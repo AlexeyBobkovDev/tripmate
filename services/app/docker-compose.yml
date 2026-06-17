@@ -1,0 +1,57 @@
+services:
+  tripmateapp:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/tripmateapp/Dockerfile
+    volumes:
+      - ${PROJECT_ROOT}/out/logs:/app/out/logs
+    restart: always
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      - tripmateapp-postgres
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:5050/healthcheck"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+      start_period: 10s
+
+  tripmateapp-postgres:
+    image: postgres:18.4-bookworm
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
+      start_period: 15s
+
+  tripmateapp-postgres-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ${PROJECT_ROOT}/migrations:/migrations
+
+  tripmate-port-forwarder:
+    image: alpine/socat:1.8.1.1
+    container_name: tripmateapp-postgres-port-forwarder
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:tripmateapp-postgres:5432
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  swagger:
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile_inline: |
+        FROM golang:1.26.4-alpine
+        RUN apk add --no-cache git
+        RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+        ENTRYPOINT ["swag"]
+    volumes:
+      - ${PROJECT_ROOT}:/code
