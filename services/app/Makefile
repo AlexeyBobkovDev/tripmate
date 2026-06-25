@@ -10,13 +10,17 @@ export PROJECT_ROOT := $(CURDIR)
 export MIGRATE_DIR := $(PROJECT_ROOT)/migrations
 export LOGS_DIR := $(PROJECT_ROOT)/out/logs
 export APP_TARGET_NAME := app
-export APP_SERVICE_NAME := tripmateapp
+export APP_SERVICE_NAME := app
+export APP_PROJECT_NAME := app
 
 
 # ===========================App===========================
 .PHONY: $(APP_TARGET_NAME)-run
 $(APP_TARGET_NAME)-run:
-	@docker compose run --rm $(APP_SERVICE_NAME)
+	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
+	docker compose run --rm --build $(APP_SERVICE_NAME)
+# 	go run ${PROJECT_ROOT}/cmd/app/main.go
+
 
 
 
@@ -76,7 +80,8 @@ $(APP_TARGET_NAME)-env-down:
 $(APP_TARGET_NAME)-env-cleanup:
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		rm -rf out/pgdata; \
+		docker compose down $(APP_SERVICE_NAME)-postgres $(APP_SERVICE_NAME)-port-forwarder && \
+		docker volume rm $(APP_PROJECT_NAME)_pgdata; \
 	fi;
 
 

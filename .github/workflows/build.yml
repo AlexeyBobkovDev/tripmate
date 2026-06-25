@@ -1,0 +1,31 @@
+name: Build
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Build Go project
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - module: "services/app"
+            cmd: "cmd/app"
+          - module: "services/notification"
+            cmd: "cmd/notification"
+
+    steps:
+      - name: Checkout go files
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache: true
+
+      - name: Build Go app
+        run: GOOS=linux go build -o app ${{ matrix.cmd }}
+        working-directory: ${{ matrix.module }}

@@ -8,10 +8,10 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN CGO_ENABLED=0 go build -o ./cmd/tripmateapp/exe ./cmd/tripmateapp
+RUN CGO_ENABLED=0 go build -o ./cmd/app/exe ./cmd/app
 
 FROM golang:1.26.4-alpine
 WORKDIR /app
-COPY --from=builder /app/cmd/tripmateapp/exe /app/
+COPY --from=builder /app/cmd/app/exe /app/
 ENV PROJECT_ROOT=/app
 ENTRYPOINT ["/app/exe"]

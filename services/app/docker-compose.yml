@@ -1,15 +1,18 @@
 services:
-  tripmateapp:
+  app:
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/tripmateapp/Dockerfile
+      dockerfile: ${PROJECT_ROOT}/cmd/app/Dockerfile
+    container_name: app
+    environment:
+      - LOGGER_FOLDER=/app/out/logs
     volumes:
       - ${PROJECT_ROOT}/out/logs:/app/out/logs
     restart: always
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
-      - tripmateapp-postgres
+      - app-postgres
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5050/healthcheck"]
       interval: 5s
@@ -17,14 +20,15 @@ services:
       timeout: 5s
       start_period: 10s
 
-  tripmateapp-postgres:
+  app-postgres:
     image: postgres:18.4-bookworm
+    container_name: app-postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - ${PROJECT_ROOT}/out/pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
@@ -33,19 +37,20 @@ services:
       timeout: 5s
       start_period: 15s
 
-  tripmateapp-postgres-migrate:
+  app-postgres-migrate:
     image: migrate/migrate:v4.19.1
+    container_name: app-postgres-migrate
     volumes:
       - ${PROJECT_ROOT}/migrations:/migrations
 
-  tripmate-port-forwarder:
+  app-postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
-    container_name: tripmateapp-postgres-port-forwarder
-    command: tcp-listen:5432,fork,reuseaddr tcp-connect:tripmateapp-postgres:5432
+    container_name: app-postgres-port-forwarder
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:app-postgres:5432
     ports:
       - "127.0.0.1:5432:5432"
 
-  swagger:
+  app-swagger:
     build:
       context: ${PROJECT_ROOT}
       dockerfile_inline: |
@@ -53,5 +58,9 @@ services:
         RUN apk add --no-cache git
         RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
         ENTRYPOINT ["swag"]
+    container_name: app-swagger
     volumes:
       - ${PROJECT_ROOT}:/code
+
+volumes:
+  pgdata:

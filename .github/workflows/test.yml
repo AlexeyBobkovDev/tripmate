@@ -1,0 +1,64 @@
+name: Test
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  test-code:
+    name: Test code
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - service: "services/app"
+            go-version-file: "services/app/go.mod"
+          - service: "services/notification"
+            go-version-file: "services/notification/go.mod"
+
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.go-version-file }}
+          cache: true
+
+      - name: Test code
+        run: go test ./...
+        working-directory: ${{ matrix.service }}
+
+  test-vulnerabilities:
+    name: Test vulnerabilities
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ["services/app", "services/notification"]
+        go-version-file: ["services/app/go.mod", "services/notification/go.mod"]
+    steps:
+      - name: Checkout files
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: ${{ matrix.go-version-file }}
+          cache: true
+
+      - uses: github/codeql-action/init@v4
+
+      - uses: github/codeql-action/analyze@v4
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        working-directory: ${{ matrix.service }}
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+        working-directory: ${{ matrix.service }}
