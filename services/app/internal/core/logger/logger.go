@@ -1,6 +1,7 @@
 package core_logger
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,16 +11,20 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+type loggerContextKey struct{}
+
+var key = loggerContextKey{}
+
 type Logger struct {
 	*zap.Logger
 	file *os.File
 }
 
-func (logger *Logger) Close() error{
-	if logger == nil{
+func (logger *Logger) Close() error {
+	if logger == nil {
 		return nil
 	}
-	
+
 	_ = logger.Sync()
 
 	if logger.file != nil {
@@ -27,6 +32,23 @@ func (logger *Logger) Close() error{
 	}
 
 	return nil
+}
+
+func ToContext(ctx context.Context, logger *Logger) context.Context {
+	return context.WithValue(
+		ctx,
+		key,
+		logger,
+	)
+}
+
+func FromContext(ctx context.Context) *Logger {
+	log, ok := ctx.Value(key).(*Logger)
+	if !ok {
+		panic("no logger in context")
+	}
+
+	return log
 }
 
 func NewLogger(config Config) (*Logger, error) {
