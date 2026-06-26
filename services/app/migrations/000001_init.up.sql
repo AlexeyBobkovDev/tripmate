@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS app.users (
         NOW() - birth_date BETWEEN 10
         AND 150
     ),
-    CONSTRAIN users_description_check CHECK (CHAR_LENGTH(TRIP(description)) > 0),
+    CONSTRAINT users_description_check CHECK (CHAR_LENGTH(TRIM(description)) > 0),
     CONSTRAINT users_email_check CHECK (email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
     CONSTRAINT users_phone_number_check CHECK (
-        char_length(phone_number) BETWEEN 10 AND 16
+        CHAR_LENGTH(phone_number) BETWEEN 10 AND 16
         AND
         phone_number ~ '^\+[0-9]{10,15}$'
     ),
