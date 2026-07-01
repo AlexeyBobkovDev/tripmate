@@ -1,0 +1,79 @@
+assert_lefthook_installed: true
+glob_matcher: doublestar
+source_dir: scripts/
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      run: scripts/format.sh {staged_files}
+      glob: "**/*.go"
+      stage_fixed: true
+
+    lint:
+      run: scripts/lint.sh
+      glob: "**/*.go"
+
+    test:
+      run: scripts/test.sh {staged_files}
+      glob: "**/*.go"
+
+pre-push:
+  parallel: true
+  commands:
+    test:
+      run: scripts/test.sh
+      env:
+        TEST_INTEGRATION: "1"
+
+    docker-build:
+      run: scripts/docker-build.sh
+
+pre-rebase:
+  parallel: true
+  commands:
+    format:
+      run: scripts/format.sh {files}
+      glob: "**/*.go"
+      stage_fixed: true
+
+    lint:
+      run: scripts/lint.sh
+      glob: "**/*.go"
+
+    test:
+      run: scripts/test.sh
+      glob: "**/*.go"
+
+pre-merge-commit:
+  parallel: true
+  commands:
+    format:
+      run: scripts/format.sh
+      glob: "**/*.go"
+      stage_fixed: true
+
+    lint:
+      run: scripts/lint.sh
+      glob: "**/*.go"
+
+    test:
+      run: scripts/test.sh
+      glob: "**/*.go"
+
+    docker-build:
+      only:
+        - ref: main
+      run: scripts/docker-build.sh
+
+prepare-commit-msg:
+  parallel: true
+  commands:
+    prepare-commit:
+      run: bash scripts/prepare-commit-msg.sh {1} {2} {3}
+
+commit-msg:
+  parallel: true
+  commands:
+    validate-commit:
+      run: bash scripts/commit-msg.sh {1}
