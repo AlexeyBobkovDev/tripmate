@@ -39,8 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["services/app", "services/notification"]
-        go-version-file: ["services/app/go.mod", "services/notification/go.mod"]
+        include:
+          - service: "services/app"
+            go-version-file: "services/app/go.mod"
+          - service: "services/notification"
+            go-version-file: "services/notification/go.mod"
     steps:
       - name: Checkout files
         uses: actions/checkout@v6
@@ -52,13 +55,12 @@ jobs:
           cache: true
 
       - uses: github/codeql-action/init@v4
+        with:
+          languages: go
+          source-root: ${{ matrix.service }}
 
       - uses: github/codeql-action/analyze@v4
 
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
-        working-directory: ${{ matrix.service }}
-
-      - name: Run govulncheck
-        run: govulncheck ./...
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
         working-directory: ${{ matrix.service }}

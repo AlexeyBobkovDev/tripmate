@@ -15,18 +15,16 @@ type Logger struct {
 	file *os.File
 }
 
-func (logger *Logger) Close() error{
-	if logger == nil{
-		return nil
+func (logger *Logger) Close() {
+	if logger == nil {
+		return
 	}
-	
+
 	_ = logger.Sync()
 
 	if logger.file != nil {
-		return logger.file.Close()
+		_ = logger.file.Close()
 	}
-
-	return nil
 }
 
 func NewLogger(config Config) (*Logger, error) {
@@ -35,7 +33,7 @@ func NewLogger(config Config) (*Logger, error) {
 		return nil, fmt.Errorf("unmarshal level: %w", err)
 	}
 
-	if err := os.MkdirAll(config.Folder, 0755); err != nil {
+	if err := os.MkdirAll(config.Folder, 0o755); err != nil {
 		return nil, fmt.Errorf("create folder: %w", err)
 	}
 
@@ -47,7 +45,7 @@ func NewLogger(config Config) (*Logger, error) {
 	file, err := os.OpenFile(
 		logFilePath,
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
-		0644,
+		0o644,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("create file: %w", err)
