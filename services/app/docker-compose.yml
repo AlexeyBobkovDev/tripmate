@@ -4,6 +4,7 @@ services:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/app/Dockerfile
     container_name: app
+    env_file: .env
     environment:
       - LOGGER_FOLDER=/app/out/logs
     volumes:
@@ -12,7 +13,8 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
-      - app-postgres
+      app-postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5050/healthcheck"]
       interval: 5s
