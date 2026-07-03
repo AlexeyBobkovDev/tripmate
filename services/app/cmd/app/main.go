@@ -11,6 +11,7 @@ import (
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
+	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
 	"go.uber.org/zap"
 )
 
@@ -37,4 +38,11 @@ func main() {
 	}
 	defer pool.Close()
 	logger.Debug("successfully created new postgres pool")
+
+	logger.Debug("initializing new server")
+	server := core_server.NewHTTPServer(core_server.NewConfigMust(), logger)
+	server.Health()
+	logger.Debug("successfully initialized server")
+
+	server.Run(ctx)
 }
