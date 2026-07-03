@@ -9,13 +9,13 @@ import (
 )
 
 type Config struct {
-	User      string    `envconfig:"User" required:"true"`
-	Password  string    `envconfig:"Password" required:"true"`
-	Host      string    `envconfig:"Host" required:"true"`
-	Port      string    `envconfig:"Port" default:"5432"`
-	Name      string    `envconfig:"Name" required:"true"`
-	SSLMode   string    `envconfig:"SSLMode" required:"true"`
-	OpTimeout time.Time `envconfig:"OpTimeout" required:"true"`
+	User      string    `envconfig:"USER" required:"true"`
+	Password  string    `envconfig:"PASSWORD" required:"true"`
+	Host      string    `envconfig:"HOST" required:"true"`
+	Port      string    `envconfig:"PORT" default:"5432"`
+	Name      string    `envconfig:"NAME" required:"true"`
+	SSLMode   string    `envconfig:"SSLMODE" required:"true"`
+	OpTimeout time.Time `envconfig:"OPTIMEOUT" required:"true"`
 }
 
 func (cfg Config) BuildDSN() string {
