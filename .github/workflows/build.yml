@@ -27,5 +27,5 @@ jobs:
           cache: true
 
       - name: Build Go app
-        run: GOOS=linux go build -o app ${{ matrix.cmd }}
+        run: GOOS=linux go build -o app ./${{ matrix.cmd }}
         working-directory: ${{ matrix.module }}
