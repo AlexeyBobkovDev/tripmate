@@ -1,6 +1,10 @@
+# Folders
 out/
 .idea/
 .vscode/
 .gigaide/
 .git/
+
+# Files
 .gitignore
+.env.example
