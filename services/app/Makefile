@@ -15,10 +15,7 @@ export APP_SERVICE_NAME := app
 # ===========================App===========================
 .PHONY: $(APP_SERVICE_NAME)-run
 $(APP_SERVICE_NAME)-run:
-	@export LOGGER_FOLDER=$(PROJECT_ROOT)/out/logs && \
-	docker compose run --rm --build $(APP_SERVICE_NAME)
-# 	go run ${PROJECT_ROOT}/cmd/app/main.go
-
+	@docker compose up --build $(APP_SERVICE_NAME)
 
 
 
@@ -77,11 +74,11 @@ $(APP_SERVICE_NAME)-cleanup-logs:
 # ===========================Env===========================
 .PHONY: $(APP_SERVICE_NAME)-env-up
 $(APP_SERVICE_NAME)-env-up:
-	@docker compose run -d $(APP_SERVICE_NAME)-postgres
+	@docker compose up -d $(APP_SERVICE_NAME)-postgres
 
 .PHONY: $(APP_SERVICE_NAME)-env-down
 $(APP_SERVICE_NAME)-env-down:
-	@docker compose stop $(APP_SERVICE_NAME)-postgres
+	@docker compose down $(APP_SERVICE_NAME)-postgres
 
 .PHONY: $(APP_SERVICE_NAME)-env-cleanup
 $(APP_SERVICE_NAME)-env-cleanup:
