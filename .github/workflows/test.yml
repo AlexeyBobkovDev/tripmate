@@ -39,8 +39,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["services/app", "services/notification"]
-        go-version-file: ["services/app/go.mod", "services/notification/go.mod"]
+        include:
+          - service: "services/app"
+            go-version-file: "services/app/go.mod"
+          - service: "services/notification"
+            go-version-file: "services/notification/go.mod"
     steps:
       - name: Checkout files
         uses: actions/checkout@v6
