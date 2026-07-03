@@ -9,21 +9,21 @@ import (
 )
 
 type Config struct {
-	User      string    `envconfig:"USER" required:"true"`
-	Password  string    `envconfig:"PASSWORD" required:"true"`
-	Host      string    `envconfig:"HOST" required:"true"`
-	Port      string    `envconfig:"PORT" default:"5432"`
-	Name      string    `envconfig:"NAME" required:"true"`
-	SSLMode   string    `envconfig:"SSLMODE" required:"true"`
-	OpTimeout time.Time `envconfig:"OPTIMEOUT" required:"true"`
+	User      string        `envconfig:"USER" required:"true"`
+	Password  string        `envconfig:"PASSWORD" required:"true"`
+	Host      string        `envconfig:"HOST" required:"true"`
+	Port      int           `envconfig:"PORT" default:"5432"`
+	DB        string        `envconfig:"DB" required:"true"`
+	SSLMode   string        `envconfig:"SSLMODE" required:"true"`
+	OpTimeout time.Duration `envconfig:"OPTIMEOUT" required:"true"`
 }
 
 func (cfg Config) BuildDSN() string {
 	u := &url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.User, cfg.Password),
-		Host:   fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
-		Path:   "/" + cfg.Name,
+		Host:   fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Path:   "/" + cfg.DB,
 	}
 
 	if cfg.SSLMode != "" {
@@ -32,7 +32,6 @@ func (cfg Config) BuildDSN() string {
 		u.RawQuery = q.Encode()
 
 	}
-
 	return u.String()
 }
 
