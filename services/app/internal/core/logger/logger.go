@@ -23,7 +23,7 @@ func (logger *Logger) Close() {
 	_ = logger.Sync()
 
 	if logger.file != nil {
-		logger.file.Close()
+		_ = logger.file.Close()
 	}
 }
 
