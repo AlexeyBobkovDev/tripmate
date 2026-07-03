@@ -16,7 +16,7 @@ export NOTIFICATION_SERVICE_NAME := notification
 # ===========================App===========================
 .PHONY: $(NOTIFICATION_TARGET_NAME)-run
 $(NOTIFICATION_TARGET_NAME)-run:
-	@docker compose run --rm $(NOTIFICATION_SERVICE_NAME)
+	@docker compose up --build $(NOTIFICATION_SERVICE_NAME)
 
 
 
@@ -66,11 +66,11 @@ $(NOTIFICATION_TARGET_NAME)-cleanup-logs:
 # ===========================Env===========================
 .PHONY: $(NOTIFICATION_TARGET_NAME)-env-up
 $(NOTIFICATION_TARGET_NAME)-env-up:
-	@docker compose run -d $(NOTIFICATION_SERVICE_NAME)-postgres
+	@docker compose up -d $(NOTIFICATION_SERVICE_NAME)-postgres
 
 .PHONY: $(NOTIFICATION_TARGET_NAME)-env-down
 $(NOTIFICATION_TARGET_NAME)-env-down:
-	@docker compose stop $(NOTIFICATION_SERVICE_NAME)-postgres
+	@docker compose down $(NOTIFICATION_SERVICE_NAME)-postgres
 
 .PHONY: $(NOTIFICATION_TARGET_NAME)-env-cleanup
 $(NOTIFICATION_TARGET_NAME)-env-cleanup:
