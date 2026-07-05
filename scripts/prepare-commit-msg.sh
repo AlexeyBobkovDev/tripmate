@@ -30,6 +30,15 @@ esac
 [[ $BRANCH =~ $JIRA_TICKET_REGEX ]] || die "Missing Jira ticket in branch name"
 JIRA_TICKET="${BASH_REMATCH[0]}"
 
-OUTPUT="feat(${JIRA_TICKET}): $COMMIT_MSG"
+if [[ ! "$PWD" =~ /tripmate/services/([^/]+) ]]; then
+	SERVICE_NAME="system"
+elif [[ "$PWD" =~ /tripmate/services/([^/]+) ]]; then
+	SERVICE_NAME="${BASH_REMATCH[1]}"
+else
+	die "Unknown path"
+fi
+echo "${SERVICE_NAME}"
+
+OUTPUT="feat(${JIRA_TICKET}, ${SERVICE_NAME}): $COMMIT_MSG"
 
 echo "$OUTPUT" >"$COMMIT_MSG_FILE"

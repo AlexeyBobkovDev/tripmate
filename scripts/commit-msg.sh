@@ -38,7 +38,7 @@ feat(TODO-123): brief explanation
 =================================="
 fi
 
-readonly COMMIT_HEADER_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\($JIRA_TICKET\): .{1,50}$"
+readonly COMMIT_HEADER_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\(${JIRA_TICKET}, .{,40}\): .{1,50}$"
 readonly COMMIT_HEADER="$(head -n1 "$COMMIT_MSG_FILE")"
 [[ "$COMMIT_HEADER" =~ $COMMIT_HEADER_REGEX ]] || die "Invalid commit header format. Should be like:
 feat(TODO-123): brief explanation"
