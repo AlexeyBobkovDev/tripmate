@@ -22,11 +22,11 @@ $(APP_SERVICE_NAME)-run:
 # ===========================Migrate===========================
 .PHONY: $(APP_SERVICE_NAME)-migrate-up
 $(APP_SERVICE_NAME)-migrate-up:
-	@$(MAKE) migrate-action action=up
+	@$(MAKE) $(APP_SERVICE_NAME)-migrate-action action=up
 
 .PHONY: $(APP_SERVICE_NAME)-migrate-down
 $(APP_SERVICE_NAME)-migrate-down:
-	@$(MAKE) migrate-action action=down
+	@$(MAKE) $(APP_SERVICE_NAME)-migrate-action action=down
 
 .PHONY: $(APP_SERVICE_NAME)-migrate-create
 $(APP_SERVICE_NAME)-migrate-create:
@@ -53,10 +53,20 @@ $(APP_SERVICE_NAME)-migrate-action:
 			-ext sql \
 			-seq \
 			$(name); \
-	else \
-		$(MIGRATE_CMD) $(action) \
+	elif [ "$(action)" = "up" ] || [ "$(action)" = "down" ]; then \
+		$(MIGRATE_CMD) \
 			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)/$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable; \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			$(action); \
+	elif [ "$(action)" = "force" ]; then \
+		if [ -z "$(v)" ]; then \
+			echo "Version must be specified. E.g. v=3"; \
+			exit 1; \
+		fi; \
+		$(MIGRATE_CMD) \
+			-path=$(MIGRATE_DIR) \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			$(action) $(v); \
 	fi;
 
 
@@ -93,11 +103,11 @@ $(APP_SERVICE_NAME)-env-cleanup:
 # ===========================Port forwarder===========================
 .PHONY: env-port-forward
 env-port-forward:
-	@docker compose run port-forwarder
+	@docker compose run -d app-postgres-port-forwarder
 
 .PHONY: env-port-close
 env-port-close:
-	@docker compose stop port-forwarder
+	@docker compose stop app-postgres-port-forwarder
 
 
 
@@ -133,3 +143,21 @@ tidy:
 .PHONY: download
 download:
 	@go mod download
+
+.PHONY: fmt
+fmt:
+	@goimports -w .; \
+    gofumpt -w .; \
+	gci write .; \
+	golangci-lint run ./...;
+
+
+
+# ===========================Test===========================
+.PHONY: $(APP_SERVICE_NAME)-benchmark
+$(APP_SERVICE_NAME)-benchmark:
+	@go test -bench=. -benchmem ./...
+
+.PHONY: $(APP_SERVICE_NAME)-test
+$(APP_SERVICE_NAME)-test:
+	@go test -v ./...

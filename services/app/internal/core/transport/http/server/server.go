@@ -5,19 +5,23 @@ import (
 	"net/http"
 
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
+	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 	"go.uber.org/zap"
 )
 
 type HTTPServer struct {
-	mux    *http.ServeMux
-	config Config
-	logger *core_logger.Logger
+	mux         *http.ServeMux
+	config      Config
+	logger      *core_logger.Logger
+	Middlewares []core_middleware.Middleware
 }
 
 func (s *HTTPServer) Run(ctx context.Context) {
+	mux := core_middleware.ChainMiddleware(s.mux, s.Middlewares...)
+
 	server := http.Server{
 		Addr:    s.config.Addr,
-		Handler: s.mux,
+		Handler: mux,
 	}
 
 	errCh := make(chan error, 1)
@@ -40,12 +44,13 @@ func (s *HTTPServer) Run(ctx context.Context) {
 	}
 }
 
-func (s *HTTPServer) RegisterRouters(routers ...APIRouter) {
+func (s *HTTPServer) RegisterRouters(routers ...*APIRouter) {
 	for _, router := range routers {
-		path := "/api/" + router.APIVersion.ToString() + "/" + router.Path
+		path := "/api/" + router.APIVersion.ToString()
+		routerMux := core_middleware.ChainMiddleware(router.mux, router.Middlewares...)
 		s.mux.Handle(
-			path,
-			router.mux,
+			path+"/",
+			http.StripPrefix(path, routerMux),
 		)
 	}
 }
@@ -56,10 +61,15 @@ func (s *HTTPServer) Health() {
 	})
 }
 
-func NewHTTPServer(config Config, logger *core_logger.Logger) *HTTPServer {
+func NewHTTPServer(
+	config Config,
+	logger *core_logger.Logger,
+	middlewares ...core_middleware.Middleware,
+) *HTTPServer {
 	return &HTTPServer{
-		mux:    http.NewServeMux(),
-		config: config,
-		logger: logger,
+		mux:         http.NewServeMux(),
+		config:      config,
+		logger:      logger,
+		Middlewares: middlewares,
 	}
 }

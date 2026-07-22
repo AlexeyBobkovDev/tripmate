@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS app.users (
     description VARCHAR(1000) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     phone_number VARCHAR(16) NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ,
@@ -19,8 +18,7 @@ CREATE TABLE IF NOT EXISTS app.users (
     CONSTRAINT users_surname_check CHECK(CHAR_LENGTH(TRIM(surname)) > 0),
     CONSTRAINT users_username_check CHECK(CHAR_LENGTH(TRIM(username)) > 0),
     CONSTRAINT users_birth_date_check CHECK (
-        NOW() - birth_date BETWEEN 10
-        AND 150
+        EXTRACT(YEAR FROM age(NOW(), birth_date)) BETWEEN 14 AND 150
     ),
     CONSTRAINT users_description_check CHECK (CHAR_LENGTH(TRIM(description)) > 0),
     CONSTRAINT users_email_check CHECK (email ~ '^[^@\s]+@[^@\s]+\.[^@\s]+$'),
@@ -35,3 +33,14 @@ CREATE TABLE IF NOT EXISTS app.users (
         OR deleted_at >= created_at
     )
 );
+
+CREATE TABLE IF NOT EXISTS app.passwords (
+    user_id BIGSERIAL PRIMARY KEY REFERENCES app.users(id),
+    version BIGINT NOT NULL DEFAULT 1,
+    password_hash BYTEA NOT NULL,
+    salt BYTEA NOT NULL,
+    times INT NOT NULL CHECK(times >= 1),
+    memory INT NOT NULL CHECK(memory >= 1024),
+    threads INT NOT NULL CHECK(threads >= 1),
+    key_len INT NOT NULL CHECK(key_len > 1)
+)
