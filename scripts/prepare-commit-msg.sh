@@ -1,4 +1,5 @@
 set -euo pipefail
+echo "PWD=$PWD"
 
 GIT_DIR=$(git rev-parse --git-dir)
 

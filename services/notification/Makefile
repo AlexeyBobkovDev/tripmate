@@ -23,11 +23,11 @@ $(NOTIFICATION_TARGET_NAME)-run:
 # ===========================Migrate===========================
 .PHONY: $(NOTIFICATION_TARGET_NAME)-migrate-up
 $(NOTIFICATION_TARGET_NAME)-migrate-up:
-	@$(MAKE) migrate-action action=up
+	@$(MAKE) $(NOTIFICATION_SERVICE_NAME)-migrate-action action=up
 
 .PHONY: $(NOTIFICATION_TARGET_NAME)-migrate-down
 $(NOTIFICATION_TARGET_NAME)-migrate-down:
-	@$(MAKE) migrate-action action=down
+	@$(MAKE) $(NOTIFICATION_SERVICE_NAME)-migrate-action action=down
 
 .PHONY: $(NOTIFICATION_TARGET_NAME)-migrate-create
 $(NOTIFICATION_TARGET_NAME)-migrate-create:
@@ -41,14 +41,20 @@ $(NOTIFICATION_TARGET_NAME)-migrate-action:
 		exit 1; \
 	fi; \
 	if [ "$(action)" = "create" ]; then \
+		if [ -z "$(name)" ]; then \
+			echo "Name of the migration must be specified! E.g. name=create_user"; \
+			exit 1; \
+		fi; \
 		$(MIGRATE_CMD) $(action) \
-			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)/$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+			-dir $(MIGRATE_DIR) \
+			-ext sql \
+			-seq \
+			$(name); \
 	else \
-		$(MIGRATE_CMD) $(action) \
-			-dir=$(MIGRATE_DIR) \
-			-ext=sql \
-			-seq; \
+		$(MIGRATE_CMD) \
+			-path=$(MIGRATE_DIR) \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			$(action); \
 	fi;
 
 
@@ -84,11 +90,11 @@ $(NOTIFICATION_TARGET_NAME)-env-cleanup:
 # ===========================Port forwarder===========================
 .PHONY: env-port-forward
 env-port-forward:
-	@docker compose run port-forwarder
+	@docker compose run -d notification-postgres-port-forwarder
 
 .PHONY: env-port-close
 env-port-close:
-	@docker compose stop port-forwarder
+	@docker compose stop notification-postgres-port-forwarder
 
 
 
