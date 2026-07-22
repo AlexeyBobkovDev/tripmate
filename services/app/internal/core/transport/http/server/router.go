@@ -3,6 +3,8 @@ package core_server
 import (
 	"fmt"
 	"net/http"
+
+	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 )
 
 type APIVersion string
@@ -18,14 +20,24 @@ const (
 )
 
 type APIRouter struct {
-	mux        *http.ServeMux
-	Path       string
-	APIVersion APIVersion
+	mux         *http.ServeMux
+	APIVersion  APIVersion
+	Middlewares []core_middleware.Middleware
 }
 
-func (r *APIRouter) RegisterRoutes(routes ...Route) {
+func NewAPIRouter(
+	APIVersion APIVersion,
+) *APIRouter {
+	return &APIRouter{
+		mux:        http.NewServeMux(),
+		APIVersion: APIVersion,
+	}
+}
+
+func (r *APIRouter) RegisterRoutes(routes ...*Route) {
 	for _, route := range routes {
 		path := fmt.Sprintf("%s %s", route.Method, route.Path)
+		// TODO: implement middleware logic
 		r.mux.HandleFunc(
 			path,
 			route.Handler,

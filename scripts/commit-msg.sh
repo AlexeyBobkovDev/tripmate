@@ -28,17 +28,17 @@ body="$(tail -n +3 "$COMMIT_MSG_FILE")"
 if [[ -n "$body" && -n "$COMMIT_HEADER_AND_BODY_SEPARATOR" ]]; then
 	die "Invalid commit format. Proper commit format:
 ==================================
-feat(TODO-123): brief explanation
+feat(TODO-123, scope): brief explanation
 
 detailed explanation
 
 ==============OR================
 
-feat(TODO-123): brief explanation
+feat(TODO-123, scope): brief explanation
 =================================="
 fi
 
 readonly COMMIT_HEADER_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\(${JIRA_TICKET}, .{,40}\): .{1,50}$"
 readonly COMMIT_HEADER="$(head -n1 "$COMMIT_MSG_FILE")"
 [[ "$COMMIT_HEADER" =~ $COMMIT_HEADER_REGEX ]] || die "Invalid commit header format. Should be like:
-feat(TODO-123): brief explanation"
+feat(TODO-123, scope): brief explanation"
