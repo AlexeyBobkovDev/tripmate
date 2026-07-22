@@ -5,13 +5,8 @@ source_dir: scripts/
 pre-commit:
   parallel: true
   commands:
-    format:
-      run: scripts/format.sh {staged_files}
-      glob: "**/*.go"
-      stage_fixed: true
-
-    lint:
-      run: scripts/lint.sh
+    check-formatting:
+      run:  scripts/check-formatting.sh
       glob: "**/*.go"
 
     test:
@@ -32,13 +27,8 @@ pre-push:
 pre-rebase:
   parallel: true
   commands:
-    format:
-      run: scripts/format.sh {files}
-      glob: "**/*.go"
-      stage_fixed: true
-
-    lint:
-      run: scripts/lint.sh
+    check-formatting:
+      run:  scripts/check-formatting.sh
       glob: "**/*.go"
 
     test:

@@ -1,0 +1,5 @@
+test -z "$(gofmt -l {files})"
+test -z "$(goimports -l {files})"
+test -z "$(gofumpt -l {files})"
+test -z "$(gci diff {files})"
+test -z "$(golangci-lint run)"
