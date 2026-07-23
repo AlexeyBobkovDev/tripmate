@@ -6,7 +6,7 @@ pre-commit:
   parallel: true
   commands:
     check-formatting:
-      run:  scripts/check-formatting.sh
+      run:  scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
 
     test:
@@ -28,7 +28,7 @@ pre-rebase:
   parallel: true
   commands:
     check-formatting:
-      run:  scripts/check-formatting.sh
+      run:  scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
 
     test:
