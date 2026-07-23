@@ -14,11 +14,24 @@ type Pool struct {
 	opTimeout time.Duration
 }
 
-func (p *Pool) Exec(ctx context.Context, sql string, arguments ...any) (core_postgres_pool.CommandTag, error) {
+func (p *Pool) Exec(
+	ctx context.Context,
+	sql string,
+	arguments ...any,
+) (core_postgres_pool.CommandTag, error) {
 	cmdTag, err := p.Pool.Exec(ctx, sql, arguments...)
 	return pgxCommandTag{cmdTag}, mapErrors(err)
 }
 
+func (p *Pool) QueryRow(
+	ctx context.Context,
+	sql string,
+	args ...any,
+) core_postgres_pool.Row {
+	row := p.Pool.QueryRow(ctx, sql, args...)
+	return row
+}
+  
 func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
 	connUrl := cfg.BuildDSN()
 	poolCfg, err := pgxpool.ParseConfig(connUrl)
