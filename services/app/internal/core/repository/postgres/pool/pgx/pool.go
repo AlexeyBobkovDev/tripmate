@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Pool struct {
 	*pgxpool.Pool
 	opTimeout time.Duration
+}
+
+func (p *Pool) Exec(ctx context.Context, sql string, arguments ...any) (core_postgres_pool.CommandTag, error) {
+	cmdTag, err := p.Pool.Exec(ctx, sql, arguments...)
+	return pgxCommandTag{cmdTag}, mapErrors(err)
 }
 
 func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
