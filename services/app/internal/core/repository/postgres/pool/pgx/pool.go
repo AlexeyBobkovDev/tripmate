@@ -31,7 +31,7 @@ func (p *Pool) QueryRow(
 	row := p.Pool.QueryRow(ctx, sql, args...)
 	return row
 }
-
+  
 func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
 	connUrl := cfg.BuildDSN()
 	poolCfg, err := pgxpool.ParseConfig(connUrl)
