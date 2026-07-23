@@ -2,12 +2,17 @@ package core_postgres_pool
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Pool interface {
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	QueryRow(ctx context.Context, sql string, args ...any) Row
+	Exec(ctx context.Context, sql string, arguments ...any) (CommandTag, error)
+}
+
+type Row interface {
+	Scan(dest ...any) error
+}
+
+type CommandTag interface {
+	RowsAffected() int64
 }
