@@ -22,7 +22,7 @@ func RequestIDMiddleware() Middleware {
 func LoggerMiddleware(logger *core_logger.Logger) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-			r.WithContext(core_logger.ToContext(r.Context(), logger))
+			r = r.WithContext(core_logger.ToContext(r.Context(), logger))
 
 			next.ServeHTTP(rw, r)
 		})
