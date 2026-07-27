@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
-
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 )
 
 type Pool struct {
@@ -30,22 +30,29 @@ func (p *Pool) QueryRow(
 	args ...any,
 ) core_postgres_pool.Row {
 	row := p.Pool.QueryRow(ctx, sql, args...)
-	return row
+	return pgxRow{row}
 }
 
-func NewPool(ctx context.Context, cfg any, opTimeout *time.Duration) (*Pool, error) {
+type Option func(*Pool)
+
+func WithOperationTimeout(opTimeout time.Duration) Option {
+	return func(p *Pool) {
+		p.opTimeout = opTimeout
+	}
+}
+
+func NewPool(ctx context.Context, cfg any, opts ...Option) (*Pool, error) {
 	var (
-		connUrl          string
-		operationTimeout time.Duration
+		connUrl   string
+		opTimeout *time.Duration
 	)
 
 	switch cfg := cfg.(type) {
 	case string:
 		connUrl = cfg
-		operationTimeout = *opTimeout
 	case Config:
 		connUrl = cfg.BuildDSN()
-		operationTimeout = cfg.OpTimeout
+		opTimeout = &cfg.OpTimeout
 	default:
 		panic("invalid pool config type")
 	}
@@ -69,8 +76,17 @@ func NewPool(ctx context.Context, cfg any, opTimeout *time.Duration) (*Pool, err
 		return nil, fmt.Errorf("failed to connect to created postgres pool: %w", err)
 	}
 
-	return &Pool{
-		Pool:      pool,
-		opTimeout: operationTimeout,
-	}, nil
+	poolWithTimeout := &Pool{
+		Pool: pool,
+	}
+
+	for _, opt := range opts {
+		opt(poolWithTimeout)
+	}
+
+	if opTimeout != nil {
+		poolWithTimeout.opTimeout = *opTimeout
+	}
+
+	return poolWithTimeout, nil
 }
