@@ -40,7 +40,9 @@ func main() {
 	logger.Debug("initializing new time zone")
 
 	logger.Debug("initializing new postgres pool")
-	pool, err := core_pgx_pool.NewPool(ctx, core_pgx_pool.NewConfigMust())
+
+	poolCfg := core_pgx_pool.NewConfigMust()
+	pool, err := core_pgx_pool.NewPool(ctx, poolCfg, nil)
 	if err != nil {
 		logger.Fatal("failed to initialize new postgres pool", zap.Error(err))
 	}
