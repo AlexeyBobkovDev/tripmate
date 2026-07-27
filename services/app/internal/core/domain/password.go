@@ -22,8 +22,8 @@ func NewPassword(
 	keyLen uint32,
 ) *Password {
 	return &Password{
-		UserID:  UninitializedID,
-		Version: UninitializedVersion,
+		UserID:  userID,
+		Version: version,
 		Hash:    hash,
 		Salt:    salt,
 		Times:   times,
