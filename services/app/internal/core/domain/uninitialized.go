@@ -1,6 +1,6 @@
 package domain
 
-const(
-	UninitializedID = -1
+const (
+	UninitializedID      = -1
 	UninitializedVersion = -1
 )

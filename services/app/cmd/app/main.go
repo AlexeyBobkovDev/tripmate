@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"go.uber.org/zap"
+
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
@@ -20,7 +22,6 @@ import (
 	users_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/repository/postgres"
 	users_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service"
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
-	"go.uber.org/zap"
 )
 
 func main() {

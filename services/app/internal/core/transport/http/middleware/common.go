@@ -3,9 +3,10 @@ package core_middleware
 import (
 	"net/http"
 
-	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
+
+	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 )
 
 func RequestIDMiddleware() Middleware {
