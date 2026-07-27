@@ -1,5 +1,4 @@
 set -euo pipefail
-echo "PWD=$PWD"
 
 GIT_DIR=$(git rev-parse --git-dir)
 
@@ -31,14 +30,24 @@ esac
 [[ $BRANCH =~ $JIRA_TICKET_REGEX ]] || die "Missing Jira ticket in branch name"
 JIRA_TICKET="${BASH_REMATCH[0]}"
 
-if [[ ! "$PWD" =~ /tripmate/services/([^/]+) ]]; then
-	SERVICE_NAME="system"
-elif [[ "$PWD" =~ /tripmate/services/([^/]+) ]]; then
-	SERVICE_NAME="${BASH_REMATCH[1]}"
-else
-	die "Unknown path"
+declare -A service_names=()
+while IFS= read -r file; do
+	echo "$file"
+	if [[ "$file" =~ ^services/([^/]+) ]]; then
+		service="${BASH_REMATCH[1]}"
+	else
+		service="service"
+	fi
+
+	service_names["$service"]=1
+	echo "${!service_names[@]}"
+done < <(git diff --cached --name-only)
+
+if (( "${#service_names[@]}" != 1 )); then
+	die "You have to split your commits into small chunks!"
 fi
-echo "${SERVICE_NAME}"
+
+SERVICE_NAME="${!service_names[@]}"
 
 OUTPUT="feat(${JIRA_TICKET}, ${SERVICE_NAME}): $COMMIT_MSG"
 
