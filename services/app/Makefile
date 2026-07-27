@@ -148,8 +148,16 @@ download:
 fmt:
 	@goimports -w .; \
     gofumpt -w .; \
-	gci write .; \
-	golangci-lint run ./...;
+	gci write \
+	--custom-order \
+	-s standard \
+	-s default \
+	-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
+	.;
+
+.PHONY: lint
+lint:
+	@golangci-lint run ./...
 
 
 
