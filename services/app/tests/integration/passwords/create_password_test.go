@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
@@ -89,7 +90,7 @@ func SetupTestDB(t *testing.T, ctx context.Context) (core_postgres_pool.Pool, st
 	connString, err := containerDB.ConnectionString(ctx, "sslmode=disable")
 	require.NoError(t, err)
 
-	pool, err := core_pgx_pool.NewPool(ctx, connString, nil)
+	pool, err := core_pgx_pool.NewPool(ctx, connString, core_pgx_pool.WithOperationTimeout(3*time.Second))
 	require.NoError(t, err)
 
 	t.Cleanup(func() { pool.Close() })
