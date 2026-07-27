@@ -1,3 +1,5 @@
+//go:build integration
+
 package passwords_test
 
 import (

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
+
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -13,6 +14,7 @@ type Pool struct {
 	*pgxpool.Pool
 	opTimeout time.Duration
 }
+
 
 func (p *Pool) Exec(
 	ctx context.Context,
@@ -31,7 +33,7 @@ func (p *Pool) QueryRow(
 	row := p.Pool.QueryRow(ctx, sql, args...)
 	return row
 }
-  
+
 func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
 	connUrl := cfg.BuildDSN()
 	poolCfg, err := pgxpool.ParseConfig(connUrl)
