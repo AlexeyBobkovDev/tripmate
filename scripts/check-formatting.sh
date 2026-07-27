@@ -19,7 +19,7 @@ for service in services/*; do
 			fi
 
 			file="${file#$service/}"
-			
+
 			test -z "$(golangci-lint run "$file")"
 		done
 	)
