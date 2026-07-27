@@ -80,6 +80,7 @@ func main() {
 		logger,
 		core_middleware.LoggerMiddleware(logger),
 		core_middleware.RequestIDMiddleware(),
+		core_middleware.TraceMiddleware(),
 		core_middleware.RecoveryMiddleware(),
 	)
 	// TODO: rename the method from Health to RegisterHealthMethod or sth like that
