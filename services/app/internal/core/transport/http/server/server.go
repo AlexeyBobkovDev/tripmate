@@ -4,9 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
-	"go.uber.org/zap"
 )
 
 type HTTPServer struct {

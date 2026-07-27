@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/go-playground/validator/v10"
+
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
 type validatable interface {

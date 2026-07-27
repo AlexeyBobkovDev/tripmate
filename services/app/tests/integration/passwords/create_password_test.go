@@ -7,12 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
-	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
-	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
-	passwords_api "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/api"
-	passwords_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/repository/postgres"
-	passwords_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/service"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -20,6 +16,12 @@ import (
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
+
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
+	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
+	passwords_api "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/api"
+	passwords_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/repository/postgres"
+	passwords_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/service"
 )
 
 const (

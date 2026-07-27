@@ -9,6 +9,6 @@ import (
 func (s *PasswordService) GetPassword(
 	ctx context.Context,
 	userID int,
-) (*domain.Password, error){
+) (*domain.Password, error) {
 	return s.passwordRepository.GetPassword(ctx, userID)
 }

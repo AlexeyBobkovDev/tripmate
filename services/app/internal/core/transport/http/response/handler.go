@@ -5,9 +5,10 @@ import (
 	"errors"
 	"net/http"
 
+	"go.uber.org/zap"
+
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
-	"go.uber.org/zap"
 )
 
 type HTTPResponseHandler struct {
