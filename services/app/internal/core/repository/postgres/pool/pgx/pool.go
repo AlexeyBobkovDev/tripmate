@@ -15,7 +15,6 @@ type Pool struct {
 	opTimeout time.Duration
 }
 
-
 func (p *Pool) Exec(
 	ctx context.Context,
 	sql string,
@@ -34,8 +33,23 @@ func (p *Pool) QueryRow(
 	return row
 }
 
-func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
-	connUrl := cfg.BuildDSN()
+func NewPool(ctx context.Context, cfg any, opTimeout *time.Duration) (*Pool, error) {
+	var (
+		connUrl          string
+		operationTimeout time.Duration
+	)
+
+	switch cfg := cfg.(type) {
+	case string:
+		connUrl = cfg
+		operationTimeout = *opTimeout
+	case Config:
+		connUrl = cfg.BuildDSN()
+		operationTimeout = cfg.OpTimeout
+	default:
+		panic("invalid pool config type")
+	}
+
 	poolCfg, err := pgxpool.ParseConfig(connUrl)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse postgres config: %w", err)
@@ -57,6 +71,6 @@ func NewPool(ctx context.Context, cfg Config) (*Pool, error) {
 
 	return &Pool{
 		Pool:      pool,
-		opTimeout: cfg.OpTimeout,
+		opTimeout: operationTimeout,
 	}, nil
 }
