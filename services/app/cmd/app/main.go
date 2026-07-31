@@ -43,7 +43,7 @@ func main() {
 	logger.Debug("initializing new postgres pool")
 
 	poolCfg := core_pgx_pool.NewConfigMust()
-	pool, err := core_pgx_pool.NewPool(ctx, poolCfg, nil)
+	pool, err := core_pgx_pool.NewPool(ctx, poolCfg)
 	if err != nil {
 		logger.Fatal("failed to initialize new postgres pool", zap.Error(err))
 	}

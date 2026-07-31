@@ -42,6 +42,12 @@ func WithOperationTimeout(opTimeout time.Duration) Option {
 }
 
 func NewPool(ctx context.Context, cfg any, opts ...Option) (*Pool, error) {
+	for _, opt := range opts {
+		if opt == nil {
+			return nil, fmt.Errorf("opt must not be nil")
+		}
+	}
+
 	var (
 		connUrl   string
 		opTimeout *time.Duration
