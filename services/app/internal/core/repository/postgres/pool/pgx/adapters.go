@@ -27,6 +27,10 @@ type pgxCommandTag struct {
 }
 
 func mapErrors(err error) error {
+	if err == nil {
+		return nil
+	}
+
 	const (
 		pgxViolatesForeignKeyErrorCode = "23503"
 	)
