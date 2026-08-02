@@ -9,6 +9,10 @@ pre-commit:
       run:  scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
 
+    check-scripts:
+      run: scripts/check-scripts.sh
+      glob: "**/*.sh"
+
     test:
       run: scripts/test.sh {staged_files}
       glob: "**/*.go"
@@ -16,6 +20,10 @@ pre-commit:
 pre-push:
   parallel: true
   commands:
+    check-scripts:
+      run: scripts/check-scripts.sh
+      glob: "**/*.sh"
+
     test:
       run: scripts/test.sh
       env:
@@ -27,6 +35,10 @@ pre-push:
 pre-rebase:
   parallel: true
   commands:
+    check-scripts:
+      run: scripts/check-scripts.sh
+      glob: "**/*.sh"
+
     check-formatting:
       run:  scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
@@ -38,6 +50,10 @@ pre-rebase:
 pre-merge-commit:
   parallel: true
   commands:
+    check-scripts:
+      run: scripts/check-scripts.sh
+      glob: "**/*.sh"
+      
     format:
       run: scripts/format.sh
       glob: "**/*.go"
