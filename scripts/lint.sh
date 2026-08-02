@@ -1,4 +1,4 @@
-set -euo pipefail
+#!/usr/bin/env bash
 
 for service in services/*; do
     [ -d "$service" ] || continue

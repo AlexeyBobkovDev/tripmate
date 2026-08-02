@@ -1,4 +1,4 @@
-set -euo pipefail
+#!/usr/bin/env bash
 
 GO_FILES=$(printf "%s\n" "$@" | grep -E '\.go$' || true)
 
