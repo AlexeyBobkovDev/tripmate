@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. ./lib/die.sh
+. "$(dirname "$0")/lib/die.sh"
 
 GIT_DIR=$(git rev-parse --git-dir)
 
