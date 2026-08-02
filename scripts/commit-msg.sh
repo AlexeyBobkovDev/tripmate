@@ -1,15 +1,12 @@
-set -euo pipefail
+#!/usr/bin/env bash
+
+. ./lib/die.sh
 
 GIT_DIR=$(git rev-parse --git-dir)
 
 if [[ -d "$GIT_DIR/rebase-merge" || -d "$GIT_DIR/rebase-apply" || -f "$GIT_DIR/MERGE_HEAD" ]]; then
 	exit 0
 fi
-
-die() {
-	echo "$1" >&2
-	exit 1
-}
 
 readonly COMMIT_MSG_FILE=$1
 readonly COMMIT_MSG="$(sed "/^#/d" "$COMMIT_MSG_FILE")"
