@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-for script in scripts/*; do
-	shellcheck -x "$script"
-done
+find scripts -name "*.sh" -type f -exec shellcheck -x {} +
