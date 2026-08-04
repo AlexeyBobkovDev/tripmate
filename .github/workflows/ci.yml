@@ -21,3 +21,8 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
+
+  docker:
+    needs: [lint, test, build]
+    uses: ./.github/workflows/docker.yml
+    secrets: inherit
