@@ -61,6 +61,6 @@ jobs:
 
       - uses: github/codeql-action/analyze@v4
 
-      - name: Install govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@latest -show verbose ./...
         working-directory: ${{ matrix.service }}
