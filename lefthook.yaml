@@ -6,11 +6,11 @@ pre-commit:
   parallel: true
   commands:
     check-formatting:
-      run:  scripts/check-formatting.sh {staged_files}
+      run: scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
 
     check-scripts:
-      run: scripts/check-scripts.sh
+      run: scripts/check-scripts.sh {staged_files}
       glob: "**/*.sh"
 
     test:
@@ -40,7 +40,7 @@ pre-rebase:
       glob: "**/*.sh"
 
     check-formatting:
-      run:  scripts/check-formatting.sh {staged_files}
+      run: scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
 
     test:
@@ -53,7 +53,7 @@ pre-merge-commit:
     check-scripts:
       run: scripts/check-scripts.sh
       glob: "**/*.sh"
-      
+
     format:
       run: scripts/format.sh
       glob: "**/*.go"

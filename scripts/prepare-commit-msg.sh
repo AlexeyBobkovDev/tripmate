@@ -33,7 +33,6 @@ JIRA_TICKET="${BASH_REMATCH[0]}"
 
 declare -A service_names=()
 while IFS= read -r file; do
-	echo "$file"
 	if [[ "$file" =~ ^services/([^/]+) ]]; then
 		service="${BASH_REMATCH[1]}"
 	else
