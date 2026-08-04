@@ -22,9 +22,28 @@ jobs:
           go-version-file: ${{ matrix.service }}/go.mod
           cache: true
 
-      - name: fmt
-        run: go fmt ./...
-        working-directory: ${{ matrix.service }}
+      - name: Check formatting
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install mvdan.cc/gofumpt@latest
+          go install github.com/daixiang0/gci@latest
+
+          readarray -t FILES < <(find -name '*.go' -type f)
+
+          test -z "$(gofmt -l "${FILES[@]}")" || gofmt -l "${FILES[@]}"
+          test -z "$(goimports -l "${FILES[@]}")" || goimports -l "${FILES[@]}"
+          test -z "$(gofumpt -l "${FILES[@]}")" || gofumpt -l "${FILES[@]}"
+          GCI_DIFF="$(gci diff \
+              --custom-order \
+              -s standard \
+              -s default \
+              -s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
+              "${FILES[@]}" 0< /dev/null
+          )"
+          test -z "$GCI_DIFF" || {
+            echo "$GCI_DIFF"
+            exit 1
+          }
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
