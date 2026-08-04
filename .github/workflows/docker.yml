@@ -29,16 +29,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: alexeybobkovdev/${{ matrix.service }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enabled=${{ startsWith(github.ref_name, 'refs/tags/') }}
+
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.module }}
           push: true
           file: ${{ matrix.module }}/cmd/${{ matrix.service }}/Dockerfile
-          tags: |
-            alexeybobkovdev/${{ matrix.service }}:${{ github.sha }}
-            alexeybobkovdev/${{ matrix.service }}:${{ github.ref_name }}
-            alexeybobkovdev/${{ matrix.service }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
 
           cache-from: type=gha
           cache-to: type=gha,mode=max
