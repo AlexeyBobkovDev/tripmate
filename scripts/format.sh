@@ -1,4 +1,4 @@
-set -euo pipefail
+#!/usr/bin/env bash
 
 GO_FILES=$(printf "%s\n" "$@" | grep -E '\.go$' || true)
 
@@ -13,7 +13,7 @@ for file in $FILES; do
     [ -d "$service" ] || continue
 
     (
-        cd "$service" || exit 1
+        cd "$service" || dye "can not cd to service=$service"
 
         rel="${file#"$service"/}"
 

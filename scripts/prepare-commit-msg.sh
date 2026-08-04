@@ -1,4 +1,8 @@
-set -euo pipefail
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/die.sh
+. "$SCRIPT_DIR/lib/die.sh"
 
 GIT_DIR=$(git rev-parse --git-dir)
 
@@ -6,12 +10,9 @@ if [[ -d "$GIT_DIR/rebase-merge" || -d "$GIT_DIR/rebase-apply" || -f "$GIT_DIR/M
 	exit 0
 fi
 
-die() {
-	echo "$1" >&2
-	exit 1
-}
+BRANCH="$(git symbolic-ref --short --quiet HEAD || true)"
+readonly BRANCH
 
-readonly BRANCH="$(git symbolic-ref --short --quiet HEAD || true)"
 [[ -z "$BRANCH" ]] && die "Detached HEAD is not supported"
 readonly COMMIT_MSG_FILE=$1
 readonly COMMIT_SOURCE=${2:-}
@@ -32,7 +33,6 @@ JIRA_TICKET="${BASH_REMATCH[0]}"
 
 declare -A service_names=()
 while IFS= read -r file; do
-	echo "$file"
 	if [[ "$file" =~ ^services/([^/]+) ]]; then
 		service="${BASH_REMATCH[1]}"
 	else
@@ -40,14 +40,15 @@ while IFS= read -r file; do
 	fi
 
 	service_names["$service"]=1
-	echo "${!service_names[@]}"
 done < <(git diff --cached --name-only)
 
 if (( "${#service_names[@]}" != 1 )); then
 	die "You have to split your commits into small chunks!"
 fi
 
-SERVICE_NAME="${!service_names[@]}"
+for service_name in "${!service_names[@]}"; do
+	SERVICE_NAME="$service_name"
+done
 
 OUTPUT="feat(${JIRA_TICKET}, ${SERVICE_NAME}): $COMMIT_MSG"
 

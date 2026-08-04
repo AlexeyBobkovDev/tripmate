@@ -1,10 +1,10 @@
-set -euo pipefail
+#!/usr/bin/env bash
 
 for service in services/*; do
     [ -d "$service" ] || continue
 
     (
-        cd "$service" || exit 1
+        cd "$service" || dye "can not cd to service=$service"
 
         golangci-lint run ./...
     )
