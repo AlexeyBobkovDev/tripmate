@@ -1,4 +1,4 @@
-FROM golang:1.26.4-bookworm AS builder
+FROM golang:1.26.5-bookworm AS builder
 
 LABEL author="Alexey Bobkov"
 LABEL email="alexeybobkovdev@outlook.com"
@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 go build -o ./cmd/app/exe ./cmd/app
 
-FROM golang:1.26.4-alpine
+FROM golang:1.26.5-alpine
 WORKDIR /app
 COPY --from=builder /app/cmd/app/exe /app/
 ENV PROJECT_ROOT=/app
