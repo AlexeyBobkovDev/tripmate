@@ -21,3 +21,8 @@ jobs:
 
   build:
     uses: ./.github/workflows/build.yml
+
+  docker:
+    needs: [lint, test, build]
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/docker.yml

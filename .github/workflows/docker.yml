@@ -1,10 +1,7 @@
 name: Docker
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types:
-      - completed
+  workflow_call:
 
 jobs:
   build-and-push:
@@ -39,7 +36,10 @@ jobs:
           context: ${{ matrix.module }}
           push: true
           file: ${{ matrix.module }}/cmd/${{ matrix.service }}/Dockerfile
-          tags: alexeybobkovdev/${{ matrix.service }}:latest
+          tags: |
+            alexeybobkovdev/${{ matrix.service }}:${{ github.sha }}
+            alexeybobkovdev/${{ matrix.service }}:${{ github.ref_name }}
+            alexeybobkovdev/${{ matrix.service }}:latest
 
           cache-from: type=gha
           cache-to: type=gha,mode=max
