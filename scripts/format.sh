@@ -13,7 +13,7 @@ for file in $FILES; do
     [ -d "$service" ] || continue
 
     (
-        cd "$service" || exit 1
+        cd "$service" || dye "can not cd to service=$service"
 
         rel="${file#"$service"/}"
 
