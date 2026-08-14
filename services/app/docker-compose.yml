@@ -60,9 +60,11 @@ services:
         RUN apk add --no-cache git
         RUN --mount=type=cache,target=go/pkg/mod \
             --mount=type=cache,target=/root/.cache/go-build \
-            go install github.com/swaggo/swag/cmd/swag@v1.16.6
+            go install github.com/swaggo/swag/v2/cmd/swag@v2.0.0-rc5
         WORKDIR /code
         ENTRYPOINT ["swag"]
+    environment:
+      - APP_SERVICE_NAME=${APP_SERVICE_NAME}
     container_name: swagger
     volumes:
       - .:/code
