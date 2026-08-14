@@ -1,19 +1,19 @@
 services:
   app:
     build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/app/Dockerfile
+      context: .
+      dockerfile: ./cmd/app/Dockerfile
     container_name: app
     env_file: .env
     environment:
       - LOGGER_FOLDER=/app/out/logs
     volumes:
-      - ${PROJECT_ROOT}/out/logs:/app/out/logs
+      - ./out/logs:/app/out/logs
     restart: always
     ports:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
-      app-postgres:
+      postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost:5050/healthcheck"]
@@ -22,9 +22,9 @@ services:
       timeout: 5s
       start_period: 10s
 
-  app-postgres:
+  postgres:
     image: postgres:18.4-bookworm
-    container_name: app-postgres
+    container_name: postgres
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -39,30 +39,35 @@ services:
       timeout: 5s
       start_period: 15s
 
-  app-postgres-migrate:
+  postgres-migrate:
     image: migrate/migrate:v4.19.1
-    container_name: app-postgres-migrate
+    container_name: postgres-migrate
     volumes:
-      - ${PROJECT_ROOT}/migrations:/migrations
+      - ./migrations:/migrations
 
-  app-postgres-port-forwarder:
+  postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
-    container_name: app-postgres-port-forwarder
-    command: tcp-listen:5432,fork,reuseaddr tcp-connect:app-postgres:5432
+    container_name: postgres-port-forwarder
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:postgres:5432
     ports:
       - "127.0.0.1:5432:5432"
 
-  app-swagger:
+  swagger:
     build:
-      context: ${PROJECT_ROOT}
+      context: .
       dockerfile_inline: |
-        FROM golang:1.26.5-alpine
+        FROM golang:1.26.6-alpine
         RUN apk add --no-cache git
-        RUN go install github.com/swaggo/swag/cmd/swag@v1.16.6
+        RUN --mount=type=cache,target=go/pkg/mod \
+            --mount=type=cache,target=/root/.cache/go-build \
+            go install github.com/swaggo/swag/v2/cmd/swag@v2.0.0-rc5
+        WORKDIR /code
         ENTRYPOINT ["swag"]
-    container_name: app-swagger
+    environment:
+      - APP_SERVICE_NAME=${APP_SERVICE_NAME}
+    container_name: swagger
     volumes:
-      - ${PROJECT_ROOT}:/code
+      - .:/code
 
 volumes:
   pgdata:

@@ -12,30 +12,43 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name        string `json:"name"           validate:"required,min=1,max=100"`
-	Surname     string `json:"surname"        validate:"required,min=1,max=100"`
-	Username    string `json:"username"       validate:"required,min=1,max=100"`
-	Description string `json:"description"    validate:"omitempty,min=1,max=1000"`
-	BirthDate   string `json:"birth_date"     validate:"required,datetime=2006-01-02"`
-	Email       string `json:"email"          validate:"required,email"`
-	PhoneNumber string `json:"phone_number"   validate:"required,e164"`
-	Password    string `json:"password"       validate:"required,min=8,max=100"`
+	Name        string `json:"name"           validate:"required,min=1,max=100"         example:"Name"`
+	Surname     string `json:"surname"        validate:"required,min=1,max=100"         example:"Surname"`
+	Username    string `json:"username"       validate:"required,min=1,max=100"         example:"Username"`
+	Description string `json:"description"    validate:"omitempty,min=1,max=1000"       example:"Some kind of description"`
+	BirthDate   string `json:"birth_date"     validate:"required,datetime=2006-01-02"   example:"2006-01-02"`
+	Email       string `json:"email"          validate:"required,email"                 example:"checkemail@gmail.com"`
+	PhoneNumber string `json:"phone_number"   validate:"required,e164"                  example:"+79990746978"`
+	Password    string `json:"password"       validate:"required,min=8,max=100"         example:"some-random-password"`
 }
 
 type CreateUserResponse struct {
-	ID          int        `json:"id"`
-	Name        string     `json:"name"`
-	Surname     string     `json:"surname"`
-	Username    string     `json:"username"`
-	Description string     `json:"description"`
-	BirthDate   string     `json:"birth_date"`
-	Email       string     `json:"email"`
-	PhoneNumber string     `json:"phone_number"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at"`
+	ID          int        `json:"id"             example:"1"`
+	Name        string     `json:"name"           example:"Name"`
+	Surname     string     `json:"surname"        example:"Surname"`
+	Username    string     `json:"username"       example:"Username"`
+	Description string     `json:"description"    example:"Some kind of description"`
+	BirthDate   string     `json:"birth_date"     example:"2006-01-02"`
+	Email       string     `json:"email"          example:"checkemail@gmail.com"`
+	PhoneNumber string     `json:"phone_number"   example:"+79990746978"`
+	CreatedAt   time.Time  `json:"created_at"     example:"2006-01-02T15:06:07.292454Z"`
+	UpdatedAt   time.Time  `json:"updated_at"     example:"2006-01-02T15:06:07.292454Z"`
+	DeletedAt   *time.Time `json:"deleted_at"     example:"2006-01-02T15:06:07.292454Z"`
 }
 
+// CreateUser godoc
+//
+//	@Summary		Create User
+//	@Description	This endpoint creates a user
+//	@ID				create-user
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CreateUserRequest					true	"The data which this endpoint will use to create user"
+//	@Success		201		{object}	CreateUserResponse					"Created user"
+//	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user data"
+//	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
+//	@Router			/users [post]
 func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)

@@ -19,6 +19,12 @@ for file in $FILES; do
 
         goimports -w "$rel"
         gofumpt -w "$rel"
-        gci write "$rel"
+        gci write \
+			--custom-order \
+			-s standard \
+			-s default \
+			-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
+			"$rel"
+
     )
 done
