@@ -13,8 +13,8 @@ export APP_SERVICE_NAME := app
 
 
 # ===========================App===========================
-.PHONY: run
-run:
+.PHONY: app-run
+app-run:
 	@docker compose up --build $(APP_SERVICE_NAME)
 
 
@@ -82,16 +82,16 @@ cleanup-logs:
 
 
 # ===========================Env===========================
-.PHONY: env-up
-env-up:
+.PHONY: postgres-up
+postgres-up:
 	@docker compose up -d postgres
 
-.PHONY: env-down
-env-down:
+.PHONY: postgres-down
+postgres-down:
 	@docker compose down postgres
 
-.PHONY: env-cleanup
-env-cleanup:
+.PHONY: postgres-cleanup
+postgres-cleanup:
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
 		docker compose down postgres port-forwarder && \
@@ -101,19 +101,20 @@ env-cleanup:
 
 
 # ===========================Port forwarder===========================
-.PHONY: env-port-forward
-env-port-forward:
+.PHONY: postgres-port-forward
+postgres-port-forward:
 	@docker compose run -d postgres-port-forwarder
 
-.PHONY: env-port-close
-env-port-close:
+.PHONY: postgres-port-close
+postgres-port-close:
 	@docker compose stop postgres-port-forwarder
 
 
 
 # ===========================Documentation===========================
 .PHONY: swagger-gen
-SWAGGER_CMD = $(MAKE) swagger-action action=init \
+SWAGGER_CMD = docker compose run --build --rm swagger \
+		init \
 		-g ./cmd/$(APP_SERVICE_NAME)/main.go \
 		-o docs \
 		--parseInternal
@@ -123,16 +124,8 @@ swagger-gen: swagger-fmt
 
 .PHONY: swagger-fmt
 swagger-fmt:
-	@$(MAKE) swagger-action action=fmt
-
-.PHONY: swagger-action
-swagger-action:
-	@if [ -z "$(action)" ]; then \
-		echo "The parameter action must be provided. E.g. action=init"; \
-		exit 1; \
-	fi; \
-	docker compose run --rm swagger $(action) \
-		--dir ./cmd,./internal
+	@docker compose run --rm --build swagger fmt \
+		--dir ./cmd/$(APP_SERVICE_NAME),./internal
 
 
 

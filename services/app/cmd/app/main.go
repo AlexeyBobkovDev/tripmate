@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
+	_ "github.com/AlexeyBobkovDev/tripmate/services/app/docs"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
@@ -23,6 +24,20 @@ import (
 	users_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service"
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
 )
+
+//	@Title			TripMate API
+//	@Version		1.0
+//	@Description	TripMate is the service that helps you plan your route and just travel
+//	@Description	without difficulties
+//	@Contact.name	TripMate support
+//	@Contact.email	tripmatesupport@gmail.com
+//
+// Contact.url  https://tripmate./support
+//
+//	@Host			localhost:8080
+//	@BasePath		/api/v1
+//	@Accept			json
+//	@Produce		json
 
 func main() {
 	cfg := core_config.NewConfigMust()
@@ -86,8 +101,8 @@ func main() {
 		core_middleware.TraceMiddleware(),
 		core_middleware.RecoveryMiddleware(),
 	)
-	// TODO: rename the method from Health to RegisterHealthMethod or sth like that
-	server.Health()
+	server.RegisterHealth()
+	server.RegisterSwagger()
 	logger.Debug("successfully initialized server")
 	server.RegisterRouters(apiVersionRouterV1)
 

@@ -4,8 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
 
+	"github.com/AlexeyBobkovDev/tripmate/services/app/docs"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 )
@@ -56,10 +58,29 @@ func (s *HTTPServer) RegisterRouters(routers ...*APIRouter) {
 	}
 }
 
-func (s *HTTPServer) Health() {
+func (s *HTTPServer) RegisterHealth() {
 	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+}
+
+func (s *HTTPServer) RegisterSwagger() {
+	s.mux.Handle(
+		"/swagger/",
+		httpSwagger.Handler(
+			httpSwagger.URL("/swagger/doc.json"),
+			httpSwagger.DefaultModelsExpandDepth(-1),
+		),
+	)
+
+	s.mux.HandleFunc(
+		"/swagger/doc.json",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(docs.SwaggerInfo.ReadDoc()))
+		},
+	)
 }
 
 func NewHTTPServer(
