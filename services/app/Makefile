@@ -13,32 +13,32 @@ export APP_SERVICE_NAME := app
 
 
 # ===========================App===========================
-.PHONY: $(APP_SERVICE_NAME)-run
-$(APP_SERVICE_NAME)-run:
+.PHONY: run
+run:
 	@docker compose up --build $(APP_SERVICE_NAME)
 
 
 
 # ===========================Migrate===========================
-.PHONY: $(APP_SERVICE_NAME)-migrate-up
-$(APP_SERVICE_NAME)-migrate-up:
-	@$(MAKE) $(APP_SERVICE_NAME)-migrate-action action=up
+.PHONY: migrate-up
+migrate-up:
+	@$(MAKE) migrate-action action=up
 
-.PHONY: $(APP_SERVICE_NAME)-migrate-down
-$(APP_SERVICE_NAME)-migrate-down:
-	@$(MAKE) $(APP_SERVICE_NAME)-migrate-action action=down
+.PHONY: migrate-down
+migrate-down:
+	@$(MAKE) migrate-action action=down
 
-.PHONY: $(APP_SERVICE_NAME)-migrate-create
-$(APP_SERVICE_NAME)-migrate-create:
+.PHONY: migrate-create
+migrate-create:
 	@if [ -z "$(name)" ]; then \
 		echo "Name of the migration must be specified! E.g. name=create_user"; \
 		exit 1; \
 	fi; \
-	$(MAKE) $(APP_SERVICE_NAME)-migrate-action action=create name=$(name)
+	$(MAKE) migrate-action action=create name=$(name)
 
-.PHONY: $(APP_SERVICE_NAME)-migrate-action
-MIGRATE_CMD = docker compose run --rm $(APP_SERVICE_NAME)-postgres-migrate
-$(APP_SERVICE_NAME)-migrate-action:
+.PHONY: migrate-action
+MIGRATE_CMD = docker compose run --rm postgres-migrate
+migrate-action:
 	@if [ -z "$(action)" ]; then \
 		echo "Action Must be specified! E.g. action=up"; \
 		exit 1; \
@@ -72,8 +72,8 @@ $(APP_SERVICE_NAME)-migrate-action:
 
 
 # ===========================Logs===========================
-.PHONY: $(APP_SERVICE_NAME)-cleanup-logs
-$(APP_SERVICE_NAME)-cleanup-logs:
+.PHONY: cleanup-logs
+cleanup-logs:
 	@read -p "Would you like to cleanup all logs? DANGER OPERATION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
 		rm -rf $(LOGS_DIR); \
@@ -82,19 +82,19 @@ $(APP_SERVICE_NAME)-cleanup-logs:
 
 
 # ===========================Env===========================
-.PHONY: $(APP_SERVICE_NAME)-env-up
-$(APP_SERVICE_NAME)-env-up:
-	@docker compose up -d $(APP_SERVICE_NAME)-postgres
+.PHONY: env-up
+env-up:
+	@docker compose up -d postgres
 
-.PHONY: $(APP_SERVICE_NAME)-env-down
-$(APP_SERVICE_NAME)-env-down:
-	@docker compose down $(APP_SERVICE_NAME)-postgres
+.PHONY: env-down
+env-down:
+	@docker compose down postgres
 
-.PHONY: $(APP_SERVICE_NAME)-env-cleanup
-$(APP_SERVICE_NAME)-env-cleanup:
+.PHONY: env-cleanup
+env-cleanup:
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		docker compose down $(APP_SERVICE_NAME)-postgres $(APP_SERVICE_NAME)-port-forwarder && \
+		docker compose down postgres port-forwarder && \
 		docker volume rm $(APP_SERVICE_NAME)_pgdata; \
 	fi;
 
@@ -103,19 +103,19 @@ $(APP_SERVICE_NAME)-env-cleanup:
 # ===========================Port forwarder===========================
 .PHONY: env-port-forward
 env-port-forward:
-	@docker compose run -d app-postgres-port-forwarder
+	@docker compose run -d postgres-port-forwarder
 
 .PHONY: env-port-close
 env-port-close:
-	@docker compose stop app-postgres-port-forwarder
+	@docker compose stop postgres-port-forwarder
 
 
 
 # ===========================Documentation===========================
 .PHONY: swagger-gen
 SWAGGER_CMD = $(MAKE) swagger-action action=init \
-		-g $(APP_PROJECT_ROOT)/cmd/$(APP_SERVICE_NAME)/main.go \
-		-0 docs \
+		-g ./cmd/$(APP_SERVICE_NAME)/main.go \
+		-o docs \
 		--parseInternal
 
 swagger-gen: swagger-fmt
@@ -131,7 +131,8 @@ swagger-action:
 		echo "The parameter action must be provided. E.g. action=init"; \
 		exit 1; \
 	fi; \
-	docker compose run --rm swagger $(action)
+	docker compose run --rm swagger $(action) \
+		--dir ./cmd,./internal
 
 
 
@@ -162,10 +163,10 @@ lint:
 
 
 # ===========================Test===========================
-.PHONY: $(APP_SERVICE_NAME)-benchmark
-$(APP_SERVICE_NAME)-benchmark:
+.PHONY: benchmark
+benchmark:
 	@go test -bench=. -benchmem ./...
 
-.PHONY: $(APP_SERVICE_NAME)-test
-$(APP_SERVICE_NAME)-test:
+.PHONY: test
+test:
 	@go test -v ./...
