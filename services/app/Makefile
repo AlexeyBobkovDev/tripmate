@@ -103,11 +103,11 @@ env-cleanup:
 # ===========================Port forwarder===========================
 .PHONY: env-port-forward
 env-port-forward:
-	@docker compose run -d app-postgres-port-forwarder
+	@docker compose run -d postgres-port-forwarder
 
 .PHONY: env-port-close
 env-port-close:
-	@docker compose stop app-postgres-port-forwarder
+	@docker compose stop postgres-port-forwarder
 
 
 
@@ -131,7 +131,7 @@ swagger-action:
 		echo "The parameter action must be provided. E.g. action=init"; \
 		exit 1; \
 	fi; \
-	docker compose run --rm app-swagger $(action) \
+	docker compose run --rm swagger $(action) \
 		--dir ./cmd,./internal
 
 
