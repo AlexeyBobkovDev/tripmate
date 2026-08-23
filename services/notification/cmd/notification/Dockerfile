@@ -1,4 +1,4 @@
-FROM golang:1.26.6-bookworm AS builder
+FROM golang:1.27.0-bookworm AS builder
 
 LABEL author="Alexey Bobkov"
 LABEL email="alexeybobkovdev@outlook.com"
@@ -10,7 +10,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o ./cmd/notification/exe ./cmd/notification
 
-FROM golang:1.26.6-alpine
+FROM golang:1.27.0-alpine
 WORKDIR /app
 COPY --from=builder /app/cmd/notification/exe /app/
 ENV PROJECT_ROOT=/app
