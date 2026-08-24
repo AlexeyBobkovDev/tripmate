@@ -78,7 +78,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 
 	userResponse := CreateUserResponse(dtoFromDomain(response))
 	responseHandler.JSONResponse(
-		http.StatusOK,
+		http.StatusCreated,
 		userResponse,
 	)
 }
