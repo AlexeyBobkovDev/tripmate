@@ -40,7 +40,7 @@ services:
       start_period: 15s
 
   postgres-migrate:
-    image: migrate/migrate:v1.27.0
+    image: migrate/migrate:v4.19.1
     container_name: postgres-migrate
     volumes:
       - ./migrations:/migrations
