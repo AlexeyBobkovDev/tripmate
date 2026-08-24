@@ -96,6 +96,11 @@ func main() {
 	server := core_server.NewHTTPServer(
 		core_server.NewConfigMust(),
 		logger,
+		core_middleware.CORSMiddleware(
+			map[string]struct{}{
+				"http://localhost:8080": {},
+			},
+		),
 		core_middleware.LoggerMiddleware(logger),
 		core_middleware.RequestIDMiddleware(),
 		core_middleware.TraceMiddleware(),
