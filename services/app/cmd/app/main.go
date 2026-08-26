@@ -93,13 +93,12 @@ func main() {
 	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
 
 	logger.Debug("initializing new server")
+	corsConfiguration := core_middleware.NewCORSConfigMust()
 	server := core_server.NewHTTPServer(
 		core_server.NewConfigMust(),
 		logger,
 		core_middleware.CORSMiddleware(
-			map[string]struct{}{
-				"http://localhost:8080": {},
-			},
+			corsConfiguration,
 		),
 		core_middleware.LoggerMiddleware(logger),
 		core_middleware.RequestIDMiddleware(),
