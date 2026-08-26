@@ -4,9 +4,11 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 )
 
@@ -31,21 +33,24 @@ func mapErrors(err error) error {
 		return nil
 	}
 
-	const (
-		pgxViolatesForeignKeyErrorCode = "23503"
-	)
-
 	if errors.Is(err, pgx.ErrNoRows) {
 		return core_postgres_pool.ErrNoRows
 	}
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		if pgErr.Code == pgxViolatesForeignKeyErrorCode {
+		switch pgErr.Code {
+		case pgerrcode.ForeignKeyViolation:
 			return fmt.Errorf(
 				"%v: %w",
 				err,
 				core_postgres_pool.ErrViolatedForeignKey,
+			)
+		case pgerrcode.UniqueViolation:
+			return fmt.Errorf(
+				"%v: %w",
+				err,
+				core_errors.ErrConflict,
 			)
 		}
 	}
