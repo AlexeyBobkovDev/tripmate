@@ -95,9 +95,13 @@ func main() {
 	logger.Debug("initializing new server")
 
 	middlewareConfig := core_middleware.NewConfigMust()
+	corsConfiguration := core_middleware.NewCORSConfigMust()
 	server := core_server.NewHTTPServer(
 		core_server.NewConfigMust(),
 		logger,
+		core_middleware.CORSMiddleware(
+			corsConfiguration,
+		),
 		core_middleware.RateLimiterMiddleware(
 			middlewareConfig.MaxReqAmount,
 			middlewareConfig.WindowSize,

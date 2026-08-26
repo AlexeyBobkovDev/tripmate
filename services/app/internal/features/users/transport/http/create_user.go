@@ -47,6 +47,7 @@ type CreateUserResponse struct {
 //	@Param			request	body		CreateUserRequest					true	"The data which this endpoint will use to create user"
 //	@Success		201		{object}	CreateUserResponse					"Created user"
 //	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user data"
+//	@Failure		409		{object}	core_http_response.ErrorResponse	"Conflict"
 //	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
 //	@Router			/users [post]
 func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
@@ -59,6 +60,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 			err,
 			"failed decode request",
 		)
+		return
 	}
 
 	userDomain, err := domainFromDTO(request)
@@ -67,6 +69,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 			err,
 			"invalid data",
 		)
+		return
 	}
 	response, err := h.usersService.CreateUser(ctx, userDomain, []byte(request.Password))
 	if err != nil {
@@ -74,11 +77,12 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 			err,
 			"failed to create user",
 		)
+		return
 	}
 
 	userResponse := CreateUserResponse(dtoFromDomain(response))
 	responseHandler.JSONResponse(
-		http.StatusOK,
+		http.StatusCreated,
 		userResponse,
 	)
 }

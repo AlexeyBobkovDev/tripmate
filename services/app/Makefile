@@ -103,11 +103,11 @@ postgres-cleanup:
 # ===========================Port forwarder===========================
 .PHONY: postgres-port-forward
 postgres-port-forward:
-	@docker compose run -d postgres-port-forwarder
+	@docker compose up -d postgres-port-forwarder
 
 .PHONY: postgres-port-close
 postgres-port-close:
-	@docker compose stop postgres-port-forwarder
+	@docker compose down postgres-port-forwarder
 
 
 
