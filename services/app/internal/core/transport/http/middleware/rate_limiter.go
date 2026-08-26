@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -187,9 +186,7 @@ func RateLimiterMiddleware(
 				return
 			}
 
-			rw.Write([]byte("You have already requested this site " + strconv.FormatFloat(slidingWindowCounterAlgorithm(rateLimiterStore.users[rateLimitKey].prevWindow, rateLimiterStore.users[rateLimitKey].curWindow), 'f', -1, 64) + " times"))
-
-			// next.ServeHTTP(rw, r)
+			next.ServeHTTP(rw, r)
 		})
 	}
 }
