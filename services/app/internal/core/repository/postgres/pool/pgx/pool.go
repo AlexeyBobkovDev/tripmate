@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
+	core_pgx_pool_adapters "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx/adapters"
 )
 
 type Pool struct {
@@ -21,7 +23,10 @@ func (p *Pool) Exec(
 	arguments ...any,
 ) (core_postgres_pool.CommandTag, error) {
 	cmdTag, err := p.Pool.Exec(ctx, sql, arguments...)
-	return pgxCommandTag{cmdTag}, mapErrors(err)
+	if err != nil {
+		return nil, core_pgx_pool_adapters.MapErrors(err)
+	}
+	return core_pgx_pool_adapters.PgxCommandTag{CommandTag: cmdTag}, nil
 }
 
 func (p *Pool) QueryRow(
@@ -30,7 +35,23 @@ func (p *Pool) QueryRow(
 	args ...any,
 ) core_postgres_pool.Row {
 	row := p.Pool.QueryRow(ctx, sql, args...)
-	return pgxRow{row}
+	return core_pgx_pool_adapters.PgxRow{Row: row}
+}
+
+func (p *Pool) Query(ctx context.Context, sql string, args ...any) (core_postgres_pool.Rows, error) {
+	rows, err := p.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, core_pgx_pool_adapters.MapErrors(err)
+	}
+	return core_pgx_pool_adapters.PgxRows{Rows: rows}, nil
+}
+
+func (p *Pool) Begin(ctx context.Context) (core_postgres_pool.Tx, error) {
+	tx, err := p.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, core_pgx_pool_adapters.MapErrors(err)
+	}
+	return &core_pgx_pool_adapters.PgxTx{Tx: tx}, nil
 }
 
 type Option func(*Pool)
