@@ -2,6 +2,7 @@ package core_postgres_pool
 
 import (
 	"context"
+	"time"
 )
 
 type Pool interface {
@@ -9,6 +10,7 @@ type Pool interface {
 	Query(ctx context.Context, sql string, args ...any) (Rows, error)
 	Exec(ctx context.Context, sql string, arguments ...any) (CommandTag, error)
 	QueryRow(ctx context.Context, sql string, args ...any) Row
+	OpTimeout() time.Duration
 }
 
 type Rows interface {

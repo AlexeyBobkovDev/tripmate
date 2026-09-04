@@ -117,3 +117,7 @@ func NewPool(ctx context.Context, cfg any, opts ...Option) (*Pool, error) {
 
 	return poolWithTimeout, nil
 }
+
+func (p *Pool) OpTimeout() time.Duration {
+	return p.opTimeout
+}
