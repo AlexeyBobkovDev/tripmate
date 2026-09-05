@@ -2,31 +2,23 @@ package users_postgres_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"github.com/jackc/pgx/v5"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
-func (r *UsersRepository) CreateUser(
+func (r *UsersRepository) GetUser(
 	ctx context.Context,
-	user *domain.UserCreate,
+	userID int,
 ) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
 	query := `
-	INSERT INTO app.users (
-		name,
-		surname,
-		username,
-		birth_date,
-		description,
-		email,
-		phone_number,
-		password_hash
-	)
-	VALUES($1, $2, $3, $4, $5, $6, $7, $8)
-	RETURNING
+	SELECT
 		id,
 		version,
 		name,
@@ -39,20 +31,16 @@ func (r *UsersRepository) CreateUser(
 		created_at,
 		updated_at,
 		deleted_at
+	FROM app.users
+	WHERE id=$1
+		AND deleted_at IS NULL;
 	`
 
 	var userResponse domain.User
 	err := r.pool.QueryRow(
 		ctx,
 		query,
-		user.Name,
-		user.Surname,
-		user.Username,
-		user.BirthDate,
-		user.Description,
-		user.Email,
-		user.PhoneNumber,
-		user.PasswordHash,
+		userID,
 	).Scan(
 		&userResponse.ID,
 		&userResponse.Version,
@@ -68,6 +56,13 @@ func (r *UsersRepository) CreateUser(
 		&userResponse.DeletedAt,
 	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf(
+				"user id %d attempt to concurrently access: %w",
+				userID,
+				err,
+			)
+		}
 		return nil, fmt.Errorf("scan error: %w", err)
 	}
 

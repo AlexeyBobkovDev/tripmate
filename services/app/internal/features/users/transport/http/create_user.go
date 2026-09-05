@@ -22,20 +22,6 @@ type CreateUserRequest struct {
 	Password    string `json:"password"       validate:"required,min=8,max=100"         example:"some-random-password"`
 }
 
-type CreateUserResponse struct {
-	ID          int        `json:"id"             example:"1"`
-	Name        string     `json:"name"           example:"Name"`
-	Surname     string     `json:"surname"        example:"Surname"`
-	Username    string     `json:"username"       example:"Username"`
-	Description string     `json:"description"    example:"Some kind of description"`
-	BirthDate   string     `json:"birth_date"     example:"2006-01-02"`
-	Email       string     `json:"email"          example:"checkemail@gmail.com"`
-	PhoneNumber string     `json:"phone_number"   example:"+79990746978"`
-	CreatedAt   time.Time  `json:"created_at"     example:"2006-01-02T15:06:07.292454Z"`
-	UpdatedAt   time.Time  `json:"updated_at"     example:"2006-01-02T15:06:07.292454Z"`
-	DeletedAt   *time.Time `json:"deleted_at"     example:"2006-01-02T15:06:07.292454Z"`
-}
-
 // CreateUser godoc
 //
 //	@Summary		Create User
@@ -54,6 +40,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)
 	responseHandler := core_http_response.NewHTTPResponseHandler(rw, logger)
+
 	var request CreateUserRequest
 	if err := core_http_request.DecodeAndValidate(r, &request); err != nil {
 		responseHandler.ErrorResponse(
@@ -63,7 +50,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDomain, err := domainFromDTO(request)
+	userDomain, err := createUserDomainFromDTO(request)
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
@@ -80,21 +67,19 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userResponse := CreateUserResponse(dtoFromDomain(response))
+	userResponse := userDTOFromDomain(response)
 	responseHandler.JSONResponse(
 		http.StatusCreated,
 		userResponse,
 	)
 }
 
-const layout = "2006-01-02"
-
-func domainFromDTO(dto CreateUserRequest) (*domain.User, error) {
+func createUserDomainFromDTO(dto CreateUserRequest) (*domain.UserCreate, error) {
 	birthDate, err := time.Parse(layout, dto.BirthDate)
 	if err != nil {
 		return nil, fmt.Errorf("parse birthdate: %w", err)
 	}
-	return domain.NewUserUninitialized(
+	return domain.NewUserCreate(
 		dto.Name,
 		dto.Surname,
 		dto.Username,
@@ -102,21 +87,6 @@ func domainFromDTO(dto CreateUserRequest) (*domain.User, error) {
 		dto.Description,
 		dto.Email,
 		dto.PhoneNumber,
+		dto.Password,
 	), nil
-}
-
-func dtoFromDomain(user *domain.User) CreateUserResponse {
-	return CreateUserResponse{
-		ID:          user.ID,
-		Name:        user.Name,
-		Surname:     user.Surname,
-		Username:    user.Username,
-		Description: user.Description,
-		BirthDate:   user.BirthDate.Format(layout),
-		Email:       user.Email,
-		PhoneNumber: user.PhoneNumber,
-		CreatedAt:   user.CreatedAt,
-		UpdatedAt:   user.UpdatedAt,
-		DeletedAt:   user.DeletedAt,
-	}
 }

@@ -12,14 +12,11 @@ import (
 
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
 	_ "github.com/AlexeyBobkovDev/tripmate/services/app/docs"
+	core_crypto_argon2id "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/crypto/argon2id"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords"
-	passwords_api "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/api"
-	passwords_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/repository/postgres"
-	passwords_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/passwords/service"
 	users_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/repository/postgres"
 	users_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service"
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
@@ -40,7 +37,7 @@ import (
 //	@Produce		json
 
 func main() {
-	cfg := core_config.NewConfigMust()
+	cfg := core_config.NewAppConfigMust()
 	time.Local = cfg.TimeZone
 
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -65,25 +62,19 @@ func main() {
 	defer pool.Close()
 	logger.Debug("successfully created new postgres pool")
 
-	passwordHasherCfg := passwords.NewConfigMust()
-	passwordHasher := passwords_service.NewArgon2IDHasher(
-		passwordHasherCfg.Times,
+	passwordHasherCfg := core_config.NewPasswordHasherConfigMust()
+	passwordHasher := core_crypto_argon2id.NewArgon2IDHash(
 		passwordHasherCfg.Memory,
-		passwordHasherCfg.Threads,
-		passwordHasherCfg.KeyLen,
+		passwordHasherCfg.Iterations,
+		passwordHasherCfg.Parallelism,
+		passwordHasherCfg.SaltLength,
+		passwordHasherCfg.KeyLength,
 	)
-
-	passwordsPostgresRepository := passwords_postgres_repository.NewPasswordsPostgresRepository(pool)
-	passwordsService := passwords_service.NewPasswordService(
-		passwordsPostgresRepository,
-		passwordHasher,
-	)
-	passwordsAPI := passwords_api.NewPasswordAPI(passwordsService)
 
 	usersPostgresRepository := users_postgres_repository.NewUsersRepository(pool)
 	usersService := users_service.NewUsersService(
 		usersPostgresRepository,
-		passwordsAPI,
+		passwordHasher,
 	)
 	usersTransport := users_transport_http.NewUsersHTTPHandler(usersService)
 

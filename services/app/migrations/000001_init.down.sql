@@ -1,4 +1,3 @@
-DROP TABLE IF EXISTS app.passwords;
 DROP TABLE IF EXISTS app.users;
 
 DROP SCHEMA IF EXISTS app;
