@@ -11,8 +11,21 @@ import (
 type UsersService interface {
 	CreateUser(
 		ctx context.Context,
-		user *domain.User,
+		user *domain.UserCreate,
 		password []byte,
+	) (*domain.User, error)
+	GetUser(
+		ctx context.Context,
+		userID int,
+	) (*domain.User, error)
+	DeleteUser(
+		ctx context.Context,
+		userID int,
+	) error
+	PatchUser(
+		ctx context.Context,
+		userID int,
+		userPatch *domain.UserPatch,
 	) (*domain.User, error)
 }
 
@@ -34,6 +47,21 @@ func (h *UsersHTTPHandler) Routes() []*core_server.Route {
 			Method:  http.MethodPost,
 			Path:    "/users",
 			Handler: h.CreateUser,
+		},
+		{
+			Method:  http.MethodGet,
+			Path:    "/users/{" + UserIDParam + "}",
+			Handler: h.GetUser,
+		},
+		{
+			Method:  http.MethodDelete,
+			Path:    "/users/{" + UserIDParam + "}",
+			Handler: h.DeleteUser,
+		},
+		{
+			Method:  http.MethodPatch,
+			Path:    "/users/{" + UserIDParam + "}",
+			Handler: h.PatchUser,
 		},
 	}
 }
