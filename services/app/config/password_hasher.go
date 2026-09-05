@@ -7,10 +7,11 @@ import (
 )
 
 type PasswordHasherConfig struct {
-	Times   uint32 `envconfig:"TIMES" required:"true"`
-	Memory  uint32 `envconfig:"MEMORY" required:"true"`
-	Threads uint8  `envconfig:"THREADS" required:"true"`
-	KeyLen  uint32 `envconfig:"KEYLEN" required:"true"`
+	Memory      uint32 `envconfig:"MEMORY"       required:"true"`
+	Iterations  uint32 `envconfig:"ITERATIONS"   required:"true"`
+	Parallelism uint8  `envconfig:"PARALLELISM"  required:"true"`
+	SaltLength  uint32 `envconfig:"SALT_LENGTH"  required:"true"`
+	KeyLength   uint32 `envconfig:"KEY_LENGTH"   required:"true"`
 }
 
 func NewPasswordHasherConfig() (PasswordHasherConfig, error) {
