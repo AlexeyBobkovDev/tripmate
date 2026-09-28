@@ -21,7 +21,46 @@ type User struct {
 }
 
 func (u *User) Validate() error {
-	// panic("unimplemented")
+	if err := validateID(u.ID); err != nil {
+		return err
+	}
+	if err := validateVersion(u.Version); err != nil {
+		return err
+	}
+	if err := validateName(u.Name); err != nil {
+		return err
+	}
+	if err := validateSurname(u.Surname); err != nil {
+		return err
+	}
+	if err := validateUserName(u.Username); err != nil {
+		return err
+	}
+	if err := validateBirthDate(u.BirthDate); err != nil {
+		return err
+	}
+	if err := validateDescription(u.Description); err != nil {
+		return err
+	}
+	if err := validateEmail(u.Email); err != nil {
+		return err
+	}
+	if err := validatePhoneNumber(u.PhoneNumber); err != nil {
+		return err
+	}
+	if err := validateCreatedAt(u.CreatedAt); err != nil {
+		return err
+	}
+	if err := validateUpdatedAt(u.UpdatedAt); err != nil {
+		return err
+	}
+	if err := validateDeletedAt(u.DeletedAt); err != nil {
+		return err
+	}
+	if err := validateDatesOrder(u.BirthDate, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
+		return err
+	}
+
 	return nil
 }
 
