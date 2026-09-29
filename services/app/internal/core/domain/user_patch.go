@@ -14,7 +14,45 @@ type UserPatch struct {
 }
 
 func (u *UserPatch) Validate() error {
-	// panic("unimplemented")
+	if err := validateVersion(u.Version); err != nil {
+		return err
+	}
+	if u.Name.Set {
+		if err := validateName(*u.Name.Value); err != nil {
+			return err
+		}
+	}
+	if u.Surname.Set {
+		if err := validateSurname(*u.Surname.Value); err != nil {
+			return err
+		}
+	}
+	if u.Username.Set {
+		if err := validateUserName(*u.Username.Value); err != nil {
+			return err
+		}
+	}
+	if u.BirthDate.Set {
+		if err := validateBirthDate(*u.BirthDate.Value); err != nil {
+			return err
+		}
+	}
+	if u.Description.Set {
+		if err := validateDescription(*u.Description.Value); err != nil {
+			return err
+		}
+	}
+	if u.Email.Set {
+		if err := validateEmail(*u.Email.Value); err != nil {
+			return err
+		}
+	}
+	if u.PhoneNumber.Set {
+		if err := validatePhoneNumber(*u.PhoneNumber.Value); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
