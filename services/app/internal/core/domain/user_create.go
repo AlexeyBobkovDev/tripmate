@@ -16,6 +16,44 @@ type UserCreate struct {
 	DeletedAt    *time.Time
 }
 
+func (u *UserCreate) Validate() error {
+	if err := validateName(u.Name); err != nil {
+		return err
+	}
+	if err := validateSurname(u.Surname); err != nil {
+		return err
+	}
+	if err := validateUserName(u.Username); err != nil {
+		return err
+	}
+	if err := validateBirthDate(u.BirthDate); err != nil {
+		return err
+	}
+	if err := validateDescription(u.Description); err != nil {
+		return err
+	}
+	if err := validateEmail(u.Email); err != nil {
+		return err
+	}
+	if err := validatePhoneNumber(u.PhoneNumber); err != nil {
+		return err
+	}
+	if err := validateCreatedAt(u.CreatedAt); err != nil {
+		return err
+	}
+	if err := validateUpdatedAt(u.UpdatedAt); err != nil {
+		return err
+	}
+	if err := validateDeletedAt(u.DeletedAt); err != nil {
+		return err
+	}
+	if err := validateDatesOrder(u.BirthDate, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func NewUserCreate(
 	name string,
 	surname string,
@@ -24,16 +62,14 @@ func NewUserCreate(
 	description string,
 	email string,
 	phoneNumber string,
-	passwordHash string,
 ) *UserCreate {
 	return &UserCreate{
-		Name:         name,
-		Surname:      surname,
-		Username:     username,
-		BirthDate:    birthDate,
-		Description:  description,
-		Email:        email,
-		PhoneNumber:  phoneNumber,
-		PasswordHash: passwordHash,
+		Name:        name,
+		Surname:     surname,
+		Username:    username,
+		BirthDate:   birthDate,
+		Description: description,
+		Email:       email,
+		PhoneNumber: phoneNumber,
 	}
 }
