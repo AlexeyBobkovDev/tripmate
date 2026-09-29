@@ -22,9 +22,6 @@ func TestUserCreateValidate(t *testing.T) {
 		Email:        "alexey@example.com",
 		PhoneNumber:  "+14155552671",
 		PasswordHash: "some-password-hash",
-		CreatedAt:    now.Add(-2 * time.Hour),
-		UpdatedAt:    now.Add(-time.Hour),
-		DeletedAt:    nil,
 	}
 
 	tests := []struct {
@@ -86,57 +83,6 @@ func TestUserCreateValidate(t *testing.T) {
 			},
 			wantErr: core_errors.ErrInvalidUserPhoneNumber,
 		},
-		{
-			name: "created at in the future",
-			mutate: func(u *UserCreate) {
-				u.CreatedAt = now.Add(time.Hour)
-			},
-			wantErr: core_errors.ErrInvalidUserCreatedAt,
-		},
-		{
-			name: "updated at in the future",
-			mutate: func(u *UserCreate) {
-				u.UpdatedAt = now.Add(time.Hour)
-			},
-			wantErr: core_errors.ErrInvalidUserUpdatedAt,
-		},
-		{
-			name: "deleted at in the future",
-			mutate: func(u *UserCreate) {
-				deletedAt := now.Add(time.Hour)
-				u.DeletedAt = &deletedAt
-			},
-			wantErr: core_errors.ErrInvalidUserDeletedAt,
-		},
-		{
-			name: "created at equal birth date",
-			mutate: func(u *UserCreate) {
-				u.CreatedAt = u.BirthDate
-			},
-			wantErr: core_errors.ErrInvalidUserCreatedAt,
-		},
-		{
-			name: "created at before birth date",
-			mutate: func(u *UserCreate) {
-				u.CreatedAt = u.BirthDate.Add(-time.Second)
-			},
-			wantErr: core_errors.ErrInvalidUserCreatedAt,
-		},
-		{
-			name: "updated at before created at",
-			mutate: func(u *UserCreate) {
-				u.UpdatedAt = u.CreatedAt.Add(-time.Second)
-			},
-			wantErr: core_errors.ErrInvalidUserUpdatedAt,
-		},
-		{
-			name: "deleted at before updated at",
-			mutate: func(u *UserCreate) {
-				deletedAt := u.UpdatedAt.Add(-time.Second)
-				u.DeletedAt = &deletedAt
-			},
-			wantErr: core_errors.ErrInvalidUserDeletedAt,
-		},
 	}
 
 	for _, tt := range tests {
@@ -169,9 +115,6 @@ func TestUserCreateValidateAllowsNilDeletedAt(t *testing.T) {
 		Email:        "alexey@example.com",
 		PhoneNumber:  "+14155552671",
 		PasswordHash: "some-password-hash",
-		CreatedAt:    now.Add(-2 * time.Hour),
-		UpdatedAt:    now.Add(-time.Hour),
-		DeletedAt:    nil,
 	}
 
 	if err := userCreate.Validate(); err != nil {
@@ -247,17 +190,5 @@ func TestNewUserCreateDoesNotSetPasswordHash(t *testing.T) {
 			"NewUserCreate().PasswordHash = %q, want empty string",
 			got.PasswordHash,
 		)
-	}
-
-	if !got.CreatedAt.IsZero() {
-		t.Fatalf("NewUserCreate().CreatedAt should be zero")
-	}
-
-	if !got.UpdatedAt.IsZero() {
-		t.Fatalf("NewUserCreate().UpdatedAt should be zero")
-	}
-
-	if got.DeletedAt != nil {
-		t.Fatalf("NewUserCreate().DeletedAt should be nil")
 	}
 }

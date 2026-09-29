@@ -11,9 +11,6 @@ type UserCreate struct {
 	Email        string
 	PhoneNumber  string
 	PasswordHash string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-	DeletedAt    *time.Time
 }
 
 func (u *UserCreate) Validate() error {
@@ -36,18 +33,6 @@ func (u *UserCreate) Validate() error {
 		return err
 	}
 	if err := validatePhoneNumber(u.PhoneNumber); err != nil {
-		return err
-	}
-	if err := validateCreatedAt(u.CreatedAt); err != nil {
-		return err
-	}
-	if err := validateUpdatedAt(u.UpdatedAt); err != nil {
-		return err
-	}
-	if err := validateDeletedAt(u.DeletedAt); err != nil {
-		return err
-	}
-	if err := validateDatesOrder(u.BirthDate, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
 		return err
 	}
 
