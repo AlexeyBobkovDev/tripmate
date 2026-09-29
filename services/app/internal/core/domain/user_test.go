@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-openapi/testify/v2/require"
+
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
@@ -168,221 +170,177 @@ func TestUserValidate(t *testing.T) {
 func TestUserApplyPatch(t *testing.T) {
 	now := time.Now()
 
-	original := User{
+	validUser := User{
 		ID:          1,
 		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
+		Name:        "User",
+		Surname:     "User",
+		Username:    "user123",
 		BirthDate:   now.AddDate(-20, 0, 0),
 		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
+		Email:       "user@gmail.com",
+		PhoneNumber: "+79998887766",
 		CreatedAt:   now.Add(-2 * time.Hour),
 		UpdatedAt:   now.Add(-time.Hour),
 		DeletedAt:   nil,
 	}
 
 	tests := []struct {
-		name  string
-		patch UserPatch
-		want  User
+		name     string
+		patch    UserPatch
+		wantErr  error
+		wantUser User
 	}{
 		{
-			name: "version only",
+			name: "valid empty patch",
 			patch: UserPatch{
-				Version: 2,
+				Version: 1,
 			},
-			want: User{
-				ID:          original.ID,
-				Version:     2,
-				Name:        original.Name,
-				Surname:     original.Surname,
-				Username:    original.Username,
-				BirthDate:   original.BirthDate,
-				Description: original.Description,
-				Email:       original.Email,
-				PhoneNumber: original.PhoneNumber,
-				CreatedAt:   original.CreatedAt,
-				UpdatedAt:   original.UpdatedAt,
-				DeletedAt:   original.DeletedAt,
-			},
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				return user
+			}(),
 		},
 		{
-			name: "name",
+			name: "different version",
 			patch: UserPatch{
 				Version: 2,
+			},
+			wantErr:  core_errors.ErrDifferentVersions,
+			wantUser: validUser,
+		},
+		{
+			name: "updates name",
+			patch: UserPatch{
+				Version: 1,
 				Name: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "John"; return &v }(),
-				},
-			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Name = "John"
-				return u
-			}(),
-		},
-		{
-			name: "surname",
-			patch: UserPatch{
-				Version: 2,
-				Surname: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "Smith"; return &v }(),
-				},
-			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Surname = "Smith"
-				return u
-			}(),
-		},
-		{
-			name: "username",
-			patch: UserPatch{
-				Version: 2,
-				Username: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "johnsmith"; return &v }(),
-				},
-			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Username = "johnsmith"
-				return u
-			}(),
-		},
-		{
-			name: "birth date",
-			patch: UserPatch{
-				Version: 2,
-				BirthDate: Nullable[time.Time]{
 					Set: true,
-					Value: func() *time.Time {
-						v := now.AddDate(-30, 0, 0)
+					Value: func() *string {
+						v := "Alexey"
 						return &v
 					}(),
 				},
 			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.BirthDate = now.AddDate(-30, 0, 0)
-				return u
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.Name = "Alexey"
+				return user
 			}(),
 		},
 		{
-			name: "description",
+			name: "updates surname",
 			patch: UserPatch{
-				Version: 2,
+				Version: 1,
+				Surname: Nullable[string]{
+					Set: true,
+					Value: func() *string {
+						v := "Bobkov"
+						return &v
+					}(),
+				},
+			},
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.Surname = "Bobkov"
+				return user
+			}(),
+		},
+		{
+			name: "updates username",
+			patch: UserPatch{
+				Version: 1,
+				Username: Nullable[string]{
+					Set: true,
+					Value: func() *string {
+						v := "alexey"
+						return &v
+					}(),
+				},
+			},
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.Username = "alexey"
+				return user
+			}(),
+		},
+		{
+			name: "updates description",
+			patch: UserPatch{
+				Version: 1,
 				Description: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "Updated description"; return &v }(),
+					Set: true,
+					Value: func() *string {
+						v := "New description"
+						return &v
+					}(),
 				},
 			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Description = "Updated description"
-				return u
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.Description = "New description"
+				return user
 			}(),
 		},
 		{
-			name: "email",
+			name: "updates email",
 			patch: UserPatch{
-				Version: 2,
+				Version: 1,
 				Email: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "new@example.com"; return &v }(),
+					Set: true,
+					Value: func() *string {
+						v := "alexey@example.com"
+						return &v
+					}(),
 				},
 			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Email = "new@example.com"
-				return u
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.Email = "alexey@example.com"
+				return user
 			}(),
 		},
 		{
-			name: "phone number",
+			name: "updates phone number",
 			patch: UserPatch{
-				Version: 2,
+				Version: 1,
 				PhoneNumber: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "+14155552672"; return &v }(),
+					Set: true,
+					Value: func() *string {
+						v := "+14155552671"
+						return &v
+					}(),
 				},
 			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.PhoneNumber = "+14155552672"
-				return u
-			}(),
-		},
-		{
-			name: "multiple fields",
-			patch: UserPatch{
-				Version: 2,
-				Name: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "John"; return &v }(),
-				},
-				Email: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "john@example.com"; return &v }(),
-				},
-				Description: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "New description"; return &v }(),
-				},
-			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Name = "John"
-				u.Email = "john@example.com"
-				u.Description = "New description"
-				return u
-			}(),
-		},
-		{
-			name: "unset fields remain unchanged",
-			patch: UserPatch{
-				Version: 2,
-				Name: Nullable[string]{
-					Set:   true,
-					Value: func() *string { v := "John"; return &v }(),
-				},
-			},
-			want: func() User {
-				u := original
-				u.Version = 2
-				u.Name = "John"
-				return u
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 2
+				user.PhoneNumber = "+14155552671"
+				return user
 			}(),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := original
+			user := validUser
 
 			err := user.ApplyPatch(&tt.patch)
-			if err != nil {
-				t.Fatalf("ApplyPatch() returned unexpected error: %v", err)
-			}
 
-			if !reflect.DeepEqual(user, tt.want) {
-				t.Fatalf(
-					"ApplyPatch() produced unexpected user:\n got:  %#v\n want: %#v",
-					user,
-					tt.want,
-				)
-			}
+			require.ErrorIs(t, err, tt.wantErr)
+			require.Equal(t, tt.wantUser, user)
 		})
 	}
 }
@@ -460,7 +418,7 @@ func TestUserApplyPatchInvalidResultDoesNotMutateUser(t *testing.T) {
 	newBirthDate := user.CreatedAt.Add(time.Hour)
 
 	patch := UserPatch{
-		Version: 2,
+		Version: 1,
 		BirthDate: Nullable[time.Time]{
 			Set:   true,
 			Value: &newBirthDate,

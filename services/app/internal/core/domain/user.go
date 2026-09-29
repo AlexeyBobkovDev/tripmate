@@ -3,6 +3,8 @@ package domain
 import (
 	"fmt"
 	"time"
+
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
 type User struct {
@@ -71,7 +73,11 @@ func (u *User) ApplyPatch(patch *UserPatch) error {
 
 	tmp := *u
 
-	tmp.Version = patch.Version
+	if tmp.Version != patch.Version {
+		return core_errors.ErrDifferentVersions
+	}
+
+	tmp.Version++
 	if patch.Name.Set {
 		tmp.Name = *patch.Name.Value
 	}
