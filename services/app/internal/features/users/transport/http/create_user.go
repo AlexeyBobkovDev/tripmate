@@ -12,10 +12,10 @@ import (
 )
 
 type CreateUserRequest struct {
-	Name        string `json:"name"           validate:"required,min=1,max=100"         example:"Name"`
-	Surname     string `json:"surname"        validate:"required,min=1,max=100"         example:"Surname"`
+	Name        string `json:"name"           validate:"required,min=1,max=50,alpha"          example:"Name"`
+	Surname     string `json:"surname"        validate:"required,min=1,max=50,alpha"          example:"Surname"`
 	Username    string `json:"username"       validate:"required,min=1,max=100"         example:"Username"`
-	Description string `json:"description"    validate:"omitempty,min=1,max=1000"       example:"Some kind of description"`
+	Description string `json:"description"    validate:"omitempty,max=1000"              example:"Some kind of description"`
 	BirthDate   string `json:"birth_date"     validate:"required,datetime=2006-01-02"   example:"2006-01-02"`
 	Email       string `json:"email"          validate:"required,email"                 example:"checkemail@gmail.com"`
 	PhoneNumber string `json:"phone_number"   validate:"required,e164"                  example:"+79990746978"`
