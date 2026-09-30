@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	core_consts "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_http_request "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/request"
 	core_http_response "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/response"
@@ -20,6 +22,14 @@ type CreateUserRequest struct {
 	Email       string `json:"email"          validate:"required,email"                 example:"checkemail@gmail.com"`
 	PhoneNumber string `json:"phone_number"   validate:"required,e164"                  example:"+79990746978"`
 	Password    string `json:"password"       validate:"required,min=8,max=100"         example:"some-random-password"`
+}
+
+func (request *CreateUserRequest) Validate() error {
+	if _, err := time.Parse(core_consts.Layout, request.BirthDate); err != nil {
+		return core_errors.ErrInvalidBirthDateFormat
+	}
+
+	return nil
 }
 
 // CreateUser godoc
