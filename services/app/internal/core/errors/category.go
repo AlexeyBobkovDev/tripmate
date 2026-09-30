@@ -7,6 +7,7 @@ const (
 	CategoryNotFound
 	CategoryConflict
 	CategoryBadRequest
+	CategoryDatabase
 )
 
 type CodedError struct {
