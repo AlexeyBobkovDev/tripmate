@@ -64,7 +64,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
-			"invalid data",
+			"failed to parse birthdate",
 		)
 		return
 	}
