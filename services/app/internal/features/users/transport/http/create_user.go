@@ -35,13 +35,13 @@ func (request *CreateUserRequest) Validate() error {
 // CreateUser godoc
 //
 //	@Summary		Create User
-//	@Description	This endpoint creates a user
+//	@Description	Creates a new user
 //	@ID				create-user
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		CreateUserRequest					true	"The data which this endpoint will use to create user"
-//	@Success		201		{object}	CreateUserResponse					"Created user"
+//	@Param			request	body		CreateUserRequest					true	"User data"
+//	@Success		201		{object}	UserResponse						"Created user"
 //	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user data"
 //	@Failure		409		{object}	core_http_response.ErrorResponse	"Conflict"
 //	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
