@@ -12,7 +12,7 @@ type UsersService interface {
 	CreateUser(
 		ctx context.Context,
 		user *domain.UserCreate,
-		password []byte,
+		password string,
 	) (*domain.User, error)
 	GetUser(
 		ctx context.Context,
