@@ -43,23 +43,31 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 		logFunc    func(string, ...zap.Field)
 	)
 
-	switch {
-	case errors.Is(err, core_errors.ErrInvalidArgument):
-		statusCode = http.StatusBadRequest
-		logFunc = h.log.Warn
-	case errors.Is(err, core_errors.ErrNotFound):
-		statusCode = http.StatusNotFound
-		logFunc = h.log.Debug
-	case errors.Is(err, core_errors.ErrConflict):
-		statusCode = http.StatusConflict
-		logFunc = h.log.Warn
-	default:
-		statusCode = http.StatusInternalServerError
-		logFunc = h.log.Error
-	}
+	var codedError *core_errors.CodedError
+	if errors.As(err, &codedError) {
+		switch codedError.Category {
+		case core_errors.CategoryBadRequest:
+			statusCode = http.StatusBadRequest
+			logFunc = h.log.Warn
+		case core_errors.CategoryNotFound:
+			statusCode = http.StatusNotFound
+			logFunc = h.log.Debug
+		case core_errors.CategoryConflict:
+			statusCode = http.StatusConflict
+			logFunc = h.log.Warn
+		case core_errors.CategoryDatabase:
+			statusCode = http.StatusInternalServerError
+			logFunc = h.log.Error
+		default:
+			statusCode = http.StatusInternalServerError
+			logFunc = h.log.Error
+		}
 
-	logFunc(msg, zap.Error(err))
-	h.errorResponse(statusCode, err, msg)
+		logFunc(msg, zap.Error(codedError.Unwrap()))
+		h.errorResponse(statusCode, codedError.Unwrap(), msg)
+		return
+	}
+	h.log.Fatal("INVALID ERROR WHICH CAN NOT BE DECODED TO CodedError error")
 }
 
 func (h *HTTPResponseHandler) errorResponse(
