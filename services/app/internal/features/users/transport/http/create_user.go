@@ -1,7 +1,6 @@
 package users_transport_http
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -68,7 +67,8 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
-	response, err := h.usersService.CreateUser(ctx, userDomain, []byte(request.Password))
+
+	response, err := h.usersService.CreateUser(ctx, userDomain, userPassword)
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
