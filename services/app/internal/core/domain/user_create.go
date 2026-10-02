@@ -39,6 +39,10 @@ func (u *UserCreate) Validate() error {
 	return nil
 }
 
+func ValidatePassword(password string) error {
+	return validatePassword(password)
+}
+
 func NewUserCreate(
 	name string,
 	surname string,
