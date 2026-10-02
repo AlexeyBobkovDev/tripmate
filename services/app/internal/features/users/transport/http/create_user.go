@@ -84,10 +84,10 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func createUserDomainFromDTO(dto CreateUserRequest) (*domain.UserCreate, error) {
-	birthDate, err := time.Parse(layout, dto.BirthDate)
+func createUserDomainFromDTO(dto CreateUserRequest) (*domain.UserCreate, string, error) {
+	birthDate, err := time.Parse(core_consts.Layout, dto.BirthDate)
 	if err != nil {
-		return nil, fmt.Errorf("parse birthdate: %w", err)
+		return nil, "", core_errors.ErrInvalidUserBirthdate
 	}
 	return domain.NewUserCreate(
 		dto.Name,
