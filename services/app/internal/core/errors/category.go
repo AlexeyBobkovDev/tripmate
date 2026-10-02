@@ -3,10 +3,9 @@ package core_errors
 type Category uint8
 
 const (
-	CategoryInvalidArgument Category = iota
+	CategoryBadRequest Category = iota
 	CategoryNotFound
 	CategoryConflict
-	CategoryBadRequest
 	CategoryDatabase
 )
 
