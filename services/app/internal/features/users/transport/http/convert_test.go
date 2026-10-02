@@ -6,11 +6,12 @@ import (
 
 	"github.com/go-playground/assert/v2"
 
+	core_consts "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
 func mustParseDate(date string) time.Time {
-	parsed, err := time.Parse(layout, date)
+	parsed, err := time.Parse(core_consts.Layout, date)
 	if err != nil {
 		panic(err)
 	}
