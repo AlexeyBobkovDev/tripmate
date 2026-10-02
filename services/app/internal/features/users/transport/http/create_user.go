@@ -97,6 +97,5 @@ func createUserDomainFromDTO(dto CreateUserRequest) (*domain.UserCreate, string,
 		dto.Description,
 		dto.Email,
 		dto.PhoneNumber,
-		dto.Password,
-	), nil
+	), dto.Password, nil
 }
