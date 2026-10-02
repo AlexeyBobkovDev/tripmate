@@ -60,7 +60,7 @@ func (h *UsersHTTPHandler) CreateUser(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userDomain, err := createUserDomainFromDTO(request)
+	userDomain, userPassword, err := createUserDomainFromDTO(request)
 	if err != nil {
 		responseHandler.ErrorResponse(
 			err,
