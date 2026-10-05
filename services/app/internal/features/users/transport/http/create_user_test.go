@@ -59,7 +59,7 @@ func TestCreateUser_Success(t *testing.T) {
 }
 
 func TestCreateUser_ServiceError(t *testing.T) {
-	serviceError := core_postgres_pool_errors.ErrNoRows
+	serviceError := core_postgres_pool_errors.ErrViolatedForeignKey
 	userCreate := testhelpers.UserCreateTest()
 
 	ctrl := gomock.NewController(t)
@@ -96,7 +96,7 @@ func TestCreateUser_ServiceError(t *testing.T) {
 	}
 
 	assert.Equal(t, "failed to create user", returnedServiceError.Message)
-	assert.Equal(t, core_postgres_pool_errors.ErrNoRows.Error(), returnedServiceError.Error)
+	assert.Equal(t, core_postgres_pool_errors.ErrViolatedForeignKey.Error(), returnedServiceError.Error)
 	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 }
 
