@@ -6,11 +6,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
-type PasswordManager interface {
-	Hash(password string) (string, error)
-	Verify(password, hash string) (bool, error)
-}
-
+//go:generate mockgen -source=service.go -destination=mocks/user_repository.go -package mocks
 type UsersRepository interface {
 	CreateUser(
 		ctx context.Context,
