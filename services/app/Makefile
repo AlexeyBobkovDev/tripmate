@@ -6,6 +6,7 @@ export
 # .NOTPARALLEL
 # .DEFAULT_GOAL := target-name
 
+SHELL := /bin/bash
 export PROJECT_ROOT := $(CURDIR)
 export MIGRATE_DIR := migrations
 export LOGS_DIR := $(PROJECT_ROOT)/out/logs
