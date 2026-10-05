@@ -141,14 +141,22 @@ download:
 
 .PHONY: fmt
 fmt:
-	@goimports -w .; \
-    gofumpt -w .; \
-	gci write \
-	--custom-order \
-	-s standard \
-	-s default \
-	-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
-	.;
+	@find . -name '*.go' ! -path "*/mocks/*" -print0 | \
+	while IFS= read -r -d '' file; do \
+		before=$$(sha256sum "$$file"); \
+		goimports -w "$$file"; \
+		gofumpt -w "$$file"; \
+		gci write \
+		--custom-order \
+		-s standard \
+		-s default \
+		-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
+		"$$file"; \
+		after=$$(sha256sum "$$file"); \
+		if [[ "$$before" != "$$after" ]]; then \
+			echo "Formatted file: $$file"; \
+		fi; \
+	done;
 
 .PHONY: lint
 lint:
