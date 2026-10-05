@@ -58,6 +58,9 @@ func validateUserName(username string) error {
 	if userUsernameLength < 1 || userUsernameLength > 100 {
 		return core_errors.ErrInvalidUserUsername
 	}
+	if strings.Contains(username, " ") {
+		return core_errors.ErrInvalidUserUsername
+	}
 	return nil
 }
 

@@ -369,7 +369,17 @@ func TestValidateUserName(t *testing.T) {
 		{
 			name:  "space",
 			input: "alex bobkov",
-			want:  nil,
+			want:  core_errors.ErrInvalidUserUsername,
+		},
+		{
+			name:  "spaces",
+			input: "alex bobkov username",
+			want:  core_errors.ErrInvalidUserUsername,
+		},
+		{
+			name:  "more than 1 space sequently",
+			input: "alex   bobkov",
+			want:  core_errors.ErrInvalidUserUsername,
 		},
 		{
 			name:  "Unicode",
