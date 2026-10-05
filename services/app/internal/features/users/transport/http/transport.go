@@ -8,6 +8,7 @@ import (
 	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
 )
 
+//go:generate mockgen -source=transport.go -destination=mocks/user_service.go -package mocks
 type UsersService interface {
 	CreateUser(
 		ctx context.Context,
