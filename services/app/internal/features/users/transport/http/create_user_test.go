@@ -18,7 +18,7 @@ import (
 )
 
 func TestCreateUser_Success(t *testing.T) {
-	userCreate := testUserCreate()
+	userCreate := testhelpers.UserCreateTest()
 	userResponse := testUserResponse()
 
 	ctrl := gomock.NewController(t)
@@ -30,7 +30,7 @@ func TestCreateUser_Success(t *testing.T) {
 		CreateUser(
 			gomock.Any(),
 			&userCreate,
-			testPassword,
+			testconsts.TestPassword,
 		).
 		Return(&userResponse, nil)
 
@@ -60,7 +60,7 @@ func TestCreateUser_Success(t *testing.T) {
 
 func TestCreateUser_ServiceError(t *testing.T) {
 	serviceError := core_postgres_pool_errors.ErrNoRows
-	userCreate := testUserCreate()
+	userCreate := testhelpers.UserCreateTest()
 
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
@@ -71,7 +71,7 @@ func TestCreateUser_ServiceError(t *testing.T) {
 		CreateUser(
 			gomock.Any(),
 			&userCreate,
-			testPassword,
+			testconsts.TestPassword,
 		).
 		Return(nil, serviceError)
 
