@@ -12,6 +12,13 @@ func (s *UsersService) CreateUser(
 	user *domain.UserCreate,
 	passwordToHash string,
 ) (*domain.User, error) {
+	if err := user.Validate(); err != nil {
+		return nil, err
+	}
+	if err := domain.ValidatePassword(passwordToHash); err != nil {
+		return nil, err
+	}
+
 	userResponse, err := s.usersRepository.CreateUser(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
