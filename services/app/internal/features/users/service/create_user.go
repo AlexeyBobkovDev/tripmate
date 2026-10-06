@@ -10,7 +10,7 @@ import (
 func (s *UsersService) CreateUser(
 	ctx context.Context,
 	user *domain.UserCreate,
-	passwordToHash []byte,
+	passwordToHash string,
 ) (*domain.User, error) {
 	userResponse, err := s.usersRepository.CreateUser(ctx, user)
 	if err != nil {
