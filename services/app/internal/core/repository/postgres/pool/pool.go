@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source=pool.go -destination=mocks/pool.go -package=mocks
 type Pool interface {
 	Begin(ctx context.Context) (Tx, error)
 	Query(ctx context.Context, sql string, args ...any) (Rows, error)
