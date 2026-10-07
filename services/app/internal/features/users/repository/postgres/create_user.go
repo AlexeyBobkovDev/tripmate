@@ -7,39 +7,39 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
+const query = `
+INSERT INTO app.users (
+	name,
+	surname,
+	username,
+	birth_date,
+	description,
+	email,
+	phone_number,
+	password_hash
+)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING
+	id,
+	version,
+	name,
+	surname,
+	username,
+	birth_date,
+	description,
+	email,
+	phone_number,
+	created_at,
+	updated_at,
+	deleted_at
+`
+
 func (r *UsersRepository) CreateUser(
 	ctx context.Context,
 	user *domain.UserCreate,
 ) (*domain.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
-
-	query := `
-	INSERT INTO app.users (
-		name,
-		surname,
-		username,
-		birth_date,
-		description,
-		email,
-		phone_number,
-		password_hash
-	)
-	VALUES($1, $2, $3, $4, $5, $6, $7, $8)
-	RETURNING
-		id,
-		version,
-		name,
-		surname,
-		username,
-		birth_date,
-		description,
-		email,
-		phone_number,
-		created_at,
-		updated_at,
-		deleted_at
-	`
 
 	var userResponse domain.User
 	err := r.pool.QueryRow(
