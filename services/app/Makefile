@@ -144,14 +144,14 @@ fmt:
 	@find . -name '*.go' ! -path "*/mocks/*" -print0 | \
 	while IFS= read -r -d '' file; do \
 		before=$$(sha256sum "$$file"); \
-		goimports -w "$$file"; \
-		gofumpt -w "$$file"; \
+		goimports -w "$$file" >/dev/null; \
+		gofumpt -w "$$file" >/dev/null; \
 		gci write \
 		--custom-order \
 		-s standard \
 		-s default \
 		-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
-		"$$file"; \
+		"$$file" >/dev/null; \
 		after=$$(sha256sum "$$file"); \
 		if [[ "$$before" != "$$after" ]]; then \
 			echo "Formatted file: $$file"; \
