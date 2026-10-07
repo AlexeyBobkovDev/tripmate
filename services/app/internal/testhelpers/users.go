@@ -47,6 +47,24 @@ func UserCreateTest() domain.UserCreate {
 	}
 }
 
+func UserTest() domain.User {
+	birthDate := BirthDateTest()
+	return domain.User{
+		ID:          1,
+		Version:     1,
+		Name:        testconsts.TestName,
+		Surname:     testconsts.TestSurname,
+		Username:    testconsts.TestUsername,
+		BirthDate:   birthDate,
+		Description: testconsts.TestDescription,
+		Email:       testconsts.TestEmail,
+		PhoneNumber: testconsts.TestPhoneNumber,
+		CreatedAt:   CreatedAtTest(),
+		UpdatedAt:   UpdatedAtTest(),
+		DeletedAt:   nil,
+	}
+}
+
 func UserPatchTest() domain.UserPatch {
 	birthDate := BirthDateTest()
 
