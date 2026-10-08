@@ -34,8 +34,5 @@ func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseHandler.JSONResponse(
-		http.StatusNoContent,
-		"user is successfully deleted",
-	)
+	responseHandler.NoContent()
 }
