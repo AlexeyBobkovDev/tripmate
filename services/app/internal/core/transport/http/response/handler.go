@@ -67,7 +67,10 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 		h.errorResponse(statusCode, err, msg)
 		return
 	}
-	h.log.Fatal("INVALID ERROR WHICH CAN NOT BE DECODED TO CodedError error")
+	h.log.Error(
+		"INVALID ERROR WHICH CAN NOT BE DECODED TO CodedError error",
+		zap.Error(err),
+	)
 }
 
 func (h *HTTPResponseHandler) errorResponse(
