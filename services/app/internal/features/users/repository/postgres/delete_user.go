@@ -5,6 +5,15 @@ import (
 	"fmt"
 )
 
+const deleteUserQuery = `
+	UPDATE app.users
+	SET deleted_at = NOW(),
+		updated_at = NOW(),
+		version = version + 1
+	WHERE id=$1
+		AND deleted_at IS NULL;
+	`
+
 func (s *UsersRepository) DeleteUser(
 	ctx context.Context,
 	userID int,
@@ -18,15 +27,7 @@ func (s *UsersRepository) DeleteUser(
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
-	query := `
-	UPDATE app.users
-	SET deleted_at = NOW(),
-		updated_at = NOW(),
-		version = version + 1
-	WHERE id=$1
-		AND deleted_at IS NULL;
-	`
-	cmdTag, err := tx.Exec(ctx, query, userID)
+	cmdTag, err := tx.Exec(ctx, deleteUserQuery, userID)
 	if err != nil {
 		return fmt.Errorf("update deleted_at field: %w", err)
 	}
