@@ -73,6 +73,10 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 	)
 }
 
+func (h *HTTPResponseHandler) NoContent() {
+	h.rw.WriteHeader(http.StatusNoContent)
+}
+
 func (h *HTTPResponseHandler) errorResponse(
 	statusCode int,
 	err error,
