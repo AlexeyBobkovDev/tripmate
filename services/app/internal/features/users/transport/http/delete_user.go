@@ -24,6 +24,13 @@ func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		)
 		return
 	}
+	if userID <= 0 {
+		responseHandler.ErrorResponse(
+			core_errors.ErrBadRequest,
+			"userID must be greater than zero",
+		)
+		return
+	}
 
 	err = h.usersService.DeleteUser(ctx, userID)
 	if err != nil {
