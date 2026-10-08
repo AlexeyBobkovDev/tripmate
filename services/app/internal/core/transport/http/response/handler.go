@@ -63,8 +63,8 @@ func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
 			logFunc = h.log.Error
 		}
 
-		logFunc(msg, zap.Error(codedError.Unwrap()))
-		h.errorResponse(statusCode, codedError.Unwrap(), msg)
+		logFunc(msg, zap.Error(err))
+		h.errorResponse(statusCode, err, msg)
 		return
 	}
 	h.log.Fatal("INVALID ERROR WHICH CAN NOT BE DECODED TO CodedError error")
