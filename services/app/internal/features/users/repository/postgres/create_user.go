@@ -7,7 +7,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
-const query = `
+const createUserQuery = `
 INSERT INTO app.users (
 	name,
 	surname,
@@ -44,7 +44,7 @@ func (r *UsersRepository) CreateUser(
 	var userResponse domain.User
 	err := r.pool.QueryRow(
 		ctx,
-		query,
+		createUserQuery,
 		user.Name,
 		user.Surname,
 		user.Username,

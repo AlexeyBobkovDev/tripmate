@@ -63,7 +63,7 @@ func TestCreateUserRepository_Success(t *testing.T) {
 		EXPECT().
 		QueryRow(
 			gomock.Any(),
-			query,
+			createUserQuery,
 			createUserRequest.Name,
 			createUserRequest.Surname,
 			createUserRequest.Username,
@@ -115,7 +115,7 @@ func TestCreateUserRepository_ScanError(t *testing.T) {
 		EXPECT().
 		QueryRow(
 			gomock.Any(),
-			query,
+			createUserQuery,
 			createUserRequest.Name,
 			createUserRequest.Surname,
 			createUserRequest.Username,
