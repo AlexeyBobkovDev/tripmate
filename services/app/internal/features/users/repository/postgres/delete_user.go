@@ -3,6 +3,8 @@ package users_postgres_repository
 import (
 	"context"
 	"fmt"
+
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
 const deleteUserQuery = `
@@ -32,7 +34,7 @@ func (s *UsersRepository) DeleteUser(
 		return fmt.Errorf("update deleted_at field: %w", err)
 	}
 	if cmdTag.RowsAffected() == 0 {
-		return fmt.Errorf("the user %d does not exist", userID)
+		return fmt.Errorf("the user %d does not exist: %w", userID, core_errors.ErrNotFound)
 	}
 
 	return tx.Commit(ctx)
