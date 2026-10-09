@@ -38,39 +38,47 @@ func (h *HTTPResponseHandler) JSONResponse(
 }
 
 func (h *HTTPResponseHandler) ErrorResponse(err error, msg string) {
+	var codedError *core_errors.CodedError
+	if !errors.As(err, &codedError) {
+		h.log.Error(
+			"unclassified application error",
+			zap.String("message", msg),
+			zap.Error(err),
+		)
+
+		h.errorResponse(
+			http.StatusInternalServerError,
+			errors.New("internal server error"),
+			"an unexpected error occurred",
+		)
+		return
+	}
+
 	var (
 		statusCode int
 		logFunc    func(string, ...zap.Field)
 	)
 
-	var codedError *core_errors.CodedError
-	if errors.As(err, &codedError) {
-		switch codedError.Category {
-		case core_errors.CategoryBadRequest:
-			statusCode = http.StatusBadRequest
-			logFunc = h.log.Warn
-		case core_errors.CategoryNotFound:
-			statusCode = http.StatusNotFound
-			logFunc = h.log.Debug
-		case core_errors.CategoryConflict:
-			statusCode = http.StatusConflict
-			logFunc = h.log.Warn
-		case core_errors.CategoryDatabase:
-			statusCode = http.StatusInternalServerError
-			logFunc = h.log.Error
-		default:
-			statusCode = http.StatusInternalServerError
-			logFunc = h.log.Error
-		}
-
-		logFunc(msg, zap.Error(err))
-		h.errorResponse(statusCode, err, msg)
-		return
+	switch codedError.Category {
+	case core_errors.CategoryBadRequest:
+		statusCode = http.StatusBadRequest
+		logFunc = h.log.Warn
+	case core_errors.CategoryNotFound:
+		statusCode = http.StatusNotFound
+		logFunc = h.log.Debug
+	case core_errors.CategoryConflict:
+		statusCode = http.StatusConflict
+		logFunc = h.log.Warn
+	case core_errors.CategoryDatabase:
+		statusCode = http.StatusInternalServerError
+		logFunc = h.log.Error
+	default:
+		statusCode = http.StatusInternalServerError
+		logFunc = h.log.Error
 	}
-	h.log.Error(
-		"INVALID ERROR WHICH CAN NOT BE DECODED TO CodedError error",
-		zap.Error(err),
-	)
+
+	logFunc(msg, zap.Error(err))
+	h.errorResponse(statusCode, err, msg)
 }
 
 func (h *HTTPResponseHandler) NoContent() {
