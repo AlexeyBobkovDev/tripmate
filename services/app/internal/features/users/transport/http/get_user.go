@@ -1,7 +1,7 @@
 package users_transport_http
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -11,6 +11,18 @@ import (
 	core_utils "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/utils"
 )
 
+// GetUser godoc
+//
+//	@Summary		Get User
+//	@Description	Gets a user
+//	@ID				get-user
+//	@Tags			users
+//	@Param			userID	path		int									true	"User ID"
+//	@Success		200		{object}	UserResponse						"Successfully retrieved user"
+//	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user ID"
+//	@Failure		404		{object}	core_http_response.ErrorResponse	"Not Found"
+//	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
+//	@Router			/users/{userID} [get]
 func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)
@@ -19,8 +31,15 @@ func (h *UsersHTTPHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	userID, err := strconv.Atoi(core_utils.GetPathParam(r, UserIDParam))
 	if err != nil {
 		responseHandler.ErrorResponse(
-			fmt.Errorf("%v: %w", err, core_errors.ErrBadRequest),
+			errors.Join(err, core_errors.ErrBadRequest),
 			"Bad Request",
+		)
+		return
+	}
+	if userID <= 0 {
+		responseHandler.ErrorResponse(
+			core_errors.ErrBadRequest,
+			"userID must be greater than zero",
 		)
 		return
 	}

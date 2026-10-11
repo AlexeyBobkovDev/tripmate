@@ -10,6 +10,25 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
+const getUserQuery = `
+SELECT
+	id,
+	version,
+	name,
+	surname,
+	username,
+	birth_date,
+	description,
+	email,
+	phone_number,
+	created_at,
+	updated_at,
+	deleted_at
+FROM app.users
+WHERE id=$1
+	AND deleted_at IS NULL;
+`
+
 func (r *UsersRepository) GetUser(
 	ctx context.Context,
 	userID int,
@@ -17,29 +36,10 @@ func (r *UsersRepository) GetUser(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	query := `
-	SELECT
-		id,
-		version,
-		name,
-		surname,
-		username,
-		birth_date,
-		description,
-		email,
-		phone_number,
-		created_at,
-		updated_at,
-		deleted_at
-	FROM app.users
-	WHERE id=$1
-		AND deleted_at IS NULL;
-	`
-
 	var userResponse domain.User
 	err := r.pool.QueryRow(
 		ctx,
-		query,
+		getUserQuery,
 		userID,
 	).Scan(
 		&userResponse.ID,
@@ -58,7 +58,7 @@ func (r *UsersRepository) GetUser(
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf(
-				"user id %d attempt to concurrently access: %w",
+				"get userID %d: %w",
 				userID,
 				err,
 			)
