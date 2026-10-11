@@ -8,12 +8,12 @@ import (
 )
 
 const deleteUserQuery = `
-	UPDATE app.users
-	SET deleted_at = NOW(),
-		updated_at = NOW(),
-		version = version + 1
-	WHERE id=$1
-		AND deleted_at IS NULL;
+UPDATE app.users
+SET deleted_at = NOW(),
+	updated_at = NOW(),
+	version = version + 1
+WHERE id=$1
+	AND deleted_at IS NULL;
 	`
 
 func (s *UsersRepository) DeleteUser(

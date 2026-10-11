@@ -11,6 +11,18 @@ import (
 	core_utils "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/utils"
 )
 
+// DeleteUser godoc
+//
+//	@Summary		Delete User
+//	@Description	Deletes a user
+//	@ID				delete-user
+//	@Tags			users
+//	@Param			userID path int	true	"User ID"
+//	@Success		204		"Deleted user"
+//	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user ID"
+//	@Failure		404		{object}	core_http_response.ErrorResponse	"Not Found"
+//	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
+//	@Router			/users/{userID} [delete]
 func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := core_logger.FromContext(ctx)
