@@ -46,7 +46,7 @@ func TestGetUser_InvalidID(t *testing.T) {
 			retrievedUser, err := usersService.GetUser(context.Background(), tt.id)
 			assert.Nil(t, retrievedUser)
 
-			require.ErrorAs(t, err, &core_errors.ErrBadRequest)
+			require.ErrorIs(t, err, core_errors.ErrBadRequest)
 		},
 		)
 	}

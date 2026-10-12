@@ -44,7 +44,7 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 
 			err := usersService.DeleteUser(context.Background(), tt.id)
 
-			require.ErrorAs(t, err, &core_errors.ErrBadRequest)
+			require.ErrorIs(t, err, core_errors.ErrBadRequest)
 		},
 		)
 	}
