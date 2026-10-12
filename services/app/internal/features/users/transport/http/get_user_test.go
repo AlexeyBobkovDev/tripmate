@@ -2,12 +2,14 @@ package users_transport_http
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/go-openapi/testify/v2/require"
-	"github.com/go-playground/assert/v2"
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
@@ -51,14 +53,21 @@ func TestGetUser_InvalidID(t *testing.T) {
 			usersTransport := NewUsersHTTPHandler(mockUsersService)
 
 			mockUsersService.EXPECT().
-				GetUser(
-					gomock.Any(),
-					gomock.Any(),
-				).
+				GetUser(gomock.Any(), gomock.Any()).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(t, http.MethodGet, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
-			logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+			rec, req := testhelpers.SetupHTTP(
+				t,
+				http.MethodGet,
+				fmt.Sprintf("/api/v1/users/%s", tt.id),
+				nil,
+			)
+
+			logger := testhelpers.SetupLogger(
+				t,
+				testconsts.TestLevel,
+				t.TempDir(),
+			)
 			ctx := core_logger.ToContext(req.Context(), logger)
 
 			req.SetPathValue("userID", tt.id)
@@ -67,8 +76,7 @@ func TestGetUser_InvalidID(t *testing.T) {
 			usersTransport.GetUser(rec, req)
 
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
-		},
-		)
+		})
 	}
 }
 
@@ -77,19 +85,24 @@ func TestGetUser_Success(t *testing.T) {
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-	response := testUserResponse()
-	mockUsersService.EXPECT().
-		GetUser(
-			gomock.Any(),
-			1,
-		).
-		Return(
-			&response,
-			nil,
-		)
+	expectedUser := testUserResponse()
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodGet, "/api/v1/users/1", nil)
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	mockUsersService.EXPECT().
+		GetUser(gomock.Any(), 1).
+		Return(&expectedUser, nil)
+
+	rec, req := testhelpers.SetupHTTP(
+		t,
+		http.MethodGet,
+		"/api/v1/users/1",
+		nil,
+	)
+
+	logger := testhelpers.SetupLogger(
+		t,
+		testconsts.TestLevel,
+		t.TempDir(),
+	)
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -97,32 +110,35 @@ func TestGetUser_Success(t *testing.T) {
 
 	usersTransport.GetUser(rec, req)
 
-	assert.Equal(t, http.StatusOK, rec.Code)
+	require.Equal(t, http.StatusOK, rec.Code)
 
 	var body UserResponse
-	err := json.NewDecoder(rec.Body).Decode(&body)
-	require.NoError(t, err)
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&body))
 
 	assert.Equal(t, testExpectedUserResponse(), body)
 }
 
-func TestGetUser_ServiceError(t *testing.T) {
+func TestGetUser_BadRequestServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
 	mockUsersService.EXPECT().
-		GetUser(
-			gomock.Any(),
-			1,
-		).
-		Return(
-			nil,
-			core_errors.ErrBadRequest,
-		)
+		GetUser(gomock.Any(), 1).
+		Return(nil, core_errors.ErrBadRequest)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodGet, "/api/v1/users/1", nil)
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testhelpers.SetupHTTP(
+		t,
+		http.MethodGet,
+		"/api/v1/users/1",
+		nil,
+	)
+
+	logger := testhelpers.SetupLogger(
+		t,
+		testconsts.TestLevel,
+		t.TempDir(),
+	)
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -131,4 +147,35 @@ func TestGetUser_ServiceError(t *testing.T) {
 	usersTransport.GetUser(rec, req)
 
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestGetUser_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUsersService := mocks.NewMockUsersService(ctrl)
+	usersTransport := NewUsersHTTPHandler(mockUsersService)
+
+	mockUsersService.EXPECT().
+		GetUser(gomock.Any(), 1).
+		Return(nil, fmt.Errorf("get userID %d: %w", 1, errors.Join(pgx.ErrNoRows, core_errors.ErrNotFound)))
+
+	rec, req := testhelpers.SetupHTTP(
+		t,
+		http.MethodGet,
+		"/api/v1/users/1",
+		nil,
+	)
+
+	logger := testhelpers.SetupLogger(
+		t,
+		testconsts.TestLevel,
+		t.TempDir(),
+	)
+	ctx := core_logger.ToContext(req.Context(), logger)
+
+	req.SetPathValue("userID", "1")
+	req = req.WithContext(ctx)
+
+	usersTransport.GetUser(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }

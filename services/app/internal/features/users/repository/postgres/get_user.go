@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
 const getUserQuery = `
@@ -60,7 +61,7 @@ func (r *UsersRepository) GetUser(
 			return nil, fmt.Errorf(
 				"get userID %d: %w",
 				userID,
-				err,
+				errors.Join(err, core_errors.ErrNotFound),
 			)
 		}
 		return nil, fmt.Errorf("scan error: %w", err)

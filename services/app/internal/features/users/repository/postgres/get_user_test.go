@@ -3,7 +3,6 @@ package users_postgres_repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
 )
@@ -25,22 +25,15 @@ func TestGetUser_Success(t *testing.T) {
 	userID := 1
 	expectedUser := testhelpers.UserTest()
 
-	mockPool.
-		EXPECT().
+	mockPool.EXPECT().
 		OpTimeout().
 		Return(5 * time.Second)
 
-	mockPool.
-		EXPECT().
-		QueryRow(
-			gomock.Any(),
-			getUserQuery,
-			userID,
-		).
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), getUserQuery, userID).
 		Return(mockRow)
 
-	mockRow.
-		EXPECT().
+	mockRow.EXPECT().
 		Scan(
 			gomock.Any(),
 			gomock.Any(),
@@ -55,26 +48,27 @@ func TestGetUser_Success(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).
-		DoAndReturn(func(scanDestination ...any) error {
-			*scanDestination[0].(*int) = expectedUser.ID
-			*scanDestination[1].(*int) = expectedUser.Version
-			*scanDestination[2].(*string) = expectedUser.Name
-			*scanDestination[3].(*string) = expectedUser.Surname
-			*scanDestination[4].(*string) = expectedUser.Username
-			*scanDestination[5].(*time.Time) = expectedUser.BirthDate
-			*scanDestination[6].(*string) = expectedUser.Description
-			*scanDestination[7].(*string) = expectedUser.Email
-			*scanDestination[8].(*string) = expectedUser.PhoneNumber
-			*scanDestination[9].(*time.Time) = expectedUser.CreatedAt
-			*scanDestination[10].(*time.Time) = expectedUser.UpdatedAt
-			*scanDestination[11].(**time.Time) = expectedUser.DeletedAt
+		DoAndReturn(func(destinations ...any) error {
+			*destinations[0].(*int) = expectedUser.ID
+			*destinations[1].(*int) = expectedUser.Version
+			*destinations[2].(*string) = expectedUser.Name
+			*destinations[3].(*string) = expectedUser.Surname
+			*destinations[4].(*string) = expectedUser.Username
+			*destinations[5].(*time.Time) = expectedUser.BirthDate
+			*destinations[6].(*string) = expectedUser.Description
+			*destinations[7].(*string) = expectedUser.Email
+			*destinations[8].(*string) = expectedUser.PhoneNumber
+			*destinations[9].(*time.Time) = expectedUser.CreatedAt
+			*destinations[10].(*time.Time) = expectedUser.UpdatedAt
+			*destinations[11].(**time.Time) = expectedUser.DeletedAt
 
 			return nil
 		})
 
 	actualUser, err := usersRepository.GetUser(context.Background(), userID)
+
 	require.NoError(t, err)
-	assert.NotNil(t, actualUser)
+	require.NotNil(t, actualUser)
 	assert.Equal(t, expectedUser, *actualUser)
 }
 
@@ -87,22 +81,15 @@ func TestGetUser_ScanError(t *testing.T) {
 	userID := 1
 	scanError := errors.New("query row error")
 
-	mockPool.
-		EXPECT().
+	mockPool.EXPECT().
 		OpTimeout().
 		Return(5 * time.Second)
 
-	mockPool.
-		EXPECT().
-		QueryRow(
-			gomock.Any(),
-			getUserQuery,
-			userID,
-		).
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), getUserQuery, userID).
 		Return(mockRow)
 
-	mockRow.
-		EXPECT().
+	mockRow.EXPECT().
 		Scan(
 			gomock.Any(),
 			gomock.Any(),
@@ -120,6 +107,7 @@ func TestGetUser_ScanError(t *testing.T) {
 		Return(scanError)
 
 	actualUser, err := usersRepository.GetUser(context.Background(), userID)
+
 	require.ErrorIs(t, err, scanError)
 	assert.Nil(t, actualUser)
 }
@@ -132,22 +120,15 @@ func TestGetUser_UserNotFound(t *testing.T) {
 
 	userID := 1
 
-	mockPool.
-		EXPECT().
+	mockPool.EXPECT().
 		OpTimeout().
 		Return(5 * time.Second)
 
-	mockPool.
-		EXPECT().
-		QueryRow(
-			gomock.Any(),
-			getUserQuery,
-			userID,
-		).
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), getUserQuery, userID).
 		Return(mockRow)
 
-	mockRow.
-		EXPECT().
+	mockRow.EXPECT().
 		Scan(
 			gomock.Any(),
 			gomock.Any(),
@@ -162,14 +143,11 @@ func TestGetUser_UserNotFound(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 		).
-		Return(pgx.ErrNoRows)
+		Return(errors.Join(pgx.ErrNoRows, core_errors.ErrNotFound))
 
 	actualUser, err := usersRepository.GetUser(context.Background(), userID)
+
 	require.ErrorIs(t, err, pgx.ErrNoRows)
-	assert.Nil(t, actualUser)
-	assert.EqualError(
-		t,
-		err,
-		fmt.Errorf("get userID %d: %w", userID, pgx.ErrNoRows).Error(),
-	)
+	require.ErrorIs(t, err, core_errors.ErrNotFound)
+	require.Nil(t, actualUser)
 }
