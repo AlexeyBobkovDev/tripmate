@@ -362,7 +362,19 @@ func TestUserApplyPatchInvalidPatchDoesNotMutateUser(t *testing.T) {
 		UpdatedAt:   now.Add(-time.Hour),
 	}
 
-	original := user
+	original := User{
+		ID:          1,
+		Version:     1,
+		Name:        "Alexey",
+		Surname:     "Bobkov",
+		Username:    "alexey",
+		BirthDate:   now.AddDate(-20, 0, 0),
+		Description: "Original description",
+		Email:       "alexey@example.com",
+		PhoneNumber: "+14155552671",
+		CreatedAt:   now.Add(-2 * time.Hour),
+		UpdatedAt:   now.Add(-time.Hour),
+	}
 
 	patch := UserPatch{
 		Version: 2,
@@ -411,7 +423,19 @@ func TestUserApplyPatchInvalidResultDoesNotMutateUser(t *testing.T) {
 		UpdatedAt:   updatedAt,
 	}
 
-	original := user
+	original := User{
+		ID:          1,
+		Version:     1,
+		Name:        "Alexey",
+		Surname:     "Bobkov",
+		Username:    "alexey",
+		BirthDate:   now.AddDate(-34, 0, 0),
+		Description: "Original description",
+		Email:       "alexey@example.com",
+		PhoneNumber: "+14155552671",
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
 
 	// The patch itself is valid, but the resulting User is invalid:
 	// the new birth date is after CreatedAt.
