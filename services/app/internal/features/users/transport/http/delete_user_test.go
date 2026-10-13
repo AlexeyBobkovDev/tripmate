@@ -1,13 +1,15 @@
 package users_transport_http
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
@@ -93,6 +95,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	usersTransport.DeleteUser(rec, req)
 
 	assert.Equal(t, http.StatusNoContent, rec.Code)
+	assert.Empty(t, rec.Body.String())
 }
 
 func TestDeleteUser_ServiceError(t *testing.T) {
@@ -106,7 +109,7 @@ func TestDeleteUser_ServiceError(t *testing.T) {
 			1,
 		).
 		Return(
-			fmt.Errorf("service error"),
+			errors.New("service error"),
 		)
 
 	rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
@@ -119,4 +122,30 @@ func TestDeleteUser_ServiceError(t *testing.T) {
 	usersTransport.DeleteUser(rec, req)
 
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestDeleteUser_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUsersService := mocks.NewMockUsersService(ctrl)
+	usersTransport := NewUsersHTTPHandler(mockUsersService)
+
+	mockUsersService.EXPECT().
+		DeleteUser(
+			gomock.Any(),
+			1,
+		).
+		Return(
+			core_errors.ErrNotFound,
+		)
+
+	rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
+	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+
+	req.SetPathValue("userID", "1")
+	req = req.WithContext(ctx)
+
+	usersTransport.DeleteUser(rec, req)
+
+	assert.Equal(t, http.StatusNotFound, rec.Code)
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -68,7 +67,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDeleteUser_RepositoryError(t *testing.T) {
+func TestDeleteUser_RepositoryError_ErrViolatedForeignKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -83,6 +82,23 @@ func TestDeleteUser_RepositoryError(t *testing.T) {
 		Return(core_postgres_pool_errors.ErrViolatedForeignKey)
 
 	err := usersService.DeleteUser(context.Background(), userID)
-	assert.Error(t, err)
-	assert.ErrorIs(t, err, core_postgres_pool_errors.ErrViolatedForeignKey)
+	require.ErrorIs(t, err, core_postgres_pool_errors.ErrViolatedForeignKey)
+}
+
+func TestDeleteUser_RepositoryError_ErrNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
+	mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
+	usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
+
+	userID := 1
+
+	mockUsersRepository.
+		EXPECT().
+		DeleteUser(context.Background(), userID).
+		Return(core_errors.ErrNotFound)
+
+	err := usersService.DeleteUser(context.Background(), userID)
+	require.ErrorIs(t, err, core_errors.ErrNotFound)
 }

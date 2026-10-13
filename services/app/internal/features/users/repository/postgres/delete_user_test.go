@@ -3,11 +3,9 @@ package users_postgres_repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
@@ -215,9 +213,4 @@ func TestDeleteUser_UserNotFound(t *testing.T) {
 
 	err := usersRepository.DeleteUser(context.Background(), userID)
 	require.ErrorIs(t, err, core_errors.ErrNotFound)
-	assert.EqualError(
-		t,
-		err,
-		fmt.Errorf("the user %d does not exist: %w", userID, core_errors.ErrNotFound).Error(),
-	)
 }
