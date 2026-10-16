@@ -27,7 +27,7 @@ const docTemplate = `{
     "paths": {
         "/users": {
             "post": {
-                "description": "This endpoint creates a user",
+                "description": "Creates a new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -41,7 +41,7 @@ const docTemplate = `{
                 "operationId": "create-user",
                 "parameters": [
                     {
-                        "description": "The data which this endpoint will use to create user",
+                        "description": "User data",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -54,11 +54,166 @@ const docTemplate = `{
                     "201": {
                         "description": "Created user",
                         "schema": {
-                            "$ref": "#/definitions/users_transport_http.CreateUserResponse"
+                            "$ref": "#/definitions/users_transport_http.UserResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid user data",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userID}": {
+            "get": {
+                "description": "Gets a user",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get User",
+                "operationId": "get-user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved user",
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a user",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Delete User",
+                "operationId": "delete-user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted user"
+                    },
+                    "400": {
+                        "description": "Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a user by ID\nIf a field is not sent, the field won't be changed\nIf a field is sent with the value of null, the field will be changed to null\nIf a field is sent with an ordinary value, the field will be changed to this value\nIf Birthdate is set as null, ErrBadRequest(400 status code) is returned",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Patch User",
+                "operationId": "patch-user",
+                "parameters": [
+                    {
+                        "description": "User data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.PatchUserRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Patched user",
+                        "schema": {
+                            "$ref": "#/definitions/users_transport_http.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user data",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/core_http_response.ErrorResponse"
                         }
@@ -106,7 +261,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "maxLength": 1000,
-                    "minLength": 1,
                     "example": "Some kind of description"
                 },
                 "email": {
@@ -115,7 +269,7 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 50,
                     "minLength": 1,
                     "example": "Name"
                 },
@@ -131,7 +285,7 @@ const docTemplate = `{
                 },
                 "surname": {
                     "type": "string",
-                    "maxLength": 100,
+                    "maxLength": 50,
                     "minLength": 1,
                     "example": "Surname"
                 },
@@ -143,7 +297,10 @@ const docTemplate = `{
                 }
             }
         },
-        "users_transport_http.CreateUserResponse": {
+        "users_transport_http.PatchUserRequest": {
+            "type": "object"
+        },
+        "users_transport_http.UserResponse": {
             "type": "object",
             "properties": {
                 "birth_date": {
@@ -189,6 +346,10 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "Username"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 5
                 }
             }
         }
