@@ -68,7 +68,7 @@ func (r *UsersRepository) CreateUser(
 		&userResponse.DeletedAt,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("scan error: %w", err)
+		return nil, fmt.Errorf("create user: %w", err)
 	}
 
 	return &userResponse, nil

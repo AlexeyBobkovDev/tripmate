@@ -64,7 +64,7 @@ func (r *UsersRepository) GetUser(
 				errors.Join(err, core_errors.ErrNotFound),
 			)
 		}
-		return nil, fmt.Errorf("scan error: %w", err)
+		return nil, fmt.Errorf("get user: %w", err)
 	}
 
 	return &userResponse, nil
