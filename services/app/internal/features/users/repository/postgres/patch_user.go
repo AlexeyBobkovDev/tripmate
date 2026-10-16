@@ -8,7 +8,43 @@ import (
 	"github.com/jackc/pgx/v5"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
+
+const patchUserQuery = `
+UPDATE app.users
+SET
+	version=version + 1,
+	name=$3,
+	surname=$4,
+	username=$5,
+	birth_date=$6,
+	description=$7,
+	email=$8,
+	phone_number=$9
+WHERE id=$1 AND version=$2 AND deleted_at IS NULL
+RETURNING
+	id,
+	version,
+	name,
+	surname,
+	username,
+	birth_date,
+	description,
+	email,
+	phone_number,
+	created_at,
+	updated_at,
+	deleted_at;
+`
+
+const userExistsQuery = `
+SELECT EXISTS(
+	SELECT 1
+	FROM app.users
+	WHERE id=$1 and deleted_at IS NULL
+);
+`
 
 func (r *UsersRepository) PatchUser(
 	ctx context.Context,
@@ -18,38 +54,11 @@ func (r *UsersRepository) PatchUser(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	query := `
-	UPDATE app.users
-	SET
-		version=version + 1,
-		name=$3,
-		surname=$4,
-		username=$5,
-		birth_date=$6,
-		description=$7,
-		email=$8,
-		phone_number=$9
-	WHERE id=$1 AND version=$2
-	RETURNING
-		id,
-		version,
-		name,
-		surname,
-		username,
-		birth_date,
-		description,
-		email,
-		phone_number,
-		created_at,
-		updated_at,
-		deleted_at;
-	`
-
 	var response domain.User
 	err := r.pool.QueryRow(
 		ctx,
-		query,
-		user.ID,
+		patchUserQuery,
+		userID,
 		user.Version,
 		user.Name,
 		user.Surname,
@@ -73,14 +82,33 @@ func (r *UsersRepository) PatchUser(
 		&response.DeletedAt,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("update user: %w", err)
+		}
+
+		var exists bool
+
+		checkErr := r.pool.QueryRow(ctx, userExistsQuery, userID).Scan(&exists)
+		if checkErr != nil {
 			return nil, fmt.Errorf(
-				"user id %d attempt to concurrently access: %w",
+				"check user %d after patch matched no rows: %w",
 				userID,
-				err,
+				checkErr,
 			)
 		}
-		return nil, fmt.Errorf("scan error: %w", err)
+		if !exists {
+			return nil, fmt.Errorf(
+				"patch user %d: %w",
+				userID,
+				core_errors.ErrNotFound,
+			)
+		}
+
+		return nil, fmt.Errorf(
+			"patch user %d: version conflict: %w",
+			userID,
+			errors.Join(err, core_errors.ErrConflict),
+		)
 	}
 
 	return &response, nil
