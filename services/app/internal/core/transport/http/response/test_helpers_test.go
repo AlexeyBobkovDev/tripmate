@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-openapi/testify/v2/require"
+	"github.com/stretchr/testify/require"
 
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 )

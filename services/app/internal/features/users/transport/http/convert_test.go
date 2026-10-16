@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 
 	core_consts "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"

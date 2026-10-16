@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-openapi/testify/v2/require"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
