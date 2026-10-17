@@ -1,0 +1,57 @@
+package users_transport_http
+
+import (
+	"errors"
+	"net/http"
+	"strconv"
+
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
+	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
+	core_http_response "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/response"
+	core_utils "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/utils"
+)
+
+// DeleteUser godoc
+//
+//	@Summary		Delete User
+//	@Description	Deletes a user
+//	@ID				delete-user
+//	@Tags			users
+//	@Param			userID path int	true	"User ID"
+//	@Success		204		"Deleted user"
+//	@Failure		400		{object}	core_http_response.ErrorResponse	"Invalid user ID"
+//	@Failure		404		{object}	core_http_response.ErrorResponse	"Not Found"
+//	@Failure		500		{object}	core_http_response.ErrorResponse	"Internal Server Error"
+//	@Router			/users/{userID} [delete]
+func (h *UsersHTTPHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := core_logger.FromContext(ctx)
+	responseHandler := core_http_response.NewHTTPResponseHandler(w, logger)
+
+	userID, err := strconv.Atoi(core_utils.GetPathParam(r, UserIDParam))
+	if err != nil {
+		responseHandler.ErrorResponse(
+			errors.Join(err, core_errors.ErrBadRequest),
+			"userID must be of type int",
+		)
+		return
+	}
+	if userID <= 0 {
+		responseHandler.ErrorResponse(
+			core_errors.ErrBadRequest,
+			"userID must be greater than zero",
+		)
+		return
+	}
+
+	err = h.usersService.DeleteUser(ctx, userID)
+	if err != nil {
+		responseHandler.ErrorResponse(
+			err,
+			"failed to delete user",
+		)
+		return
+	}
+
+	responseHandler.NoContent()
+}
