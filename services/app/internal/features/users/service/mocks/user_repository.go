@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	gomock "go.uber.org/mock/gomock"
+
+	domain "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
 // MockUsersRepository is a mock of UsersRepository interface.

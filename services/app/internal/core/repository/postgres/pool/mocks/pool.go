@@ -14,8 +14,9 @@ import (
 	reflect "reflect"
 	time "time"
 
-	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 	gomock "go.uber.org/mock/gomock"
+
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 )
 
 // MockPool is a mock of Pool interface.
