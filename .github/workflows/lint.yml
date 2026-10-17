@@ -28,7 +28,7 @@ jobs:
           go install mvdan.cc/gofumpt@latest
           go install github.com/daixiang0/gci@latest
 
-          readarray -t FILES < <(find -name '*.go' -type f)
+          mapfile -t FILES < <(find . -name '*.go' -type f)
 
           unformatted="$(gofmt -l "${FILES[@]}")"  || exit 1
           if [[ -n "$unformatted" ]]; then
@@ -51,12 +51,13 @@ jobs:
               -s standard \
               -s default \
               -s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
-              "${FILES[@]}"
+              "${FILES[@]}" </dev/null
           )" || exit 1
           if [[ -n "$unformatted" ]]; then
             printf '%s\n' "$unformatted"
             exit 1
           fi
+        working-directory: ${{ matrix.service }}
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9.3.0
