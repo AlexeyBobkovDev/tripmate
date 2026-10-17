@@ -30,25 +30,38 @@ jobs:
 
           readarray -t FILES < <(find -name '*.go' -type f)
 
-          test -z "$(gofmt -l "${FILES[@]}")" || gofmt -l "${FILES[@]}"
-          test -z "$(goimports -l "${FILES[@]}")" || goimports -l "${FILES[@]}"
-          test -z "$(gofumpt -l "${FILES[@]}")" || gofumpt -l "${FILES[@]}"
-          GCI_DIFF="$(gci diff \
+          unformatted="$(gofmt -l "${FILES[@]}")"  || exit 1
+          if [[ -n "$unformatted" ]]; then
+            printf '%s\n' "$unformatted"
+            exit 1
+          fi
+          unformatted="$(goimports -l "${FILES[@]}")"  || exit 1
+          if [[ -n "$unformatted" ]]; then
+            printf '%s\n' "$unformatted"
+            exit 1
+          fi
+          unformatted="$(gofumpt -l "${FILES[@]}")"  || exit 1
+          if [[ -n "$unformatted" ]]; then
+            printf '%s\n' "$unformatted"
+            exit 1
+          fi
+
+          unformatted="$(gci diff \
               --custom-order \
               -s standard \
               -s default \
               -s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
-              "${FILES[@]}" 0< /dev/null
-          )"
-          test -z "$GCI_DIFF" || {
-            echo "$GCI_DIFF"
+              "${FILES[@]}"
+          )" || exit 1
+          if [[ -n "$unformatted" ]]; then
+            printf '%s\n' "$unformatted"
             exit 1
-          }
+          fi
 
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v9.3.0
         with:
-          version: v2.13.1
+          version: v2.15.0
           working-directory: ${{ matrix.service }}
 
       - name: Vet
