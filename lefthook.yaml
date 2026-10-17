@@ -8,7 +8,6 @@ pre-commit:
     check-formatting:
       run: scripts/check-formatting.sh {staged_files}
       glob: "**/*.go"
-      exclude: "**/mocks/**"
 
     check-scripts:
       run: scripts/check-scripts.sh {staged_files}
