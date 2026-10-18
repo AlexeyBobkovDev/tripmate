@@ -7,19 +7,19 @@ type Argon2IDHash struct {
 }
 
 func NewArgon2IDHash(
-	Memory uint32,
-	Iterations uint32,
-	Parallelism uint8,
-	SaltLength uint32,
-	KeyLength uint32,
+	memory uint32,
+	iterations uint32,
+	parallelism uint8,
+	saltLength uint32,
+	keyLength uint32,
 ) *Argon2IDHash {
 	return &Argon2IDHash{
 		&argon2id.Params{
-			Memory:      Memory,
-			Iterations:  Iterations,
-			Parallelism: Parallelism,
-			SaltLength:  SaltLength,
-			KeyLength:   KeyLength,
+			Memory:      memory,
+			Iterations:  iterations,
+			Parallelism: parallelism,
+			SaltLength:  saltLength,
+			KeyLength:   keyLength,
 		},
 	}
 }
