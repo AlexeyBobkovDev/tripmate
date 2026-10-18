@@ -13,7 +13,7 @@ import (
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestGetUser_Success(t *testing.T) {
@@ -23,7 +23,7 @@ func TestGetUser_Success(t *testing.T) {
 	usersRepository := NewUsersRepository(mockPool)
 
 	userID := 1
-	expectedUser := testhelpers.UserTest()
+	expectedUser := testutils.UserTest()
 
 	mockPool.EXPECT().
 		OpTimeout().

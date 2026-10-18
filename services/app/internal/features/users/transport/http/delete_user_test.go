@@ -12,8 +12,7 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestDeleteUser_InvalidID(t *testing.T) {
@@ -56,8 +55,8 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 				).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
-			logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+			rec, req := testutils.SetupHTTP(t, http.MethodDelete, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
+			logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 			ctx := core_logger.ToContext(req.Context(), logger)
 
 			req.SetPathValue("userID", tt.id)
@@ -85,8 +84,8 @@ func TestDeleteUser_Success(t *testing.T) {
 			nil,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -112,8 +111,8 @@ func TestDeleteUser_ServiceError(t *testing.T) {
 			errors.New("service error"),
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -138,8 +137,8 @@ func TestDeleteUser_NotFound(t *testing.T) {
 			core_errors.ErrNotFound,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodDelete, "/api/v1/users/1", nil)
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")

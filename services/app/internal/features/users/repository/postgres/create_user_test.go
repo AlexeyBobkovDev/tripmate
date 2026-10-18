@@ -11,7 +11,7 @@ import (
 
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestCreateUserRepository_Success(t *testing.T) {
@@ -20,8 +20,8 @@ func TestCreateUserRepository_Success(t *testing.T) {
 	mockRow := mocks.NewMockRow(ctrl)
 	usersRepository := NewUsersRepository(mockPool)
 
-	createUserRequest := testhelpers.UserCreateTest()
-	expectedCreatedUser := testhelpers.UserTest()
+	createUserRequest := testutils.UserCreateTest()
+	expectedCreatedUser := testutils.UserTest()
 
 	mockRow.EXPECT().
 		Scan(
@@ -87,7 +87,7 @@ func TestCreateUserRepository_ScanError(t *testing.T) {
 	mockRow := mocks.NewMockRow(ctrl)
 	usersRepository := NewUsersRepository(mockPool)
 
-	createUserRequest := testhelpers.UserCreateTest()
+	createUserRequest := testutils.UserCreateTest()
 
 	mockRow.EXPECT().
 		Scan(

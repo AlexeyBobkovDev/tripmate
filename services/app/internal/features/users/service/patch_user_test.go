@@ -12,7 +12,7 @@ import (
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestPatchUser_InvalidID(t *testing.T) {
@@ -29,7 +29,7 @@ func TestPatchUser_InvalidID(t *testing.T) {
 			id:   0,
 		},
 	}
-	userPatch := testhelpers.UserPatchTest()
+	userPatch := testutils.UserPatchTest()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -67,9 +67,9 @@ func TestPatchUser_Success(t *testing.T) {
 	usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
 
 	userID := 1
-	userPatch := testhelpers.UserPatchTest()
-	user := testhelpers.UserTest()
-	patchedUser := testhelpers.UserTest()
+	userPatch := testutils.UserPatchTest()
+	user := testutils.UserTest()
+	patchedUser := testutils.UserTest()
 	require.NoError(t, patchedUser.ApplyPatch(&userPatch))
 
 	mockUsersRepository.
@@ -96,7 +96,7 @@ func TestPatchUser_GetUserError(t *testing.T) {
 
 	userID := 1
 
-	userPatch := testhelpers.UserPatchTest()
+	userPatch := testutils.UserPatchTest()
 	getUserError := errors.New("get user error")
 
 	mockUsersRepository.
@@ -118,11 +118,11 @@ func TestPatchUser_ApplyPatchError(t *testing.T) {
 
 	userID := 1
 
-	userPatch := testhelpers.UserPatchTest()
+	userPatch := testutils.UserPatchTest()
 	// Make userPatch invalid
 	tooLongName := strings.Repeat("a", 150)
 	userPatch.Name.Value = &tooLongName
-	user := testhelpers.UserTest()
+	user := testutils.UserTest()
 
 	mockUsersRepository.
 		EXPECT().
@@ -150,9 +150,9 @@ func TestPatchUser_PatchUserError(t *testing.T) {
 	userID := 1
 
 	patchUserRepositoryError := errors.New("patch user repository error")
-	userPatch := testhelpers.UserPatchTest()
-	user := testhelpers.UserTest()
-	patchedUser := testhelpers.UserTest()
+	userPatch := testutils.UserPatchTest()
+	user := testutils.UserTest()
+	patchedUser := testutils.UserTest()
 	require.NoError(t, patchedUser.ApplyPatch(&userPatch))
 
 	mockUsersRepository.
@@ -181,12 +181,12 @@ func TestPatchUser_Conflict(t *testing.T) {
 
 	patchUserRepositoryError := errors.New("patch user repository error")
 
-	userPatch := testhelpers.UserPatchTest()
-	user := testhelpers.UserTest()
+	userPatch := testutils.UserPatchTest()
+	user := testutils.UserTest()
 
 	user.Version = userPatch.Version
 
-	patchedUser := testhelpers.UserTest()
+	patchedUser := testutils.UserTest()
 	require.NoError(t, patchedUser.ApplyPatch(&userPatch))
 
 	mockUsersRepository.
@@ -216,8 +216,8 @@ func TestPatchUser_VersionMismatch(t *testing.T) {
 	)
 
 	userID := 1
-	userPatch := testhelpers.UserPatchTest()
-	user := testhelpers.UserTest()
+	userPatch := testutils.UserPatchTest()
+	user := testutils.UserTest()
 	user.Version = userPatch.Version - 1
 
 	mockUsersRepository.

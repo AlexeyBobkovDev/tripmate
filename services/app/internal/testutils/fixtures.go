@@ -1,4 +1,4 @@
-package testhelpers
+package testutils
 
 import (
 	"fmt"
@@ -7,7 +7,6 @@ import (
 
 	core_consts "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
 )
 
 func BirthDateTest() time.Time {
@@ -37,13 +36,13 @@ func UpdatedAtTest() time.Time {
 func UserCreateTest() domain.UserCreate {
 	birthDate := BirthDateTest()
 	return domain.UserCreate{
-		Name:        testconsts.TestName,
-		Surname:     testconsts.TestSurname,
-		Username:    testconsts.TestUsername,
+		Name:        TestName,
+		Surname:     TestSurname,
+		Username:    TestUsername,
 		BirthDate:   birthDate,
-		Description: testconsts.TestDescription,
-		Email:       testconsts.TestEmail,
-		PhoneNumber: testconsts.TestPhoneNumber,
+		Description: TestDescription,
+		Email:       TestEmail,
+		PhoneNumber: TestPhoneNumber,
 	}
 }
 
@@ -52,13 +51,13 @@ func UserTest() domain.User {
 	return domain.User{
 		ID:          1,
 		Version:     1,
-		Name:        testconsts.TestName,
-		Surname:     testconsts.TestSurname,
-		Username:    testconsts.TestUsername,
+		Name:        TestName,
+		Surname:     TestSurname,
+		Username:    TestUsername,
 		BirthDate:   birthDate,
-		Description: testconsts.TestDescription,
-		Email:       testconsts.TestEmail,
-		PhoneNumber: testconsts.TestPhoneNumber,
+		Description: TestDescription,
+		Email:       TestEmail,
+		PhoneNumber: TestPhoneNumber,
 		CreatedAt:   CreatedAtTest(),
 		UpdatedAt:   UpdatedAtTest(),
 		DeletedAt:   nil,
@@ -70,13 +69,13 @@ func UserPatchTest() domain.UserPatch {
 
 	return domain.UserPatch{
 		Version:     1,
-		Name:        domain.Nullable[string]{Value: &testconsts.TestName, Set: true},
-		Surname:     domain.Nullable[string]{Value: &testconsts.TestSurname, Set: true},
-		Username:    domain.Nullable[string]{Value: &testconsts.TestUsername, Set: true},
+		Name:        domain.Nullable[string]{Value: &TestName, Set: true},
+		Surname:     domain.Nullable[string]{Value: &TestSurname, Set: true},
+		Username:    domain.Nullable[string]{Value: &TestUsername, Set: true},
 		BirthDate:   domain.Nullable[time.Time]{Value: &birthDate, Set: true},
-		Description: domain.Nullable[string]{Value: &testconsts.TestDescription, Set: true},
-		Email:       domain.Nullable[string]{Value: &testconsts.TestEmail, Set: true},
-		PhoneNumber: domain.Nullable[string]{Value: &testconsts.TestPhoneNumber, Set: true},
+		Description: domain.Nullable[string]{Value: &TestDescription, Set: true},
+		Email:       domain.Nullable[string]{Value: &TestEmail, Set: true},
+		PhoneNumber: domain.Nullable[string]{Value: &TestPhoneNumber, Set: true},
 	}
 }
 
@@ -92,13 +91,13 @@ func PatchRequestBodyTest() *strings.Reader {
 			"email": "%s",
 			"phone_number": "%s"
 		}`,
-		testconsts.TestName,
-		testconsts.TestSurname,
-		testconsts.TestUsername,
+		TestName,
+		TestSurname,
+		TestUsername,
 		BirthDateTest().Format(core_consts.Layout),
-		testconsts.TestDescription,
-		testconsts.TestEmail,
-		testconsts.TestPhoneNumber,
+		TestDescription,
+		TestEmail,
+		TestPhoneNumber,
 	)
 
 	return strings.NewReader(body)

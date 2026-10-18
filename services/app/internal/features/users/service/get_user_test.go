@@ -12,7 +12,7 @@ import (
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestGetUser_InvalidID(t *testing.T) {
@@ -66,7 +66,7 @@ func TestGetUser_Success(t *testing.T) {
 	)
 
 	userID := 1
-	expectedUser := testhelpers.UserTest()
+	expectedUser := testutils.UserTest()
 
 	mockUsersRepository.EXPECT().
 		GetUser(context.Background(), userID).

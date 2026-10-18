@@ -1,4 +1,4 @@
-package testconsts
+package testutils
 
 const (
 	TestLevel = "DEBUG"

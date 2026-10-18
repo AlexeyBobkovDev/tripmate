@@ -13,7 +13,7 @@ import (
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestPatchUserRepository_Success(t *testing.T) {
@@ -23,7 +23,7 @@ func TestPatchUserRepository_Success(t *testing.T) {
 	usersRepository := NewUsersRepository(mockPool)
 
 	userID := 1
-	patchUserRequest := testhelpers.UserTest()
+	patchUserRequest := testutils.UserTest()
 
 	mockRow.EXPECT().
 		Scan(
@@ -103,7 +103,7 @@ func TestPatchUserRepository_ScanError(t *testing.T) {
 
 	userID := 1
 	scanError := errors.New("scan error")
-	patchUserRequest := testhelpers.UserTest()
+	patchUserRequest := testutils.UserTest()
 
 	mockRow.EXPECT().
 		Scan(
@@ -158,7 +158,7 @@ func TestPatchUserRepository_ExistsCheckScanError(t *testing.T) {
 	userID := 1
 	userVersion := 1
 	existsCheckError := errors.New("exists check scan error")
-	patchUserRequest := testhelpers.UserTest()
+	patchUserRequest := testutils.UserTest()
 	patchUserRequest.Version = userVersion + 1
 
 	mockRow.EXPECT().
@@ -228,7 +228,7 @@ func TestPatchUserRepository_UserNotFound(t *testing.T) {
 
 	userID := 1
 	userVersion := 1
-	patchUserRequest := testhelpers.UserTest()
+	patchUserRequest := testutils.UserTest()
 	patchUserRequest.Version = userVersion + 1
 
 	mockRow.EXPECT().
@@ -302,7 +302,7 @@ func TestPatchUserRepository_ErrConflict(t *testing.T) {
 
 	userID := 1
 	userVersion := 1
-	patchUserRequest := testhelpers.UserTest()
+	patchUserRequest := testutils.UserTest()
 	patchUserRequest.Version = userVersion + 1
 
 	mockRow.EXPECT().

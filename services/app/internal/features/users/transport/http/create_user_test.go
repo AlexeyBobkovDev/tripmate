@@ -13,12 +13,11 @@ import (
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	core_http_response "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/response"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestCreateUserHTTP_Success(t *testing.T) {
-	userCreate := testhelpers.UserCreateTest()
+	userCreate := testutils.UserCreateTest()
 	userResponse := testUserResponse()
 
 	ctrl := gomock.NewController(t)
@@ -30,18 +29,18 @@ func TestCreateUserHTTP_Success(t *testing.T) {
 		CreateUser(
 			gomock.Any(),
 			&userCreate,
-			testconsts.TestPassword,
+			testutils.TestPassword,
 		).
 		Return(&userResponse, nil)
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodPost,
 		"/api/v1/users",
 		testRequestBodyWithDefaults(),
 	)
 
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 	req = req.WithContext(ctx)
 
@@ -60,7 +59,7 @@ func TestCreateUserHTTP_Success(t *testing.T) {
 
 func TestCreateUserHTTP_ServiceError(t *testing.T) {
 	serviceError := core_postgres_pool_errors.ErrViolatedForeignKey
-	userCreate := testhelpers.UserCreateTest()
+	userCreate := testutils.UserCreateTest()
 
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
@@ -71,18 +70,18 @@ func TestCreateUserHTTP_ServiceError(t *testing.T) {
 		CreateUser(
 			gomock.Any(),
 			&userCreate,
-			testconsts.TestPassword,
+			testutils.TestPassword,
 		).
 		Return(nil, serviceError)
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodPost,
 		"/api/v1/users",
 		testRequestBodyWithDefaults(),
 	)
 
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 	req = req.WithContext(ctx)
 
@@ -110,14 +109,14 @@ func TestCreateUserHTTP_InvalidJSON(t *testing.T) {
 		CreateUser(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(0)
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodPost,
 		"/api/v1/users",
 		testRequestInvalidJSON(),
 	)
 
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 	req = req.WithContext(ctx)
 
@@ -249,16 +248,16 @@ func TestCreateUserHTTP_ValidationError(t *testing.T) {
 				CreateUser(gomock.Any(), gomock.Any(), gomock.Any()).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(
+			rec, req := testutils.SetupHTTP(
 				t,
 				http.MethodPost,
 				"/api/v1/users",
 				strings.NewReader(tt.body),
 			)
 
-			logger := testhelpers.SetupLogger(
+			logger := testutils.SetupLogger(
 				t,
-				testconsts.TestLevel,
+				testutils.TestLevel,
 				t.TempDir(),
 			)
 

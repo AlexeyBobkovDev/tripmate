@@ -15,8 +15,7 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestGetUser_InvalidID(t *testing.T) {
@@ -56,16 +55,16 @@ func TestGetUser_InvalidID(t *testing.T) {
 				GetUser(gomock.Any(), gomock.Any()).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(
+			rec, req := testutils.SetupHTTP(
 				t,
 				http.MethodGet,
 				fmt.Sprintf("/api/v1/users/%s", tt.id),
 				nil,
 			)
 
-			logger := testhelpers.SetupLogger(
+			logger := testutils.SetupLogger(
 				t,
-				testconsts.TestLevel,
+				testutils.TestLevel,
 				t.TempDir(),
 			)
 			ctx := core_logger.ToContext(req.Context(), logger)
@@ -91,16 +90,16 @@ func TestGetUser_Success(t *testing.T) {
 		GetUser(gomock.Any(), 1).
 		Return(&expectedUser, nil)
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodGet,
 		"/api/v1/users/1",
 		nil,
 	)
 
-	logger := testhelpers.SetupLogger(
+	logger := testutils.SetupLogger(
 		t,
-		testconsts.TestLevel,
+		testutils.TestLevel,
 		t.TempDir(),
 	)
 	ctx := core_logger.ToContext(req.Context(), logger)
@@ -127,16 +126,16 @@ func TestGetUser_BadRequestServiceError(t *testing.T) {
 		GetUser(gomock.Any(), 1).
 		Return(nil, core_errors.ErrBadRequest)
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodGet,
 		"/api/v1/users/1",
 		nil,
 	)
 
-	logger := testhelpers.SetupLogger(
+	logger := testutils.SetupLogger(
 		t,
-		testconsts.TestLevel,
+		testutils.TestLevel,
 		t.TempDir(),
 	)
 	ctx := core_logger.ToContext(req.Context(), logger)
@@ -158,16 +157,16 @@ func TestGetUser_NotFound(t *testing.T) {
 		GetUser(gomock.Any(), 1).
 		Return(nil, fmt.Errorf("get userID %d: %w", 1, errors.Join(pgx.ErrNoRows, core_errors.ErrNotFound)))
 
-	rec, req := testhelpers.SetupHTTP(
+	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodGet,
 		"/api/v1/users/1",
 		nil,
 	)
 
-	logger := testhelpers.SetupLogger(
+	logger := testutils.SetupLogger(
 		t,
-		testconsts.TestLevel,
+		testutils.TestLevel,
 		t.TempDir(),
 	)
 	ctx := core_logger.ToContext(req.Context(), logger)

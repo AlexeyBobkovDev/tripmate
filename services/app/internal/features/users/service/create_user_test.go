@@ -14,7 +14,7 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestCreateUser_Success(t *testing.T) {
@@ -29,7 +29,7 @@ func TestCreateUser_Success(t *testing.T) {
 		passwordHash = "$argon2id$v=19$m=65536,t=3,p=2$hashed-password"
 	)
 
-	testUserCreate := testhelpers.UserCreateTest()
+	testUserCreate := testutils.UserCreateTest()
 
 	expectedUser := domain.NewUser(
 		0,
@@ -41,8 +41,8 @@ func TestCreateUser_Success(t *testing.T) {
 		testUserCreate.Description,
 		testUserCreate.Email,
 		testUserCreate.PhoneNumber,
-		testhelpers.CreatedAtTest(),
-		testhelpers.CreatedAtTest(),
+		testutils.CreatedAtTest(),
+		testutils.CreatedAtTest(),
 		nil,
 	)
 
@@ -73,7 +73,7 @@ func TestCreateUser_RepositoryError(t *testing.T) {
 		passwordHash = "$argon2id$v=19$m=65536,t=3,p=2$hashed-password"
 	)
 
-	testUserCreate := testhelpers.UserCreateTest()
+	testUserCreate := testutils.UserCreateTest()
 
 	mockPasswordManager.
 		EXPECT().
@@ -97,7 +97,7 @@ func TestCreateUser_UserValidationError(t *testing.T) {
 		password = "robust-password-Ab!(*&^1324"
 	)
 
-	testUserCreate := testhelpers.UserCreateTest()
+	testUserCreate := testutils.UserCreateTest()
 	tests := []struct {
 		name string
 		fn   func(domain.UserCreate) domain.UserCreate
@@ -264,7 +264,7 @@ func TestCreateUser_UserValidationError(t *testing.T) {
 }
 
 func TestCreateUser_PasswordValidationError(t *testing.T) {
-	testUserCreate := testhelpers.UserCreateTest()
+	testUserCreate := testutils.UserCreateTest()
 	tests := []struct {
 		name     string
 		password string

@@ -6,23 +6,22 @@ import (
 
 	core_consts "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func testUserResponse() domain.User {
 	return domain.User{
 		ID:          1,
 		Version:     1,
-		Name:        testconsts.TestName,
-		Surname:     testconsts.TestSurname,
-		Username:    testconsts.TestUsername,
-		BirthDate:   testhelpers.BirthDateTest(),
-		Description: testconsts.TestDescription,
-		Email:       testconsts.TestEmail,
-		PhoneNumber: testconsts.TestPhoneNumber,
-		CreatedAt:   testhelpers.CreatedAtTest(),
-		UpdatedAt:   testhelpers.UpdatedAtTest(),
+		Name:        testutils.TestName,
+		Surname:     testutils.TestSurname,
+		Username:    testutils.TestUsername,
+		BirthDate:   testutils.BirthDateTest(),
+		Description: testutils.TestDescription,
+		Email:       testutils.TestEmail,
+		PhoneNumber: testutils.TestPhoneNumber,
+		CreatedAt:   testutils.CreatedAtTest(),
+		UpdatedAt:   testutils.UpdatedAtTest(),
 		DeletedAt:   nil,
 	}
 }
@@ -57,14 +56,14 @@ func testRequestBodyWithDefaults() *strings.Reader {
 			"phone_number": "%s",
 			"password": "%s"
 		}`,
-		testconsts.TestName,
-		testconsts.TestSurname,
-		testconsts.TestUsername,
-		testhelpers.BirthDateTest().Format(core_consts.Layout),
-		testconsts.TestDescription,
-		testconsts.TestEmail,
-		testconsts.TestPhoneNumber,
-		testconsts.TestPassword,
+		testutils.TestName,
+		testutils.TestSurname,
+		testutils.TestUsername,
+		testutils.BirthDateTest().Format(core_consts.Layout),
+		testutils.TestDescription,
+		testutils.TestEmail,
+		testutils.TestPhoneNumber,
+		testutils.TestPassword,
 	)
 	return strings.NewReader(body)
 }
@@ -94,13 +93,13 @@ func testPatchRequestBody() *strings.Reader {
 			"email": "%s",
 			"phone_number": "%s"
 		}`,
-		testconsts.TestName,
-		testconsts.TestSurname,
-		testconsts.TestUsername,
-		testhelpers.BirthDateTest().Format(core_consts.Layout),
-		testconsts.TestDescription,
-		testconsts.TestEmail,
-		testconsts.TestPhoneNumber,
+		testutils.TestName,
+		testutils.TestSurname,
+		testutils.TestUsername,
+		testutils.BirthDateTest().Format(core_consts.Layout),
+		testutils.TestDescription,
+		testutils.TestEmail,
+		testutils.TestPhoneNumber,
 	)
 
 	return strings.NewReader(body)

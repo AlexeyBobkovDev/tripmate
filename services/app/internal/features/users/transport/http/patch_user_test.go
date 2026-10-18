@@ -16,8 +16,7 @@ import (
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_http_response "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/response"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testconsts"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testhelpers"
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestPatchUser_InvalidID(t *testing.T) {
@@ -61,8 +60,8 @@ func TestPatchUser_InvalidID(t *testing.T) {
 				).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
-			logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+			rec, req := testutils.SetupHTTP(t, http.MethodPatch, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
+			logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 			ctx := core_logger.ToContext(req.Context(), logger)
 
 			req.SetPathValue("userID", tt.id)
@@ -81,7 +80,7 @@ func TestPatchUser_Success(t *testing.T) {
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-	userPatch := testhelpers.UserPatchTest()
+	userPatch := testutils.UserPatchTest()
 	response := testUserResponse()
 	expectedResponse := testExpectedUserResponse()
 
@@ -96,8 +95,8 @@ func TestPatchUser_Success(t *testing.T) {
 			nil,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -119,7 +118,7 @@ func TestPatchUser_ServiceError(t *testing.T) {
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-	request := testhelpers.UserPatchTest()
+	request := testutils.UserPatchTest()
 	serviceError := fmt.Errorf("service error")
 	mockUsersService.EXPECT().
 		PatchUser(
@@ -132,8 +131,8 @@ func TestPatchUser_ServiceError(t *testing.T) {
 			serviceError,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -153,8 +152,8 @@ func TestPatchUser_InvalidJSON(t *testing.T) {
 		PatchUser(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(0)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testRequestInvalidJSON())
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testRequestInvalidJSON())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 	req = req.WithContext(ctx)
 	req.SetPathValue("userID", "1")
@@ -274,8 +273,8 @@ func TestPatchUser_ValidationError(t *testing.T) {
 				PatchUser(gomock.Any(), gomock.Any(), gomock.Any()).
 				Times(0)
 
-			rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", strings.NewReader(tt.body))
-			logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+			rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", strings.NewReader(tt.body))
+			logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 			ctx := core_logger.ToContext(req.Context(), logger)
 			req = req.WithContext(ctx)
 			req.SetPathValue("userID", "1")
@@ -293,7 +292,7 @@ func TestPatchUser_Conflict(t *testing.T) {
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-	request := testhelpers.UserPatchTest()
+	request := testutils.UserPatchTest()
 	conflictError := errors.Join(errors.New("conflict error"), core_errors.ErrConflict)
 	mockUsersService.EXPECT().
 		PatchUser(
@@ -306,8 +305,8 @@ func TestPatchUser_Conflict(t *testing.T) {
 			conflictError,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
@@ -327,7 +326,7 @@ func TestPatchUser_NotFound(t *testing.T) {
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-	request := testhelpers.UserPatchTest()
+	request := testutils.UserPatchTest()
 	notFoundError := errors.Join(errors.New("not found"), core_errors.ErrNotFound)
 	mockUsersService.EXPECT().
 		PatchUser(
@@ -340,8 +339,8 @@ func TestPatchUser_NotFound(t *testing.T) {
 			notFoundError,
 		)
 
-	rec, req := testhelpers.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
-	logger := testhelpers.SetupLogger(t, testconsts.TestLevel, t.TempDir())
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/api/v1/users/1", testPatchRequestBody())
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
 
 	req.SetPathValue("userID", "1")
