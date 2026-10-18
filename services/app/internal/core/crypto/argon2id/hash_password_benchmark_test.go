@@ -8,9 +8,9 @@ import (
 
 func BenchmarkHash(b *testing.B) {
 	hasher := core_crypto_argon2id.NewArgon2IDHash(
-		memory,
-		times,
-		threads,
+		memoryKiB,
+		iterations,
+		parallelism,
 		saltLen,
 		keyLen,
 	)
@@ -18,7 +18,7 @@ func BenchmarkHash(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		if _, err := hasher.Hash(BENCHMARK_PASSWORD); err != nil {
+		if _, err := hasher.Hash(benchmarkPassword); err != nil {
 			b.Fatal(err)
 		}
 	}

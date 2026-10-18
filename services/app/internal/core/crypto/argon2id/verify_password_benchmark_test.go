@@ -8,14 +8,14 @@ import (
 
 func BenchmarkVerify(b *testing.B) {
 	hasher := core_crypto_argon2id.NewArgon2IDHash(
-		memory,
-		times,
-		threads,
+		memoryKiB,
+		iterations,
+		parallelism,
 		saltLen,
 		keyLen,
 	)
 
-	passwordHash, err := hasher.Hash(BENCHMARK_PASSWORD)
+	passwordHash, err := hasher.Hash(benchmarkPassword)
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -23,7 +23,8 @@ func BenchmarkVerify(b *testing.B) {
 	b.ResetTimer()
 
 	for b.Loop() {
-		if _, err := hasher.Verify(BENCHMARK_PASSWORD, passwordHash); err != nil {
+		verified, err := hasher.Verify(benchmarkPassword, passwordHash)
+		if err != nil {
 			b.Fatal(err)
 		}
 	}
