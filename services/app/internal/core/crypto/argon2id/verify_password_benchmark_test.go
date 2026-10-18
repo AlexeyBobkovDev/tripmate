@@ -20,12 +20,13 @@ func BenchmarkVerify(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	b.ResetTimer()
-
 	for b.Loop() {
 		verified, err := hasher.Verify(benchmarkPassword, passwordHash)
 		if err != nil {
 			b.Fatal(err)
+		}
+		if !verified {
+			b.Fatal("expected password verification to succeed")
 		}
 	}
 }
