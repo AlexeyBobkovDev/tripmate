@@ -15,8 +15,6 @@ func BenchmarkHash(b *testing.B) {
 		keyLen,
 	)
 
-	b.ResetTimer()
-
 	for b.Loop() {
 		if _, err := hasher.Hash(benchmarkPassword); err != nil {
 			b.Fatal(err)
