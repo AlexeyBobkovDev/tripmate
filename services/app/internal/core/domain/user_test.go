@@ -367,8 +367,12 @@ func TestUserApplyPatch(t *testing.T) {
 
 			err := user.ApplyPatch(&tt.patch)
 
-			require.ErrorIs(t, err, tt.wantErr)
-			require.Equal(t, tt.wantUser, user)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+			require.True(t, compareExistedUserWithGotUser(&tt.wantUser, &user))
 		})
 	}
 }
