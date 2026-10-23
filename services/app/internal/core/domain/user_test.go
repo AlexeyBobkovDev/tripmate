@@ -199,7 +199,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				return user
 			}(),
 		},
@@ -226,7 +226,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.Name = "Alexey"
 				return user
 			}(),
@@ -246,7 +246,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.Surname = "Bobkov"
 				return user
 			}(),
@@ -266,7 +266,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.Username = "alexey"
 				return user
 			}(),
@@ -286,7 +286,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.Description = "New description"
 				return user
 			}(),
@@ -306,7 +306,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.Email = "alexey@example.com"
 				return user
 			}(),
@@ -326,7 +326,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantErr: nil,
 			wantUser: func() User {
 				user := validUser
-				user.Version = 2
+				user.Version = 1
 				user.PhoneNumber = "+14155552671"
 				return user
 			}(),
