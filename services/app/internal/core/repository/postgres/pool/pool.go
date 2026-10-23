@@ -12,6 +12,7 @@ type Pool interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (CommandTag, error)
 	QueryRow(ctx context.Context, sql string, args ...any) Row
 	OpTimeout() time.Duration
+	Close()
 }
 
 type Rows interface {
