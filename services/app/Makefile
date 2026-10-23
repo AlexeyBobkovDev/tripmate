@@ -161,6 +161,19 @@ lint:
 benchmark:
 	@go test -bench=. -benchmem ./...
 
+
+.PHONY: test-unit
+test-unit:
+	@go test -race -count=1 -v ./...
+
+.PHONY: test-integration
+test-integration:
+	@go test -tags=integration -race -count=1 -v ./...
+
+.PHONY: test-e2e
+test-e2e:
+	@go test -tags=integration -race -count=1 -v ./...
+
 .PHONY: test
 test:
-	@go test -tags=integration -race -count=1 -v ./...
+	@go test -tags="integration e2e" -race -count=1 -v ./...
