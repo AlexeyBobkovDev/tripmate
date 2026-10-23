@@ -371,7 +371,11 @@ func TestUserPatchValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.patch.Validate()
 
-			require.ErrorIs(t, err, tt.wantErr)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }
