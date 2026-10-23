@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
+	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
@@ -175,7 +175,7 @@ func TestUsersRepository_PatchUser_ExistsCheckScanError(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 			gomock.Any(),
-		).Return(pgx.ErrNoRows)
+		).Return(core_postgres_pool_errors.ErrNoRows)
 
 	mockUserExistsRow.EXPECT().
 		Scan(
@@ -245,7 +245,7 @@ func TestUsersRepository_PatchUser_UserNotFound(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 			gomock.Any(),
-		).Return(pgx.ErrNoRows)
+		).Return(core_postgres_pool_errors.ErrNoRows)
 
 	mockUserExistsRow.EXPECT().
 		Scan(
@@ -319,7 +319,7 @@ func TestUsersRepository_PatchUser_ErrConflict(t *testing.T) {
 			gomock.Any(),
 			gomock.Any(),
 			gomock.Any(),
-		).Return(pgx.ErrNoRows)
+		).Return(core_postgres_pool_errors.ErrNoRows)
 
 	mockUserExistsRow.EXPECT().
 		Scan(
@@ -363,6 +363,6 @@ func TestUsersRepository_PatchUser_ErrConflict(t *testing.T) {
 
 	actualUser, err := usersRepository.PatchUser(context.Background(), userID, &patchUserRequest)
 	require.ErrorIs(t, err, core_errors.ErrConflict)
-	require.ErrorIs(t, err, pgx.ErrNoRows)
+	require.ErrorIs(t, err, core_postgres_pool_errors.ErrNoRows)
 	require.Nil(t, actualUser)
 }

@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
-
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
+	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 )
 
 const getUserQuery = `
@@ -57,7 +56,7 @@ func (r *UsersRepository) GetUser(
 		&userResponse.DeletedAt,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		if errors.Is(err, core_postgres_pool_errors.ErrNoRows) {
 			return nil, fmt.Errorf(
 				"get userID %d: %w",
 				userID,
