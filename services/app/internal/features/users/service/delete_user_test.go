@@ -12,7 +12,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service/mocks"
 )
 
-func TestDeleteUser_InvalidID(t *testing.T) {
+func TestUsersService_DeleteUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   int
@@ -49,7 +49,7 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestDeleteUser_Success(t *testing.T) {
+func TestUsersService_DeleteUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -67,7 +67,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDeleteUser_RepositoryError_ErrViolatedForeignKey(t *testing.T) {
+func TestUsersService_DeleteUser_RepositoryError_ErrViolatedForeignKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -85,7 +85,7 @@ func TestDeleteUser_RepositoryError_ErrViolatedForeignKey(t *testing.T) {
 	require.ErrorIs(t, err, core_postgres_pool_errors.ErrViolatedForeignKey)
 }
 
-func TestDeleteUser_RepositoryError_ErrNotFound(t *testing.T) {
+func TestUsersService_DeleteUser_RepositoryError_ErrNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)

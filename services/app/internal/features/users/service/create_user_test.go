@@ -17,7 +17,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestCreateUser_Success(t *testing.T) {
+func TestUsersService_CreateUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -61,7 +61,7 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.Equal(t, expectedUser, returnedUser)
 }
 
-func TestCreateUser_RepositoryError(t *testing.T) {
+func TestUsersService_CreateUser_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -92,7 +92,7 @@ func TestCreateUser_RepositoryError(t *testing.T) {
 	assert.ErrorContains(t, err, "failed to create user")
 }
 
-func TestCreateUser_UserValidationError(t *testing.T) {
+func TestUsersService_CreateUser_UserValidationError(t *testing.T) {
 	const (
 		password = "robust-password-Ab!(*&^1324"
 	)
@@ -263,7 +263,7 @@ func TestCreateUser_UserValidationError(t *testing.T) {
 	}
 }
 
-func TestCreateUser_PasswordValidationError(t *testing.T) {
+func TestUsersService_CreateUser_PasswordValidationError(t *testing.T) {
 	testUserCreate := testutils.UserCreateTest()
 	tests := []struct {
 		name     string

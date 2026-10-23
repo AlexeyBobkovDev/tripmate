@@ -15,7 +15,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestPatchUser_InvalidID(t *testing.T) {
+func TestUsersService_PatchUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   int
@@ -59,7 +59,7 @@ func TestPatchUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestPatchUser_Success(t *testing.T) {
+func TestUsersService_PatchUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -87,7 +87,7 @@ func TestPatchUser_Success(t *testing.T) {
 	assert.Equal(t, patchedUser, *retrievedUser)
 }
 
-func TestPatchUser_GetUserError(t *testing.T) {
+func TestUsersService_PatchUser_GetUserError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -109,7 +109,7 @@ func TestPatchUser_GetUserError(t *testing.T) {
 	assert.Nil(t, retrievedUser)
 }
 
-func TestPatchUser_ApplyPatchError(t *testing.T) {
+func TestUsersService_PatchUser_ApplyPatchError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -140,7 +140,7 @@ func TestPatchUser_ApplyPatchError(t *testing.T) {
 	assert.Nil(t, retrievedUser)
 }
 
-func TestPatchUser_PatchUserError(t *testing.T) {
+func TestUsersService_PatchUser_PatchUserError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -170,7 +170,7 @@ func TestPatchUser_PatchUserError(t *testing.T) {
 	require.Nil(t, retrievedUser)
 }
 
-func TestPatchUser_Conflict(t *testing.T) {
+func TestUsersService_PatchUser_Conflict(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -205,7 +205,7 @@ func TestPatchUser_Conflict(t *testing.T) {
 	require.Nil(t, retrievedUser)
 }
 
-func TestPatchUser_VersionMismatch(t *testing.T) {
+func TestUsersService_PatchUser_VersionMismatch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)

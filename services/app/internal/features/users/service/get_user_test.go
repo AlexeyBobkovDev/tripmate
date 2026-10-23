@@ -15,7 +15,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestGetUser_InvalidID(t *testing.T) {
+func TestUsersService_GetUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   int
@@ -55,7 +55,7 @@ func TestGetUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestGetUser_Success(t *testing.T) {
+func TestUsersService_GetUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
@@ -82,7 +82,7 @@ func TestGetUser_Success(t *testing.T) {
 	assert.Equal(t, expectedUser, *retrievedUser)
 }
 
-func TestGetUser_RepositoryError(t *testing.T) {
+func TestUsersService_GetUser_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
