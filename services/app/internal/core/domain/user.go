@@ -77,7 +77,6 @@ func (u *User) ApplyPatch(patch *UserPatch) error {
 		return core_errors.ErrDifferentVersions
 	}
 
-	tmp.Version++
 	if patch.Name.Set {
 		tmp.Name = *patch.Name.Value
 	}
