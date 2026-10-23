@@ -15,7 +15,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestDeleteUser_InvalidID(t *testing.T) {
+func TestUsersTransportHTTP_DeleteUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   string
@@ -70,7 +70,7 @@ func TestDeleteUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestDeleteUser_Success(t *testing.T) {
+func TestUsersTransportHTTP_DeleteUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -97,7 +97,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	assert.Empty(t, rec.Body.String())
 }
 
-func TestDeleteUser_ServiceError(t *testing.T) {
+func TestUsersTransportHTTP_DeleteUser_ServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -123,7 +123,7 @@ func TestDeleteUser_ServiceError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
 
-func TestDeleteUser_NotFound(t *testing.T) {
+func TestUsersTransportHTTP_DeleteUser_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)

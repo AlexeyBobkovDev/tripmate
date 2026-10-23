@@ -16,7 +16,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestCreateUserHTTP_Success(t *testing.T) {
+func TestUsersTransportHTTP_CreateUser_Success(t *testing.T) {
 	userCreate := testutils.UserCreateTest()
 	userResponse := testUserResponse()
 
@@ -57,7 +57,7 @@ func TestCreateUserHTTP_Success(t *testing.T) {
 	assert.Equal(t, testExpectedUserResponse(), user)
 }
 
-func TestCreateUserHTTP_ServiceError(t *testing.T) {
+func TestUsersTransportHTTP_CreateUser_ServiceError(t *testing.T) {
 	serviceError := core_postgres_pool_errors.ErrViolatedForeignKey
 	userCreate := testutils.UserCreateTest()
 
@@ -99,7 +99,7 @@ func TestCreateUserHTTP_ServiceError(t *testing.T) {
 	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 }
 
-func TestCreateUserHTTP_InvalidJSON(t *testing.T) {
+func TestUsersTransportHTTP_CreateUser_InvalidJSON(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -126,7 +126,7 @@ func TestCreateUserHTTP_InvalidJSON(t *testing.T) {
 	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 }
 
-func TestCreateUserHTTP_ValidationError(t *testing.T) {
+func TestUsersTransportHTTP_CreateUser_ValidationError(t *testing.T) {
 	tests := []struct {
 		name string
 		body string

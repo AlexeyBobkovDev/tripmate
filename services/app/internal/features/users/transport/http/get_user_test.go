@@ -18,7 +18,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestGetUser_InvalidID(t *testing.T) {
+func TestUsersTransportHTTP_GetUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   string
@@ -79,7 +79,7 @@ func TestGetUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestGetUser_Success(t *testing.T) {
+func TestUsersTransportHTTP_GetUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -117,7 +117,7 @@ func TestGetUser_Success(t *testing.T) {
 	assert.Equal(t, testExpectedUserResponse(), body)
 }
 
-func TestGetUser_BadRequestServiceError(t *testing.T) {
+func TestUsersTransportHTTP_GetUser_BadRequestServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -148,7 +148,7 @@ func TestGetUser_BadRequestServiceError(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
 
-func TestGetUser_NotFound(t *testing.T) {
+func TestUsersTransportHTTP_GetUser_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)

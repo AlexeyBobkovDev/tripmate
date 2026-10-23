@@ -19,7 +19,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestPatchUser_InvalidID(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_InvalidID(t *testing.T) {
 	tests := []struct {
 		name string
 		id   string
@@ -75,7 +75,7 @@ func TestPatchUser_InvalidID(t *testing.T) {
 	}
 }
 
-func TestPatchUser_Success(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -113,7 +113,7 @@ func TestPatchUser_Success(t *testing.T) {
 	assert.Equal(t, expectedResponse, actualUser)
 }
 
-func TestPatchUser_ServiceError(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_ServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -143,7 +143,7 @@ func TestPatchUser_ServiceError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, rec.Code)
 }
 
-func TestPatchUser_InvalidJSON(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_InvalidJSON(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -164,7 +164,7 @@ func TestPatchUser_InvalidJSON(t *testing.T) {
 	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 }
 
-func TestPatchUser_ValidationError(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_ValidationError(t *testing.T) {
 	tests := []struct {
 		name string
 		body string
@@ -287,7 +287,7 @@ func TestPatchUser_ValidationError(t *testing.T) {
 	}
 }
 
-func TestPatchUser_Conflict(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_Conflict(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
@@ -321,7 +321,7 @@ func TestPatchUser_Conflict(t *testing.T) {
 	assert.Equal(t, conflictError.Error(), response.Error)
 }
 
-func TestPatchUser_NotFound(t *testing.T) {
+func TestUsersTransportHTTP_PatchUser_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockUsersService := mocks.NewMockUsersService(ctrl)
 	usersTransport := NewUsersHTTPHandler(mockUsersService)
