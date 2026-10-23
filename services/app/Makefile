@@ -95,7 +95,7 @@ postgres-down:
 postgres-cleanup:
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		docker compose down postgres port-forwarder && \
+		docker compose down postgres-port-forwarder && \
 		docker volume rm $(APP_SERVICE_NAME)_pgdata; \
 	fi;
 
