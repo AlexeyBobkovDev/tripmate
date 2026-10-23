@@ -16,7 +16,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestGetUser_Success(t *testing.T) {
+func TestUsersRepository_GetUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRow := mocks.NewMockRow(ctrl)
 	mockPool := mocks.NewMockPool(ctrl)
@@ -72,7 +72,7 @@ func TestGetUser_Success(t *testing.T) {
 	assert.Equal(t, expectedUser, *actualUser)
 }
 
-func TestGetUser_ScanError(t *testing.T) {
+func TestUsersRepository_GetUser_ScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRow := mocks.NewMockRow(ctrl)
 	mockPool := mocks.NewMockPool(ctrl)
@@ -112,7 +112,7 @@ func TestGetUser_ScanError(t *testing.T) {
 	assert.Nil(t, actualUser)
 }
 
-func TestGetUser_UserNotFound(t *testing.T) {
+func TestUsersRepository_GetUser_UserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRow := mocks.NewMockRow(ctrl)
 	mockPool := mocks.NewMockPool(ctrl)

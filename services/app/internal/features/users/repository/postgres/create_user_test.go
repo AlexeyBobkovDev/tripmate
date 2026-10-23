@@ -14,7 +14,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestCreateUserRepository_Success(t *testing.T) {
+func TestUsersRepository_CreateUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
@@ -81,7 +81,7 @@ func TestCreateUserRepository_Success(t *testing.T) {
 	assert.Equal(t, expectedCreatedUser, *actualUser)
 }
 
-func TestCreateUserRepository_ScanError(t *testing.T) {
+func TestUsersRepository_CreateUser_ScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)

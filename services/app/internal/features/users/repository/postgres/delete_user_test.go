@@ -13,7 +13,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
 )
 
-func TestDeleteUser_Success(t *testing.T) {
+func TestUsersRepository_DeleteUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockCommandTag := mocks.NewMockCommandTag(ctrl)
 	mockTx := mocks.NewMockTx(ctrl)
@@ -60,7 +60,7 @@ func TestDeleteUser_Success(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDeleteUser_BeginTxError(t *testing.T) {
+func TestUsersRepository_DeleteUser_BeginTxError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockTx := mocks.NewMockTx(ctrl)
 	mockPool := mocks.NewMockPool(ctrl)
@@ -85,7 +85,7 @@ func TestDeleteUser_BeginTxError(t *testing.T) {
 	require.ErrorIs(t, err, beginTxError)
 }
 
-func TestDeleteUser_ExecError(t *testing.T) {
+func TestUsersRepository_DeleteUser_ExecError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockCommandTag := mocks.NewMockCommandTag(ctrl)
 	mockTx := mocks.NewMockTx(ctrl)
@@ -124,7 +124,7 @@ func TestDeleteUser_ExecError(t *testing.T) {
 	require.ErrorIs(t, err, txExecError)
 }
 
-func TestDeleteUser_CommitError(t *testing.T) {
+func TestUsersRepository_DeleteUser_CommitError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockCommandTag := mocks.NewMockCommandTag(ctrl)
 	mockTx := mocks.NewMockTx(ctrl)
@@ -172,7 +172,7 @@ func TestDeleteUser_CommitError(t *testing.T) {
 	require.ErrorIs(t, err, txCommitError)
 }
 
-func TestDeleteUser_UserNotFound(t *testing.T) {
+func TestUsersRepository_DeleteUser_UserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockCommandTag := mocks.NewMockCommandTag(ctrl)
 	mockTx := mocks.NewMockTx(ctrl)

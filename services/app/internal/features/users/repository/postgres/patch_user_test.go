@@ -16,7 +16,7 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
-func TestPatchUserRepository_Success(t *testing.T) {
+func TestUsersRepository_PatchUser_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
@@ -95,7 +95,7 @@ func TestPatchUserRepository_Success(t *testing.T) {
 	assert.Equal(t, patchUserRequest.DeletedAt, actualUser.DeletedAt)
 }
 
-func TestPatchUserRepository_ScanError(t *testing.T) {
+func TestUsersRepository_PatchUser_ScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
@@ -148,7 +148,7 @@ func TestPatchUserRepository_ScanError(t *testing.T) {
 	require.Nil(t, actualUser)
 }
 
-func TestPatchUserRepository_ExistsCheckScanError(t *testing.T) {
+func TestUsersRepository_PatchUser_ExistsCheckScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
@@ -219,7 +219,7 @@ func TestPatchUserRepository_ExistsCheckScanError(t *testing.T) {
 	require.Nil(t, actualUser)
 }
 
-func TestPatchUserRepository_UserNotFound(t *testing.T) {
+func TestUsersRepository_PatchUser_UserNotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
@@ -293,7 +293,7 @@ func TestPatchUserRepository_UserNotFound(t *testing.T) {
 	require.Nil(t, actualUser)
 }
 
-func TestPatchUserRepository_ErrConflict(t *testing.T) {
+func TestUsersRepository_PatchUser_ErrConflict(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
