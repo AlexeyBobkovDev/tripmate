@@ -212,6 +212,14 @@ func TestUserApplyPatch(t *testing.T) {
 			wantUser: validUser,
 		},
 		{
+			name: "invalid patch version",
+			patch: UserPatch{
+				Version: 0,
+			},
+			wantErr:  core_errors.ErrInvalidUserVersion,
+			wantUser: validUser,
+		},
+		{
 			name: "updates name",
 			patch: UserPatch{
 				Version: 1,
@@ -328,6 +336,26 @@ func TestUserApplyPatch(t *testing.T) {
 				user := validUser
 				user.Version = 1
 				user.PhoneNumber = "+14155552671"
+				return user
+			}(),
+		},
+		{
+			name: "updates birthdate",
+			patch: UserPatch{
+				Version: 1,
+				BirthDate: Nullable[time.Time]{
+					Set: true,
+					Value: func() *time.Time {
+						v := time.Date(2000, time.October, 22, 12, 0o0, 0o0, 0o0, time.Local)
+						return &v
+					}(),
+				},
+			},
+			wantErr: nil,
+			wantUser: func() User {
+				user := validUser
+				user.Version = 1
+				user.BirthDate = time.Date(2000, time.October, 22, 12, 0o0, 0o0, 0o0, time.Local)
 				return user
 			}(),
 		},
