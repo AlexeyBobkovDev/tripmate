@@ -6,6 +6,7 @@ export
 # .NOTPARALLEL
 # .DEFAULT_GOAL := target-name
 
+SHELL := /bin/bash
 export PROJECT_ROOT := $(CURDIR)
 export MIGRATE_DIR := migrations
 export LOGS_DIR := $(PROJECT_ROOT)/out/logs
@@ -94,7 +95,7 @@ postgres-down:
 postgres-cleanup:
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		docker compose down postgres port-forwarder && \
+		docker compose down postgres-port-forwarder && \
 		docker volume rm $(APP_SERVICE_NAME)_pgdata; \
 	fi;
 
@@ -141,7 +142,7 @@ download:
 .PHONY: fmt
 fmt:
 	@goimports -w .; \
-    gofumpt -w .; \
+	gofumpt -w .; \
 	gci write \
 	--custom-order \
 	-s standard \
@@ -160,6 +161,34 @@ lint:
 benchmark:
 	@go test -bench=. -benchmem ./...
 
+.PHONY: test-unit
+test-unit:
+	@if go test -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL UNIT TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** UNIT TESTS FAILED ********************'; \
+	fi
+
+.PHONY: test-integration
+test-integration:
+	@if go test -tags=integration -run 'Integration' -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL INTEGRATION TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** INTEGRATION TESTS FAILED ********************'; \
+	fi
+
+.PHONY: test-e2e
+test-e2e:
+	@if LOGGER_FOLDER=../../../out/logs go test -tags=e2e -run 'E2E' -race -count=1 -v ./tests/e2e/...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL E2E TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** E2E TESTS FAILED ********************'; \
+	fi
+
 .PHONY: test
 test:
-	@go test -v ./...
+	@if LOGGER_FOLDER=../../../out/logs go test -tags="integration e2e" -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** TESTS FAILED ********************'; \
+	fi

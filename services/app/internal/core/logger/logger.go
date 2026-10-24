@@ -2,9 +2,11 @@ package core_logger
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"go.uber.org/zap"
@@ -20,16 +22,26 @@ type Logger struct {
 	file *os.File
 }
 
-func (logger *Logger) Close() {
+func (logger *Logger) Close() error {
 	if logger == nil {
-		return
+		return nil
 	}
 
-	_ = logger.Sync()
+	var (
+		syncErr      error
+		closeFileErr error
+	)
+	if err := logger.Sync(); err != nil {
+		if !errors.Is(err, syscall.EINVAL) {
+			syncErr = err
+		}
+	}
 
 	if logger.file != nil {
-		_ = logger.file.Close()
+		closeFileErr = logger.file.Close()
 	}
+
+	return errors.Join(syncErr, closeFileErr)
 }
 
 func ToContext(ctx context.Context, log *Logger) context.Context {

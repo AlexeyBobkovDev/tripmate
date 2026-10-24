@@ -19,14 +19,13 @@ definitions:
       description:
         example: Some kind of description
         maxLength: 1000
-        minLength: 1
         type: string
       email:
         example: checkemail@gmail.com
         type: string
       name:
         example: Name
-        maxLength: 100
+        maxLength: 50
         minLength: 1
         type: string
       password:
@@ -39,7 +38,7 @@ definitions:
         type: string
       surname:
         example: Surname
-        maxLength: 100
+        maxLength: 50
         minLength: 1
         type: string
       username:
@@ -56,7 +55,9 @@ definitions:
     - surname
     - username
     type: object
-  users_transport_http.CreateUserResponse:
+  users_transport_http.PatchUserRequest:
+    type: object
+  users_transport_http.UserResponse:
     properties:
       birth_date:
         example: "2006-01-02"
@@ -91,6 +92,9 @@ definitions:
       username:
         example: Username
         type: string
+      version:
+        example: 5
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -107,10 +111,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: This endpoint creates a user
+      description: Creates a new user
       operationId: create-user
       parameters:
-      - description: The data which this endpoint will use to create user
+      - description: User data
         in: body
         name: request
         required: true
@@ -122,9 +126,13 @@ paths:
         "201":
           description: Created user
           schema:
-            $ref: '#/definitions/users_transport_http.CreateUserResponse'
+            $ref: '#/definitions/users_transport_http.UserResponse'
         "400":
           description: Invalid user data
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/core_http_response.ErrorResponse'
         "500":
@@ -132,6 +140,111 @@ paths:
           schema:
             $ref: '#/definitions/core_http_response.ErrorResponse'
       summary: Create User
+      tags:
+      - users
+  /users/{userID}:
+    delete:
+      description: Deletes a user
+      operationId: delete-user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Deleted user
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Delete User
+      tags:
+      - users
+    get:
+      description: Gets a user
+      operationId: get-user
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved user
+          schema:
+            $ref: '#/definitions/users_transport_http.UserResponse'
+        "400":
+          description: Invalid user ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Get User
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Partially updates a user by ID
+        If a field is not sent, the field won't be changed
+        If a field is sent with the value of null, the field will be changed to null
+        If a field is sent with an ordinary value, the field will be changed to this value
+        If Birthdate is set as null, ErrBadRequest(400 status code) is returned
+      operationId: patch-user
+      parameters:
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/users_transport_http.PatchUserRequest'
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Patched user
+          schema:
+            $ref: '#/definitions/users_transport_http.UserResponse'
+        "400":
+          description: Invalid user data
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Patch User
       tags:
       - users
 produces:

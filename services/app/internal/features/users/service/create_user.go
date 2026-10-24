@@ -9,18 +9,25 @@ import (
 
 func (s *UsersService) CreateUser(
 	ctx context.Context,
-	user *domain.User,
-	passwordToHash []byte,
+	user *domain.UserCreate,
+	passwordToHash string,
 ) (*domain.User, error) {
+	if err := user.Validate(); err != nil {
+		return nil, err
+	}
+	if err := domain.ValidatePassword(passwordToHash); err != nil {
+		return nil, err
+	}
+
+	password, err := s.passwordHasher.Hash(passwordToHash)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+	user.PasswordHash = password
+
 	userResponse, err := s.usersRepository.CreateUser(ctx, user)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
-
-	_, err = s.passwordHasher.CreatePassword(ctx, userResponse.ID, passwordToHash)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate password: %w", err)
-	}
-
 	return userResponse, nil
 }
