@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
 die() {
-	echo "$1" >&2
+	printf '%s\n' "$*" >&2
 	exit 1
 }

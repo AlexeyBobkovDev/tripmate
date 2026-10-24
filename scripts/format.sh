@@ -1,30 +1,36 @@
 #!/usr/bin/env bash
 
-GO_FILES=$(printf "%s\n" "$@" | grep -E '\.go$' || true)
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/die.sh
+. "$SCRIPT_DIR/lib/die.sh"
 
-if [ -n "$GO_FILES" ]; then
-    FILES="$GO_FILES"
+GO_FILES=()
+for file in "$@"; do
+	[[ "$file" == *.go ]] && GO_FILES+=("$file")
+done
+
+if (( ${#GO_FILES[@]} > 0 )); then
+    FILES=("${GO_FILES[@]}")
 else
-    FILES=$(find services -type f -name '*.go')
+    mapfile -d '' -t FILES < <(find services -type f -name '*.go')
 fi
 
-for file in $FILES; do
+for file in "${FILES[@]}"; do
     service=$(echo "$file" | cut -d/ -f1-2)
     [ -d "$service" ] || continue
 
     (
-        cd "$service" || dye "can not cd to service=$service"
+        cd "$service" || die "can not cd to service=$service"
 
         rel="${file#"$service"/}"
 
-        goimports -w "$rel"
-        gofumpt -w "$rel"
+        goimports -w "$rel" || exit 1
+        gofumpt -w "$rel" || exit 1
         gci write \
 			--custom-order \
 			-s standard \
 			-s default \
 			-s "prefix(github.com/AlexeyBobkovDev/tripmate)" \
-			"$rel"
-
-    )
+			"$rel" || exit 1
+    ) || exit 1
 done

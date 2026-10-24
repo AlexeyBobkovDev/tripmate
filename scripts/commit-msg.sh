@@ -26,9 +26,8 @@ readonly JIRA_TICKET="${BASH_REMATCH[0]}"
 
 COMMIT_HEADER_AND_BODY_SEPARATOR="$(tail -n +2 <(echo "$COMMIT_MSG") | head -n1)"
 readonly COMMIT_HEADER_AND_BODY_SEPARATOR
-body="$(tail -n +3 <(echo "$COMMIT_MSG"))"
 
-if [[ -n "$body" && -n "$COMMIT_HEADER_AND_BODY_SEPARATOR" ]]; then
+if [[ -n "$COMMIT_HEADER_AND_BODY_SEPARATOR" ]]; then
 	die "Invalid commit format. Proper commit format:
 ==================================
 feat(TODO-123, scope): brief explanation
@@ -41,7 +40,7 @@ feat(TODO-123, scope): brief explanation
 =================================="
 fi
 
-readonly COMMIT_HEADER_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\(${JIRA_TICKET}, .{,40}\): .{1,50}$"
+readonly COMMIT_HEADER_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\(${JIRA_TICKET}, .{1,40}\): .{1,50}$"
 COMMIT_HEADER="$(head -n1 <(echo "$COMMIT_MSG"))"
 readonly COMMIT_HEADER
 [[ "$COMMIT_HEADER" =~ $COMMIT_HEADER_REGEX ]] || die "Invalid commit header format. Should be like:
