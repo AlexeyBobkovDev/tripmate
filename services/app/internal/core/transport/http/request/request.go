@@ -16,6 +16,25 @@ type validatable interface {
 
 var requestValidator = validator.New(validator.WithRequiredStructEnabled())
 
+func Validate(obj any) error {
+	errInvalidArgument := fmt.Errorf(
+		"request validation: %v: %w",
+		obj,
+		core_errors.ErrInvalidArgument,
+	)
+	if err := requestValidator.Struct(obj); err != nil {
+		return errInvalidArgument
+	}
+
+	if v, ok := obj.(validatable); ok {
+		if err := v.Validate(); err != nil {
+			return errInvalidArgument
+		}
+	}
+
+	return nil
+}
+
 func DecodeAndValidate(req *http.Request, dest any) error {
 	if err := json.NewDecoder(req.Body).Decode(dest); err != nil {
 		return fmt.Errorf(
@@ -25,22 +44,5 @@ func DecodeAndValidate(req *http.Request, dest any) error {
 		)
 	}
 
-	var err error
-
-	v, ok := dest.(validatable)
-	if ok {
-		err = v.Validate()
-	} else {
-		err = requestValidator.Struct(dest)
-	}
-
-	if err != nil {
-		return fmt.Errorf(
-			"request validation: %v: %w",
-			dest,
-			core_errors.ErrInvalidArgument,
-		)
-	}
-
-	return nil
+	return Validate(dest)
 }

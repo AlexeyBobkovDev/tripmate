@@ -1,6 +1,8 @@
 package core_logger
 
-import "github.com/kelseyhightower/envconfig"
+import (
+	"github.com/kelseyhightower/envconfig"
+)
 
 type Config struct {
 	Level  string `envconfig:"LEVEL" default:"DEBUG"`

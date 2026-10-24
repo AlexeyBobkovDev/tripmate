@@ -1,7 +1,6 @@
 package core_middleware
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"sync"
@@ -54,7 +53,6 @@ func slidingWindowCounterAlgorithm(
 		weight = 0
 	}
 
-	fmt.Println("Requests since last 10s", float64(curWindow.reqAmount)+float64(prevWindow.reqAmount)*weight)
 	return float64(curWindow.reqAmount) + float64(prevWindow.reqAmount)*weight
 }
 
@@ -74,14 +72,11 @@ func (l *RateLimiter) IsAllowed() bool {
 
 func (l *RateLimiter) Add() {
 	l.curWindow.reqAmount++
-	fmt.Println("l.curWindow.reqAmount after increasing", l.curWindow.reqAmount)
 }
 
 func (l *RateLimiter) Reset() {
 	l.prevWindow = l.curWindow
 	l.curWindow = NewWindow(l.WindowSize)
-	fmt.Printf("prev: %+v\n", *l.prevWindow)
-	fmt.Printf("cur:  %+v\n", *l.curWindow)
 }
 
 type RateLimiterStore struct {
@@ -148,7 +143,6 @@ func RateLimiterMiddleware(
 	maxReqAmount int,
 	windowSize time.Duration,
 ) Middleware {
-	fmt.Println(maxReqAmount, windowSize)
 	rateLimiterStore := NewRateLimiterStore(
 		maxReqAmount,
 		windowSize,

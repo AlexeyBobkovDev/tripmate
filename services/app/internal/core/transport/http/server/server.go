@@ -2,7 +2,11 @@ package core_server
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"go.uber.org/zap"
@@ -19,18 +23,26 @@ type HTTPServer struct {
 	Middlewares []core_middleware.Middleware
 }
 
-func (s *HTTPServer) Run(ctx context.Context) {
-	mux := core_middleware.ChainMiddleware(s.mux, s.Middlewares...)
+func (s *HTTPServer) Handler() http.Handler {
+	return core_middleware.ChainMiddleware(
+		s.mux,
+		s.Middlewares...,
+	)
+}
 
-	server := http.Server{
+func (s *HTTPServer) Run(ctx context.Context) error {
+	server := &http.Server{
 		Addr:    s.config.Addr,
-		Handler: mux,
+		Handler: s.Handler(),
 	}
 
 	errCh := make(chan error, 1)
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		s.logger.Debug("start HTTP server", zap.String("addr", s.config.Addr))
-		if err := server.ListenAndServe(); err != nil {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			s.logger.Debug("failed to start HTTP server", zap.Error(err))
 			errCh <- err
 		}
@@ -38,13 +50,32 @@ func (s *HTTPServer) Run(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
-		if err := server.Shutdown(ctx); err != nil {
-			s.logger.Fatal("failed to shutdown server", zap.Error(err))
+		shutDownCtx, shutDownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutDownCancel()
+
+		if errShutdown := server.Shutdown(shutDownCtx); errShutdown != nil {
+			errClose := server.Close()
+
+			wg.Wait()
+
+			if errClose != nil {
+				combinedError := errors.Join(errShutdown, errClose)
+				s.logger.Error("force shutdown failed", zap.Error(combinedError))
+				return fmt.Errorf("force shutdown failed: %w", combinedError)
+			}
+
+			s.logger.Error("graceful shutdown failed", zap.Error(errShutdown))
+			return fmt.Errorf("graceful shutdown failed: %w", errShutdown)
 		}
+		wg.Wait()
 		s.logger.Debug("server stopped correctly")
 	case err := <-errCh:
-		s.logger.Fatal("failed to start server", zap.Error(err))
+		wg.Wait()
+		s.logger.Error("HTTP server stopped unexpectedly", zap.Error(err))
+		return fmt.Errorf("HTTP server stopped unexpectedly: %w", err)
 	}
+
+	return nil
 }
 
 func (s *HTTPServer) RegisterRouters(routers ...*APIRouter) {
