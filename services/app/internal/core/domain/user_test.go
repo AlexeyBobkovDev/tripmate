@@ -346,7 +346,7 @@ func TestUserApplyPatch(t *testing.T) {
 				BirthDate: Nullable[time.Time]{
 					Set: true,
 					Value: func() *time.Time {
-						v := time.Date(2000, time.October, 22, 12, 0o0, 0o0, 0o0, time.Local)
+						v := time.Date(2000, time.October, 22, 12, 0, 0, 0, time.UTC)
 						return &v
 					}(),
 				},
@@ -355,7 +355,7 @@ func TestUserApplyPatch(t *testing.T) {
 			wantUser: func() User {
 				user := validUser
 				user.Version = 1
-				user.BirthDate = time.Date(2000, time.October, 22, 12, 0o0, 0o0, 0o0, time.Local)
+				user.BirthDate = time.Date(2000, time.October, 22, 12, 0, 0, 0, time.UTC)
 				return user
 			}(),
 		},
