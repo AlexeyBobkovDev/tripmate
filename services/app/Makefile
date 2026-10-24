@@ -161,19 +161,34 @@ lint:
 benchmark:
 	@go test -bench=. -benchmem ./...
 
-
 .PHONY: test-unit
 test-unit:
-	@go test -race -count=1 -v ./...
+	@if go test -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL UNIT TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** UNIT TESTS FAILED ********************'; \
+	fi
 
 .PHONY: test-integration
 test-integration:
-	@go test -tags=integration -run 'Integration' -race -count=1 -v ./...
+	@if go test -tags=integration -run 'Integration' -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL INTEGRATION TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** INTEGRATION TESTS FAILED ********************'; \
+	fi
 
 .PHONY: test-e2e
 test-e2e:
-	@LOGGER_FOLDER=../../../out/logs go test -tags=e2e -run 'E2E' -race -count=1 -v ./tests/e2e/...
+	@if LOGGER_FOLDER=../../../out/logs go test -tags=e2e -run 'E2E' -race -count=1 -v ./tests/e2e/...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL E2E TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** E2E TESTS FAILED ********************'; \
+	fi
 
 .PHONY: test
 test:
-	@LOGGER_FOLDER=../../../out/logs go test -tags="integration e2e" -race -count=1 -v ./...
+	@if LOGGER_FOLDER=../../../out/logs go test -tags="integration e2e" -race -count=1 -v ./...; then \
+		printf '\n\033[32m%s\033[0m\n' '******************** ALL TESTS PASSED ********************' ; \
+	else \
+		printf '\n\033[31m%s\033[0m\n' '******************** TESTS FAILED ********************'; \
+	fi
