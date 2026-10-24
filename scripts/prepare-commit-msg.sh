@@ -16,8 +16,8 @@ readonly BRANCH
 [[ -z "$BRANCH" ]] && die "Detached HEAD is not supported"
 readonly COMMIT_MSG_FILE=$1
 readonly COMMIT_SOURCE=${2:-}
-readonly COMMIT_TYPE="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\("
 readonly JIRA_TICKET_REGEX="([A-Z]+-[0-9]+)"
+readonly COMMIT_TYPE="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\("
 
 COMMIT_MSG="$(sed "/^#/d" "$COMMIT_MSG_FILE")"
 [[ "$COMMIT_MSG" =~ $COMMIT_TYPE ]] && exit 0
@@ -42,7 +42,7 @@ while IFS= read -r file; do
 	service_names["$service"]=1
 done < <(git diff --cached --name-only)
 
-if (( "${#service_names[@]}" != 1 )); then
+if (( ${#service_names[@]} != 1 )); then
 	die "You have to split your commits into small chunks!"
 fi
 
@@ -52,4 +52,4 @@ done
 
 OUTPUT="feat(${JIRA_TICKET}, ${SERVICE_NAME}): $COMMIT_MSG"
 
-echo "$OUTPUT" >"$COMMIT_MSG_FILE"
+printf '%s\n' "$OUTPUT" > "$COMMIT_MSG_FILE"

@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
 
-GO_FILES=$(printf "%s\n" "$@" | grep -E '\.go$' || true)
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/die.sh
+. "$SCRIPT_DIR/lib/die.sh"
 
-if [ -n "$GO_FILES" ]; then
-	FILES="$GO_FILES"
+GO_FILES=()
+
+if (( "$#" == 0 )); then
+	mapfile -d '' -t GO_FILES < <(find services -type f -name '*.go' -print0)
 else
-	FILES=$(find services -type f -name '*.go')
+	for file in "$@"; do
+		[[ "$file" == *.go ]] && GO_FILES+=("$file")
+	done
 fi
 
-for file in $FILES; do
+declare -A SERVICES
+for file in "${GO_FILES[@]}"; do
 	service=$(echo "$file" | cut -d/ -f1-2)
+	[ -d "$service" ] || continue
+	SERVICES["$service"]=true
+done
+
+for service in "${!SERVICES[@]}"; do
 	[ -d "$service" ] || continue
 
 	(
-		cd "$service" || dye "can not cd to service=$service"
+		cd "$service" || die "can not cd to service=$service"
+		go test ./... || exit 1
 
-		go test ./...
-		if [ "${TEST_INTEGRATION:-0}" -eq 1 ]; then
-			go test -tags=integration ./...
-		fi
-	)
+		LOGGER_FOLDER=../../../out/logs go test -tags=integration,e2e -race -count=1 -v ./... || exit 1
+	) || exit 1
 done
