@@ -60,7 +60,10 @@ func (r *UsersRepository) GetUser(
 			return nil, fmt.Errorf(
 				"get userID %d: %w",
 				userID,
-				errors.Join(err, core_errors.ErrNotFound),
+				core_errors.NewError(
+					errors.Join(err, core_errors.ErrNotFound),
+					core_errors.CategoryNotFound,
+				),
 			)
 		}
 		return nil, fmt.Errorf("get user: %w", err)
