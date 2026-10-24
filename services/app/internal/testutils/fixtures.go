@@ -11,7 +11,7 @@ import (
 
 func BirthDateTest() time.Time {
 	return time.Date(
-		2010, 0o6, 9,
+		2010, 6, 9,
 		0, 0, 0, 0,
 		time.UTC,
 	)
@@ -20,7 +20,7 @@ func BirthDateTest() time.Time {
 func CreatedAtTest() time.Time {
 	return time.Date(
 		2026, 9, 9,
-		17, 0o0, 45, 0,
+		17, 0, 45, 0,
 		time.UTC,
 	)
 }
