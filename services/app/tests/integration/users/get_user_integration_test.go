@@ -57,7 +57,7 @@ func TestUsersService_GetUser_Integration_Success(t *testing.T) {
 	assert.Equal(t, createdUser.DeletedAt, retrievedUser.DeletedAt)
 }
 
-func TestUsersService_GetUser_Integration_UserNotFound(t *testing.T) {
+func TestUsersService_GetUser_Integration_InvalidUserID(t *testing.T) {
 	checkIfDatabaseIsDirty(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

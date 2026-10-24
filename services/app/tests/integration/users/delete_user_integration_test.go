@@ -42,7 +42,7 @@ func TestUsersService_DeleteUser_Integration_Success(t *testing.T) {
 	assert.False(t, deletedAt.IsZero())
 }
 
-func TestUsersService_DeleteUser_Integration_UserNotFound(t *testing.T) {
+func TestUsersService_DeleteUser_Integration_InvalidUserID(t *testing.T) {
 	checkIfDatabaseIsDirty(t)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
