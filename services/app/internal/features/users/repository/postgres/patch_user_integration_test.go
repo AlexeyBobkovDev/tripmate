@@ -15,6 +15,8 @@ import (
 )
 
 func TestUsersRepository_PatchUser_Integration_Success(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
 
 	userPatch := testutils.UserPatchTest()
@@ -50,6 +52,8 @@ func TestUsersRepository_PatchUser_Integration_Success(t *testing.T) {
 }
 
 func TestUsersRepository_PatchUser_Integration_Conflict_MismatchingUserVersions(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
 
 	userPatch := testutils.UserPatchTest()
@@ -86,6 +90,8 @@ func TestUsersRepository_PatchUser_Integration_Conflict_MismatchingUserVersions(
 }
 
 func TestUsersRepository_PatchUser_Integration_NotFound_InvalidUserID(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
 
 	userToPatch := domain.User{}
@@ -96,6 +102,8 @@ func TestUsersRepository_PatchUser_Integration_NotFound_InvalidUserID(t *testing
 }
 
 func TestUsersRepository_PatchUser_Integration_NotFound_AlreadyDeletedUser(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
 
 	userPatch := testutils.UserPatchTest()

@@ -15,6 +15,8 @@ import (
 )
 
 func TestUsersRepository_CreateUser_Integration_Success(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
@@ -48,6 +50,8 @@ func TestUsersRepository_CreateUser_Integration_Success(t *testing.T) {
 }
 
 func TestUsersRepository_CreateUser_Integration_UserAlreadyExists_ConflictError(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	usersRepository := NewUsersRepository(poolForIntegrationTesting)
