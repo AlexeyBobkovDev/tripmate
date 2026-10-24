@@ -187,7 +187,7 @@ test-e2e:
 
 .PHONY: test
 test:
-	@if LOGGER_FOLDER=../../../out/logs go test -tags="integration e2e" -race -count=1 -v ./...; then \
+	@if LOGGER_FOLDER=../../../out/logs go test -tags=integration,e2e -race -count=1 -v ./...; then \
 		printf '\n\033[32m%s\033[0m\n' '******************** ALL TESTS PASSED ********************' ; \
 	else \
 		printf '\n\033[31m%s\033[0m\n' '******************** TESTS FAILED ********************'; \
