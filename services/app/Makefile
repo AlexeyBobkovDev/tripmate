@@ -172,7 +172,7 @@ test-integration:
 
 .PHONY: test-e2e
 test-e2e:
-	@go test -tags=integration -race -count=1 -v ./...
+	@go test -tags=e2e -race -count=1 -v ./tests/e2e
 
 .PHONY: test
 test:
