@@ -19,8 +19,12 @@ type HTTPServer struct {
 	Middlewares []core_middleware.Middleware
 }
 
-func (s *HTTPServer) Run(ctx context.Context) {
-	mux := core_middleware.ChainMiddleware(s.mux, s.Middlewares...)
+func (s *HTTPServer) Handler() http.Handler {
+	return core_middleware.ChainMiddleware(
+		s.mux,
+		s.Middlewares...,
+	)
+}
 
 	server := http.Server{
 		Addr:    s.config.Addr,
