@@ -36,6 +36,10 @@ func NewAPIRouter(
 
 func (r *APIRouter) RegisterRoutes(routes ...*Route) {
 	for _, route := range routes {
+		if route == nil || route.Handler == nil {
+			panic("cannot register a new route or handler")
+		}
+
 		path := fmt.Sprintf("%s %s", route.Method, route.Path)
 		// TODO: implement middleware logic
 		r.mux.HandleFunc(
