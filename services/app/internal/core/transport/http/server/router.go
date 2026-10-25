@@ -41,10 +41,14 @@ func (r *APIRouter) RegisterRoutes(routes ...*Route) {
 		}
 
 		path := fmt.Sprintf("%s %s", route.Method, route.Path)
-		// TODO: implement middleware logic
-		r.mux.HandleFunc(
+
+		handler := core_middleware.ChainMiddleware(
+			http.HandlerFunc(route.Handler),
+			r.Middlewares...,
+		)
+		r.mux.Handle(
 			path,
-			route.Handler,
+			handler,
 		)
 	}
 }
