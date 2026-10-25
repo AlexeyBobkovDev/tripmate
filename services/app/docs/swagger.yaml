@@ -29,7 +29,7 @@ definitions:
         minLength: 1
         type: string
       password:
-        example: some-random-password
+        example: some-random-ROBUST-password-1234!!!
         maxLength: 100
         minLength: 8
         type: string
@@ -56,6 +56,32 @@ definitions:
     - username
     type: object
   users_transport_http.PatchUserRequest:
+    properties:
+      birth_date:
+        example: "2006-01-02"
+        type: string
+      description:
+        example: Some kind of description
+        type: string
+      email:
+        example: checkemail@gmail.com
+        type: string
+      name:
+        example: Name
+        type: string
+      phone_number:
+        example: "+79990746978"
+        type: string
+      surname:
+        example: Surname
+        type: string
+      username:
+        example: Username
+        type: string
+      version:
+        example: 1
+        minimum: 1
+        type: integer
     type: object
   users_transport_http.UserResponse:
     properties:
