@@ -18,14 +18,14 @@ import (
 )
 
 type PatchUserRequest struct {
-	Version     int                              `json:"version"        validate:"min=1"                                                   example:"1"`
-	Name        core_http_types.Nullable[string] `json:"name"                                                     swaggertype:"string"     example:"Name"`
-	Surname     core_http_types.Nullable[string] `json:"surname"                                                  swaggertype:"string"     example:"Surname"`
-	Username    core_http_types.Nullable[string] `json:"username"                                                 swaggertype:"string"     example:"Username"`
-	Description core_http_types.Nullable[string] `json:"description"                                              swaggertype:"string"     example:"Some kind of description"`
-	BirthDate   core_http_types.Nullable[string] `json:"birth_date"                                               swaggertype:"string"     example:"2006-01-02"`
-	Email       core_http_types.Nullable[string] `json:"email"                                                    swaggertype:"string"     example:"checkemail@gmail.com"`
-	PhoneNumber core_http_types.Nullable[string] `json:"phone_number"                                             swaggertype:"string"     example:"+79990746978"`
+	Version     int                              `json:"version"        validate:"min=1"                           example:"1"`
+	Name        core_http_types.Nullable[string] `json:"name"                             swaggertype:"string"     example:"Name"`
+	Surname     core_http_types.Nullable[string] `json:"surname"                          swaggertype:"string"     example:"Surname"`
+	Username    core_http_types.Nullable[string] `json:"username"                         swaggertype:"string"     example:"Username"`
+	Description core_http_types.Nullable[string] `json:"description"                      swaggertype:"string"     example:"Some kind of description"`
+	BirthDate   core_http_types.Nullable[string] `json:"birth_date"                       swaggertype:"string"     example:"2006-01-02"`
+	Email       core_http_types.Nullable[string] `json:"email"                            swaggertype:"string"     example:"checkemail@gmail.com"`
+	PhoneNumber core_http_types.Nullable[string] `json:"phone_number"                     swaggertype:"string"     example:"+79990746978"`
 }
 
 func (request *PatchUserRequest) Validate() error {
