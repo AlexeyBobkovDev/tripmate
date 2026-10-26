@@ -28,6 +28,12 @@ for service in "${!SERVICES[@]}"; do
 		cd "$service" || die "can not cd to service=$service"
 		go test ./... || exit 1
 
-		LOGGER_FOLDER=../../../out/logs go test -tags=integration,e2e -race -count=1 -v ./... || exit 1
+		if [ "${TEST_INTEGRATION:-0}" == 1 ]; then
+			LOGGER_FOLDER=../../../out/logs go test -tags=integration -race -count=1 -v ./... || exit 1
+		fi
+		if [ "${TEST_E2E:-0}" == 1 ]; then
+			LOGGER_FOLDER=../../../out/logs go test -tags=e2e -race -count=1 -v ./... || exit 1
+		fi
+
 	) || exit 1
 done

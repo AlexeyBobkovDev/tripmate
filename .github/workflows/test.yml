@@ -31,7 +31,7 @@ jobs:
           cache: true
 
       - name: Test code
-        run: go test ./...
+        run: echo pwd $(pwd); LOGGER_FOLDER=../../../out/logs go test -tags=integration,e2e -race -count=1 -v ./... || exit 1
         working-directory: ${{ matrix.service }}
 
   test-vulnerabilities:
