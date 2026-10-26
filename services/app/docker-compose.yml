@@ -5,6 +5,7 @@ services:
       dockerfile: ./cmd/app/Dockerfile
     container_name: app
     env_file: .env
+    user: "${APP_UID:?APP_UID is not set up}:${APP_GID:?APP_GID is not set up}"
     environment:
       - LOGGER_FOLDER=/app/out/logs
     volumes:
@@ -16,7 +17,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:5050/healthcheck"]
+      test: ["CMD", "curl -fsS http://localhost:${APP_PORT}/healthcheck"]
       interval: 5s
       retries: 5
       timeout: 5s

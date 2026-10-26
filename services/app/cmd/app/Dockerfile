@@ -15,6 +15,18 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 FROM golang:1.27.3-alpine
 WORKDIR /app
-COPY --from=builder /app/cmd/app/exe /app/
+
+RUN addgroup -S -g 10001 app && \
+    adduser -S \
+            -u 10001 \
+            -G app \
+            -H \
+            -s /sbin/nologin app \
+            app
+
+COPY --from=builder --chown=10001:10001 /app/cmd/app/exe /app/
+
+USER 10001:10001
+
 ENV PROJECT_ROOT=/app
 ENTRYPOINT ["/app/exe"]

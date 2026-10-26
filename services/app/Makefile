@@ -11,6 +11,8 @@ export PROJECT_ROOT := $(CURDIR)
 export MIGRATE_DIR := migrations
 export LOGS_DIR := $(PROJECT_ROOT)/out/logs
 export APP_SERVICE_NAME := app
+export APP_UID := $(shell id -u)
+export APP_GID := $(shell id -g)
 
 
 # ===========================App===========================
