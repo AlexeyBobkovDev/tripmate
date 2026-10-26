@@ -80,8 +80,14 @@ func (s *HTTPServer) Run(ctx context.Context) error {
 
 func (s *HTTPServer) RegisterRouters(routers ...*APIRouter) {
 	for _, router := range routers {
+		if router == nil || router.mux == nil {
+			panic("cannot register nil router or mux")
+		}
+
 		path := "/api/" + router.APIVersion.ToString()
+
 		routerMux := core_middleware.ChainMiddleware(router.mux, router.Middlewares...)
+
 		s.mux.Handle(
 			path+"/",
 			http.StripPrefix(path, routerMux),

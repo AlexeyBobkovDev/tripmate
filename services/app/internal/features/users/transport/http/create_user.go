@@ -20,7 +20,7 @@ type CreateUserRequest struct {
 	BirthDate   string `json:"birth_date"     validate:"required,datetime=2006-01-02"         example:"2006-01-02"`
 	Email       string `json:"email"          validate:"required,email"                       example:"checkemail@gmail.com"`
 	PhoneNumber string `json:"phone_number"   validate:"required,e164"                        example:"+79990746978"`
-	Password    string `json:"password"       validate:"required,min=8,max=100"               example:"some-random-password"`
+	Password    string `json:"password"       validate:"required,min=8,max=100"               example:"some-random-ROBUST-password-1234!!!"`
 }
 
 func (request *CreateUserRequest) Validate() error {
