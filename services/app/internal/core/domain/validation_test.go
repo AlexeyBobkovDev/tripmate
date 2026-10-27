@@ -313,7 +313,7 @@ func TestValidateCreatedAt(t *testing.T) {
 	require.NoError(t, validateCreatedAt(now.Add(-time.Second)))
 	require.NoError(t, validateCreatedAt(now))
 	require.ErrorIs(t, validateCreatedAt(now.Add(time.Second)), core_errors.ErrInvalidCreatedAt)
-	require.NoError(t, validateCreatedAt(time.Time{}))
+	require.ErrorIs(t, validateCreatedAt(time.Time{}), core_errors.ErrInvalidCreatedAt)
 }
 
 func TestValidateUpdatedAt(t *testing.T) {
@@ -321,7 +321,7 @@ func TestValidateUpdatedAt(t *testing.T) {
 	require.NoError(t, validateUpdatedAt(now.Add(-time.Second)))
 	require.NoError(t, validateUpdatedAt(now))
 	require.ErrorIs(t, validateUpdatedAt(now.Add(time.Second)), core_errors.ErrInvalidUpdatedAt)
-	require.NoError(t, validateUpdatedAt(time.Time{}))
+	require.ErrorIs(t, validateCreatedAt(time.Time{}), core_errors.ErrInvalidUpdatedAt)
 }
 
 func TestValidateDeletedAt(t *testing.T) {
