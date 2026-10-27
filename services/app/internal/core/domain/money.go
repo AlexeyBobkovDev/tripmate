@@ -3,8 +3,8 @@ package domain
 import core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 
 type Money struct {
-	AmountMinorUnits int64
-	Currency         string
+	AmountMinorUnits int64  `json:"amount_minor_units"    example:"1500000"`
+	Currency         string `json:"currency"              example:"RUB"`
 }
 
 func (m *Money) Validate() error {

@@ -8,9 +8,9 @@ import (
 )
 
 type Location struct {
-	Name      string
-	Latitude  float64
-	Longitude float64
+	Name      string  `json:"name"       example:"Red Square"`
+	Latitude  float64 `json:"latitude"   example:"55.753900"`
+	Longitude float64 `json:"longitude"  example:"37.620800"`
 }
 
 func (l *Location) Validate() error {
