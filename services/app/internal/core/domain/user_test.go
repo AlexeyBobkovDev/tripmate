@@ -45,14 +45,14 @@ func TestUserValidate(t *testing.T) {
 			mutate: func(u *User) {
 				u.ID = 0
 			},
-			wantErr: core_errors.ErrInvalidUserID,
+			wantErr: core_errors.ErrInvalidID,
 		},
 		{
 			name: "invalid version",
 			mutate: func(u *User) {
 				u.Version = 0
 			},
-			wantErr: core_errors.ErrInvalidUserVersion,
+			wantErr: core_errors.ErrInvalidVersion,
 		},
 		{
 			name: "invalid name",
@@ -108,14 +108,14 @@ func TestUserValidate(t *testing.T) {
 			mutate: func(u *User) {
 				u.CreatedAt = now.Add(time.Hour)
 			},
-			wantErr: core_errors.ErrInvalidUserCreatedAt,
+			wantErr: core_errors.ErrInvalidCreatedAt,
 		},
 		{
 			name: "updated at in the future",
 			mutate: func(u *User) {
 				u.UpdatedAt = now.Add(time.Hour)
 			},
-			wantErr: core_errors.ErrInvalidUserUpdatedAt,
+			wantErr: core_errors.ErrInvalidUpdatedAt,
 		},
 		{
 			name: "deleted at in the future",
@@ -123,21 +123,21 @@ func TestUserValidate(t *testing.T) {
 				deletedAt := now.Add(time.Hour)
 				u.DeletedAt = &deletedAt
 			},
-			wantErr: core_errors.ErrInvalidUserDeletedAt,
+			wantErr: core_errors.ErrInvalidDeletedAt,
 		},
 		{
 			name: "created before birth date",
 			mutate: func(u *User) {
 				u.CreatedAt = u.BirthDate
 			},
-			wantErr: core_errors.ErrInvalidUserCreatedAt,
+			wantErr: core_errors.ErrInvalidCreatedAt,
 		},
 		{
 			name: "updated before created",
 			mutate: func(u *User) {
 				u.UpdatedAt = u.CreatedAt.Add(-time.Second)
 			},
-			wantErr: core_errors.ErrInvalidUserUpdatedAt,
+			wantErr: core_errors.ErrInvalidUpdatedAt,
 		},
 		{
 			name: "deleted before updated",
@@ -145,7 +145,7 @@ func TestUserValidate(t *testing.T) {
 				deletedAt := u.UpdatedAt.Add(-time.Second)
 				u.DeletedAt = &deletedAt
 			},
-			wantErr: core_errors.ErrInvalidUserDeletedAt,
+			wantErr: core_errors.ErrInvalidDeletedAt,
 		},
 	}
 
@@ -216,7 +216,7 @@ func TestUserApplyPatch(t *testing.T) {
 			patch: UserPatch{
 				Version: 0,
 			},
-			wantErr:  core_errors.ErrInvalidUserVersion,
+			wantErr:  core_errors.ErrInvalidVersion,
 			wantUser: validUser,
 		},
 		{
@@ -483,11 +483,11 @@ func TestUserApplyPatchInvalidResultDoesNotMutateUser(t *testing.T) {
 
 	err := user.ApplyPatch(&patch)
 
-	if !errors.Is(err, core_errors.ErrInvalidUserCreatedAt) {
+	if !errors.Is(err, core_errors.ErrInvalidCreatedAt) {
 		t.Fatalf(
 			"ApplyPatch() = %v, want %v",
 			err,
-			core_errors.ErrInvalidUserCreatedAt,
+			core_errors.ErrInvalidCreatedAt,
 		)
 	}
 
