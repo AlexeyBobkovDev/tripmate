@@ -3,8 +3,15 @@ package core_errors
 import "errors"
 
 var (
-	ErrInvalidUserID          = NewError(errors.New("invalid user id"), CategoryBadRequest)
-	ErrInvalidUserVersion     = NewError(errors.New("invalid user version"), CategoryBadRequest)
+	ErrInvalidID         = NewError(errors.New("invalid id"), CategoryBadRequest)
+	ErrInvalidVersion    = NewError(errors.New("invalid version"), CategoryBadRequest)
+	ErrDifferentVersions = NewError(errors.New("invalid patch version"), CategoryBadRequest)
+	ErrInvalidCreatedAt  = NewError(errors.New("invalid createdAt"), CategoryBadRequest)
+	ErrInvalidUpdatedAt  = NewError(errors.New("invalid updatedAt"), CategoryBadRequest)
+	ErrInvalidDeletedAt  = NewError(errors.New("invalid DeletedAt"), CategoryBadRequest)
+)
+
+var (
 	ErrInvalidUserName        = NewError(errors.New("invalid user name"), CategoryBadRequest)
 	ErrInvalidUserSurname     = NewError(errors.New("invalid user surname"), CategoryBadRequest)
 	ErrInvalidUserUsername    = NewError(errors.New("invalid user username"), CategoryBadRequest)
@@ -13,8 +20,20 @@ var (
 	ErrInvalidUserEmail       = NewError(errors.New("invalid user email"), CategoryBadRequest)
 	ErrInvalidUserPhoneNumber = NewError(errors.New("invalid user phone number"), CategoryBadRequest)
 	ErrInvalidUserPassword    = NewError(errors.New("invalid user password"), CategoryBadRequest)
-	ErrInvalidUserCreatedAt   = NewError(errors.New("invalid user createdAt"), CategoryBadRequest)
-	ErrInvalidUserUpdatedAt   = NewError(errors.New("invalid user updatedAt"), CategoryBadRequest)
-	ErrInvalidUserDeletedAt   = NewError(errors.New("invalid user DeletedAt"), CategoryBadRequest)
-	ErrDifferentVersions      = NewError(errors.New("invalid patch version"), CategoryBadRequest)
+)
+
+var (
+	ErrInvalidTripStartDate = NewError(errors.New("invalid trip start date"), CategoryBadRequest)
+	ErrInvalidTripEndDate   = NewError(errors.New("invalid trip end date"), CategoryBadRequest)
+	ErrInvalidBudget        = NewError(errors.New("invalid trip budget"), CategoryBadRequest)
+	ErrUnsupportedCurrency  = NewError(errors.New("unsupported trip currency"), CategoryBadRequest)
+	ErrInvalidLocationName  = NewError(errors.New("invalid trip location name"), CategoryBadRequest)
+	ErrInvalidLatitude      = NewError(errors.New("invalid trip latitude"), CategoryBadRequest)
+	ErrInvalidLongitude     = NewError(errors.New("invalid trip longitude"), CategoryBadRequest)
+	ErrInvalidTripName      = NewError(errors.New("invalid trip name"), CategoryBadRequest)
+	ErrInvalidPlanningArea  = NewError(errors.New("invalid planning area"), CategoryBadRequest)
+	ErrInvalidTimeZone      = NewError(errors.New("invalid time zone"), CategoryBadRequest)
+	ErrUnsupportedTimezone  = NewError(errors.New("unsupported time zone"), CategoryBadRequest)
+	ErrInvalidInterest      = NewError(errors.New("invalid interest"), CategoryBadRequest)
+	ErrUnsupportedInterest  = NewError(errors.New("unsupported interest"), CategoryBadRequest)
 )
