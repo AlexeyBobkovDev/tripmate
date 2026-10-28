@@ -20,14 +20,14 @@ func validTripCreate() *TripCreate {
 		1,
 		"Weekend in Moscow",
 		"Moscow",
-		&Location{
+		Location{
 			Name:      "Red Square",
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},
 		startDate,
 		endDate,
-		&Money{
+		Money{
 			AmountMinorUnits: 100000,
 			Currency:         "RUB",
 		},
@@ -50,10 +50,10 @@ func TestTripCreateValidate_Valid(t *testing.T) {
 		t.Parallel()
 
 		got := validTripCreate()
-		got.StartLocation = nil
-		got.Budget = nil
+		got.StartLocation = Location{}
+		got.Budget = Money{}
 
-		require.NoError(t, got.Validate())
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidLocationName)
 	})
 
 	t.Run("empty interests", func(t *testing.T) {
@@ -97,7 +97,7 @@ func TestTripCreateValidate_InvalidStartLocation(t *testing.T) {
 	t.Parallel()
 
 	got := validTripCreate()
-	got.StartLocation = &Location{
+	got.StartLocation = Location{
 		Name:      "Invalid location",
 		Latitude:  math.NaN(),
 		Longitude: 37.6208,
@@ -152,7 +152,7 @@ func TestTripCreateValidate_InvalidBudget(t *testing.T) {
 	t.Parallel()
 
 	got := validTripCreate()
-	got.Budget = &Money{
+	got.Budget = Money{
 		AmountMinorUnits: 0,
 		Currency:         "RUB",
 	}
@@ -181,14 +181,14 @@ func TestTripCreateValidate_InvalidTimeZone(t *testing.T) {
 func TestNewTripCreate(t *testing.T) {
 	t.Parallel()
 
-	startLocation := &Location{
+	startLocation := Location{
 		Name:      "Red Square",
 		Latitude:  55.7539,
 		Longitude: 37.6208,
 	}
 	startDate := time.Now().AddDate(0, 0, 60).UTC()
 	endDate := startDate.AddDate(0, 0, 3)
-	budget := &Money{AmountMinorUnits: 100000, Currency: "RUB"}
+	budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestNature}
 
 	got := NewTripCreate(
@@ -207,10 +207,10 @@ func TestNewTripCreate(t *testing.T) {
 	assert.Equal(t, 42, got.OwnerID)
 	assert.Equal(t, "Winter trip", got.Name)
 	assert.Equal(t, "Moscow", got.PlanningArea)
-	assert.Same(t, startLocation, got.StartLocation)
+	assert.Equal(t, startLocation, got.StartLocation)
 	assert.True(t, startDate.Equal(got.StartDate))
 	assert.True(t, endDate.Equal(got.EndDate))
-	assert.Same(t, budget, got.Budget)
+	assert.Equal(t, budget, got.Budget)
 	assert.Equal(t, interests, got.Interests)
 	assert.Equal(t, "Europe/Moscow", got.TimeZone)
 }

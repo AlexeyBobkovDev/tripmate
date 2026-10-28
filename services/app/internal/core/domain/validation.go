@@ -230,11 +230,7 @@ func validateTripDatesOrder(
 	return validateSystemDatesOrder(createdAt, updatedAt, deletedAt)
 }
 
-func validateBudget(budget *Money) error {
-	if budget == nil {
-		return nil
-	}
-
+func validateBudget(budget Money) error {
 	return budget.Validate()
 }
 
@@ -252,10 +248,7 @@ func validatePlanningArea(planningArea string) error {
 	return nil
 }
 
-func validateStartLocation(startLocation *Location) error {
-	if startLocation == nil {
-		return nil
-	}
+func validateStartLocation(startLocation Location) error {
 	return startLocation.Validate()
 }
 

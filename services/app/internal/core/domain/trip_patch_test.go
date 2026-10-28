@@ -80,7 +80,7 @@ func TestTripPatchValidate(t *testing.T) {
 		{
 			name: "start location value is nil when set",
 			mutate: func(p *TripPatch) {
-				p.StartLocation = Nullable[*Location]{Set: true}
+				p.StartLocation = Nullable[Location]{Set: true}
 			},
 			wantErr: core_errors.ErrInvalidArgument,
 		},
@@ -88,7 +88,7 @@ func TestTripPatchValidate(t *testing.T) {
 			name: "invalid start location",
 			mutate: func(p *TripPatch) {
 				location := &Location{Name: " ", Latitude: 0, Longitude: 0}
-				p.StartLocation = Nullable[*Location]{Set: true, Value: &location}
+				p.StartLocation = Nullable[Location]{Set: true, Value: location}
 			},
 			wantErr: core_errors.ErrInvalidLocationName,
 		},
@@ -125,15 +125,15 @@ func TestTripPatchValidate(t *testing.T) {
 		{
 			name: "budget value is nil when set",
 			mutate: func(p *TripPatch) {
-				p.Budget = Nullable[*Money]{Set: true}
+				p.Budget = Nullable[Money]{Set: true}
 			},
 			wantErr: core_errors.ErrInvalidArgument,
 		},
 		{
 			name: "invalid budget",
 			mutate: func(p *TripPatch) {
-				budget := &Money{AmountMinorUnits: 0, Currency: "RUB"}
-				p.Budget = Nullable[*Money]{Set: true, Value: &budget}
+				budget := Money{AmountMinorUnits: 0, Currency: "RUB"}
+				p.Budget = Nullable[Money]{Set: true, Value: &budget}
 			},
 			wantErr: core_errors.ErrInvalidBudget,
 		},
@@ -180,36 +180,38 @@ func TestTripPatchValidate(t *testing.T) {
 			mutate: func(p *TripPatch) {
 				name := "Weekend trip"
 				area := "Moscow"
-				location := &Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
+				location := Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
 				start := time.Now().Add(48 * time.Hour)
 				end := start.Add(24 * time.Hour)
-				budget := &Money{AmountMinorUnits: 100000, Currency: "RUB"}
+				budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 				interests := []Interest{InterestHistory, InterestFood}
 				timeZone := "Europe/Moscow"
 
 				p.Name = Nullable[string]{Set: true, Value: &name}
 				p.PlanningArea = Nullable[string]{Set: true, Value: &area}
-				p.StartLocation = Nullable[*Location]{Set: true, Value: &location}
+				p.StartLocation = Nullable[Location]{Set: true, Value: &location}
 				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
 				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
-				p.Budget = Nullable[*Money]{Set: true, Value: &budget}
+				p.Budget = Nullable[Money]{Set: true, Value: &budget}
 				p.Interests = Nullable[[]Interest]{Set: true, Value: &interests}
 				p.TimeZone = Nullable[string]{Set: true, Value: &timeZone}
 			},
 		},
 		{
-			name: "optional location can be cleared",
+			name: "location cleared",
 			mutate: func(p *TripPatch) {
-				var location *Location
-				p.StartLocation = Nullable[*Location]{Set: true, Value: &location}
+				var location Location
+				p.StartLocation = Nullable[Location]{Set: true, Value: &location}
 			},
+			wantErr: core_errors.ErrInvalidLocationName,
 		},
 		{
-			name: "optional budget can be cleared",
+			name: "budget cleared",
 			mutate: func(p *TripPatch) {
-				var budget *Money
-				p.Budget = Nullable[*Money]{Set: true, Value: &budget}
+				var budget Money
+				p.Budget = Nullable[Money]{Set: true, Value: &budget}
 			},
+			wantErr: core_errors.ErrInvalidBudget,
 		},
 		{
 			name: "empty interests list is valid",
@@ -243,17 +245,17 @@ func TestNewTripPatch(t *testing.T) {
 	endDate := time.Date(2027, time.June, 3, 12, 0, 0, 0, time.UTC)
 	name := "Summer trip"
 	area := "Moscow"
-	location := &Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
-	budget := &Money{AmountMinorUnits: 250000, Currency: "RUB"}
+	location := Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
+	budget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestArchitecture}
 	timeZone := "Europe/Moscow"
 
 	nameField := Nullable[string]{Set: true, Value: &name}
 	areaField := Nullable[string]{Set: true, Value: &area}
-	locationField := Nullable[*Location]{Set: true, Value: &location}
+	locationField := Nullable[Location]{Set: true, Value: &location}
 	startDateField := Nullable[time.Time]{Set: true, Value: &startDate}
 	endDateField := Nullable[time.Time]{Set: true, Value: &endDate}
-	budgetField := Nullable[*Money]{Set: true, Value: &budget}
+	budgetField := Nullable[Money]{Set: true, Value: &budget}
 	interestsField := Nullable[[]Interest]{Set: true, Value: &interests}
 	timeZoneField := Nullable[string]{Set: true, Value: &timeZone}
 

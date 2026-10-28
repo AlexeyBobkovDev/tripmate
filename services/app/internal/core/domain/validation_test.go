@@ -321,7 +321,7 @@ func TestValidateUpdatedAt(t *testing.T) {
 	require.NoError(t, validateUpdatedAt(now.Add(-time.Second)))
 	require.NoError(t, validateUpdatedAt(now))
 	require.ErrorIs(t, validateUpdatedAt(now.Add(time.Second)), core_errors.ErrInvalidUpdatedAt)
-	require.ErrorIs(t, validateCreatedAt(time.Time{}), core_errors.ErrInvalidUpdatedAt)
+	require.ErrorIs(t, validateCreatedAt(time.Time{}), core_errors.ErrInvalidCreatedAt)
 }
 
 func TestValidateDeletedAt(t *testing.T) {
@@ -431,10 +431,10 @@ func TestValidateTripDatesOrder(t *testing.T) {
 }
 
 func TestValidateBudget(t *testing.T) {
-	require.NoError(t, validateBudget(nil))
-	require.NoError(t, validateBudget(&Money{AmountMinorUnits: 1, Currency: "RUB"}))
-	require.ErrorIs(t, validateBudget(&Money{AmountMinorUnits: 0, Currency: "RUB"}), core_errors.ErrInvalidBudget)
-	require.ErrorIs(t, validateBudget(&Money{AmountMinorUnits: 100, Currency: "USD"}), core_errors.ErrUnsupportedCurrency)
+	require.ErrorIs(t, validateBudget(Money{}), core_errors.ErrInvalidBudget)
+	require.NoError(t, validateBudget(Money{AmountMinorUnits: 1, Currency: "RUB"}))
+	require.ErrorIs(t, validateBudget(Money{AmountMinorUnits: 0, Currency: "RUB"}), core_errors.ErrInvalidBudget)
+	require.ErrorIs(t, validateBudget(Money{AmountMinorUnits: 100, Currency: "USD"}), core_errors.ErrUnsupportedCurrency)
 }
 
 func TestValidateTripName(t *testing.T) {
@@ -456,11 +456,11 @@ func TestValidatePlanningArea(t *testing.T) {
 }
 
 func TestValidateStartLocation(t *testing.T) {
-	require.NoError(t, validateStartLocation(nil))
-	require.NoError(t, validateStartLocation(&Location{Name: "Moscow", Latitude: 55.75, Longitude: 37.62}))
-	require.ErrorIs(t, validateStartLocation(&Location{Name: "", Latitude: 55.75, Longitude: 37.62}), core_errors.ErrInvalidLocationName)
-	require.ErrorIs(t, validateStartLocation(&Location{Name: "Moscow", Latitude: 91, Longitude: 37.62}), core_errors.ErrInvalidLatitude)
-	require.ErrorIs(t, validateStartLocation(&Location{Name: "Moscow", Latitude: 55.75, Longitude: 181}), core_errors.ErrInvalidLongitude)
+	require.ErrorIs(t, validateStartLocation(Location{}), core_errors.ErrInvalidLocationName)
+	require.NoError(t, validateStartLocation(Location{Name: "Moscow", Latitude: 55.75, Longitude: 37.62}))
+	require.ErrorIs(t, validateStartLocation(Location{Name: "", Latitude: 55.75, Longitude: 37.62}), core_errors.ErrInvalidLocationName)
+	require.ErrorIs(t, validateStartLocation(Location{Name: "Moscow", Latitude: 91, Longitude: 37.62}), core_errors.ErrInvalidLatitude)
+	require.ErrorIs(t, validateStartLocation(Location{Name: "Moscow", Latitude: 55.75, Longitude: 181}), core_errors.ErrInvalidLongitude)
 }
 
 func TestValidateInterests(t *testing.T) {

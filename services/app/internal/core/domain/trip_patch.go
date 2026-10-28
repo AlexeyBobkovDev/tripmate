@@ -12,12 +12,12 @@ type TripPatch struct {
 
 	Name          Nullable[string]
 	PlanningArea  Nullable[string]
-	StartLocation Nullable[*Location]
+	StartLocation Nullable[Location]
 
 	StartDate Nullable[time.Time]
 	EndDate   Nullable[time.Time]
 
-	Budget    Nullable[*Money]
+	Budget    Nullable[Money]
 	Interests Nullable[[]Interest]
 	TimeZone  Nullable[string]
 }
@@ -102,10 +102,10 @@ func NewTripPatch(
 	version int,
 	name Nullable[string],
 	planningArea Nullable[string],
-	startLocation Nullable[*Location],
+	startLocation Nullable[Location],
 	startDate Nullable[time.Time],
 	endDate Nullable[time.Time],
-	budget Nullable[*Money],
+	budget Nullable[Money],
 	interests Nullable[[]Interest],
 	timeZone Nullable[string],
 ) *TripPatch {

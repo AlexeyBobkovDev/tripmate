@@ -14,12 +14,12 @@ type Trip struct {
 
 	Name          string
 	PlanningArea  string
-	StartLocation *Location
+	StartLocation Location
 
 	StartDate time.Time
 	EndDate   time.Time
 
-	Budget    *Money
+	Budget    Money
 	Interests []Interest
 	TimeZone  string
 
@@ -129,10 +129,10 @@ func NewTrip(
 	version int,
 	name string,
 	planningArea string,
-	startLocation *Location,
+	startLocation Location,
 	startDate time.Time,
 	endDate time.Time,
-	budget *Money,
+	budget Money,
 	interests []Interest,
 	timeZone string,
 	createdAt time.Time,
