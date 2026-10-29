@@ -59,7 +59,7 @@ func (u *User) Validate() error {
 	if err := validateDeletedAt(u.DeletedAt); err != nil {
 		return err
 	}
-	if err := validateDatesOrder(u.BirthDate, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
+	if err := validateUserDatesOrder(u.BirthDate, u.CreatedAt, u.UpdatedAt, u.DeletedAt); err != nil {
 		return err
 	}
 

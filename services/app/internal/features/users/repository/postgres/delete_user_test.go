@@ -42,6 +42,14 @@ func TestUsersRepository_DeleteUser_Success(t *testing.T) {
 		Return(mockCommandTag, nil)
 	mockTx.
 		EXPECT().
+		Exec(
+			gomock.Any(),
+			deleteTripsQuery,
+			userID,
+		).
+		Return(mockCommandTag, nil)
+	mockTx.
+		EXPECT().
 		Rollback(gomock.Any()).
 		Return(nil)
 	mockTx.
@@ -58,6 +66,59 @@ func TestUsersRepository_DeleteUser_Success(t *testing.T) {
 
 	err := usersRepository.DeleteUser(context.Background(), userID)
 	require.NoError(t, err)
+}
+
+func TestUsersRepository_DeleteUser_TripsUpdateError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockCommandTag := mocks.NewMockCommandTag(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
+	mockPool := mocks.NewMockPool(ctrl)
+	usersRepository := NewUsersRepository(mockPool)
+
+	userID := 1
+	txExecError := errors.New("update trips error")
+
+	mockPool.
+		EXPECT().
+		OpTimeout().
+		Return(5 * time.Second)
+
+	mockCommandTag.
+		EXPECT().
+		RowsAffected().
+		Return(int64(1))
+
+	mockTx.
+		EXPECT().
+		Exec(
+			gomock.Any(),
+			deleteUserQuery,
+			userID,
+		).
+		Return(mockCommandTag, nil)
+	mockTx.
+		EXPECT().
+		Exec(
+			gomock.Any(),
+			deleteTripsQuery,
+			userID,
+		).
+		Return(mockCommandTag, txExecError)
+	mockTx.
+		EXPECT().
+		Rollback(gomock.Any()).
+		Return(nil)
+
+	mockPool.
+		EXPECT().
+		Begin(
+			gomock.Any(),
+		).
+		Return(mockTx, nil)
+
+	err := usersRepository.DeleteUser(context.Background(), userID)
+	require.Error(t, err)
+	require.ErrorIs(t, err, txExecError)
 }
 
 func TestUsersRepository_DeleteUser_BeginTxError(t *testing.T) {
@@ -149,6 +210,14 @@ func TestUsersRepository_DeleteUser_CommitError(t *testing.T) {
 		Exec(
 			gomock.Any(),
 			deleteUserQuery,
+			userID,
+		).
+		Return(mockCommandTag, nil)
+	mockTx.
+		EXPECT().
+		Exec(
+			gomock.Any(),
+			deleteTripsQuery,
 			userID,
 		).
 		Return(mockCommandTag, nil)

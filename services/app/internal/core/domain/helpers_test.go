@@ -12,10 +12,8 @@ func compareExistedUserWithGotUser(existedUser, gotUser *User) bool {
 		existedUser.PhoneNumber == gotUser.PhoneNumber &&
 		existedUser.CreatedAt.Equal(gotUser.CreatedAt) &&
 		existedUser.UpdatedAt.Equal(gotUser.UpdatedAt)
-	if existedUser.DeletedAt == nil && gotUser.DeletedAt == nil {
-		return areEqual &&
-			existedUser.DeletedAt == nil &&
-			gotUser.DeletedAt == nil
+	if existedUser.DeletedAt == nil || gotUser.DeletedAt == nil {
+		return areEqual && existedUser.DeletedAt == gotUser.DeletedAt
 	}
 	return areEqual && existedUser.DeletedAt.Equal(*gotUser.DeletedAt)
 }

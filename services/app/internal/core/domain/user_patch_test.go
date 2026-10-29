@@ -45,14 +45,14 @@ func TestUserPatchValidate(t *testing.T) {
 			patch: UserPatch{
 				Version: 0,
 			},
-			wantErr: core_errors.ErrInvalidUserVersion,
+			wantErr: core_errors.ErrInvalidVersion,
 		},
 		{
 			name: "negative version",
 			patch: UserPatch{
 				Version: -1,
 			},
-			wantErr: core_errors.ErrInvalidUserVersion,
+			wantErr: core_errors.ErrInvalidVersion,
 		},
 
 		{

@@ -11,6 +11,163 @@ definitions:
         example: short human-readable message
         type: string
     type: object
+  domain.Interest:
+    enum:
+    - history
+    - nature
+    - food
+    - architecture
+    type: string
+    x-enum-varnames:
+    - InterestHistory
+    - InterestNature
+    - InterestFood
+    - InterestArchitecture
+  domain.Location:
+    properties:
+      latitude:
+        example: 55.7539
+        type: number
+      longitude:
+        example: 37.6208
+        type: number
+      name:
+        example: Red Square
+        maxLength: 100
+        minLength: 1
+        type: string
+    required:
+    - latitude
+    - longitude
+    - name
+    type: object
+  domain.Money:
+    properties:
+      amount_minor_units:
+        example: 1500000
+        minimum: 1
+        type: integer
+      currency:
+        example: RUB
+        type: string
+    required:
+    - amount_minor_units
+    - currency
+    type: object
+  trips_transport_http.CreateTripRequest:
+    properties:
+      budget:
+        $ref: '#/definitions/domain.Money'
+      end_date:
+        example: "2026-11-16"
+        type: string
+      interests:
+        items:
+          $ref: '#/definitions/domain.Interest'
+        minItems: 1
+        type: array
+      name:
+        example: Walk around Moscow
+        maxLength: 100
+        minLength: 1
+        type: string
+      planning_area:
+        example: Moscow
+        maxLength: 100
+        minLength: 1
+        type: string
+      start_date:
+        example: "2026-11-14"
+        type: string
+      start_location:
+        $ref: '#/definitions/domain.Location'
+      time_zone:
+        example: Europe/Moscow
+        type: string
+    required:
+    - budget
+    - end_date
+    - interests
+    - name
+    - planning_area
+    - start_date
+    - start_location
+    - time_zone
+    type: object
+  trips_transport_http.PatchTripRequest:
+    properties:
+      budget:
+        $ref: '#/definitions/domain.Money'
+      end_date:
+        example: "2026-11-16"
+        type: string
+      interests:
+        items:
+          $ref: '#/definitions/domain.Interest'
+        type: array
+      name:
+        example: Walk around NYC
+        type: string
+      planning_area:
+        example: NYC
+        type: string
+      start_date:
+        example: "2026-11-14"
+        type: string
+      start_location:
+        $ref: '#/definitions/domain.Location'
+      time_zone:
+        example: Europe/Moscow
+        type: string
+      version:
+        example: 5
+        minimum: 1
+        type: integer
+    type: object
+  trips_transport_http.TripResponse:
+    properties:
+      budget:
+        $ref: '#/definitions/domain.Money'
+      created_at:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      deleted_at:
+        example: ""
+        type: string
+      end_date:
+        example: "2026-11-16T00:00:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      interests:
+        items:
+          $ref: '#/definitions/domain.Interest'
+        type: array
+      name:
+        example: Walk around Moscow
+        type: string
+      owner_id:
+        example: 1
+        type: integer
+      planning_area:
+        example: Moscow
+        type: string
+      start_date:
+        example: "2026-11-14T00:00:00Z"
+        type: string
+      start_location:
+        $ref: '#/definitions/domain.Location'
+      time_zone:
+        example: Europe/Moscow
+        type: string
+      updated_at:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
   users_transport_http.CreateUserRequest:
     properties:
       birth_date:
@@ -133,6 +290,195 @@ info:
   title: TripMate API
   version: "1.0"
 paths:
+  /trips/{ownerID}:
+    get:
+      description: Gets trips
+      operationId: get-trips
+      parameters:
+      - description: OwnerID ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved trip
+          schema:
+            $ref: '#/definitions/trips_transport_http.TripResponse'
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Gets Trip
+      tags:
+      - trips
+    post:
+      consumes:
+      - application/json
+      description: Creates a new trip
+      operationId: create-trip
+      parameters:
+      - description: OwnerID ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      - description: Trip data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/trips_transport_http.CreateTripRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created trip
+          schema:
+            $ref: '#/definitions/trips_transport_http.TripResponse'
+        "400":
+          description: Invalid trip data
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Create Trip
+      tags:
+      - trips
+  /trips/{ownerID}/{tripID}:
+    delete:
+      description: Deletes a trip
+      operationId: delete-trip
+      parameters:
+      - description: OwnerID ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Deleted trip
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Delete Trip
+      tags:
+      - trips
+    get:
+      description: Gets a trip
+      operationId: get-trip
+      parameters:
+      - description: OwnerID ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved trip
+          schema:
+            $ref: '#/definitions/trips_transport_http.TripResponse'
+        "400":
+          description: Invalid trip ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Get Trip
+      tags:
+      - trips
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Partially updates a trip by ID
+        If a field is not sent, the field won't be changed
+        If a field is sent with the value of null, the field will be changed to null
+        If a field is sent with an ordinary value, the field will be changed to this value
+        If Birthdate is set as null, ErrBadRequest(400 status code) is returned
+      operationId: patch-trip
+      parameters:
+      - description: Trip data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/trips_transport_http.PatchTripRequest'
+      - description: OwnerID ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Patched trip
+          schema:
+            $ref: '#/definitions/trips_transport_http.TripResponse'
+        "400":
+          description: Invalid trip data
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Trip not found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Patch Trip
+      tags:
+      - trips
   /users:
     post:
       consumes:

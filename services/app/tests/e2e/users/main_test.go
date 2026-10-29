@@ -5,6 +5,7 @@ package users_e2e_test
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"testing"
@@ -43,10 +44,20 @@ type userTestDeps struct {
 var (
 	testDeps = userTestDeps{}
 	testApp  *core_app.Application
+	freePort = fmt.Sprintf(":%d", getFreePort())
 )
 
 func TestMain(m *testing.M) {
 	os.Exit(runTests(m))
+}
+
+func getFreePort() int {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		panic(err)
+	}
+	defer listener.Close()
+	return listener.Addr().(*net.TCPAddr).Port
 }
 
 func runTests(m *testing.M) int {
@@ -96,7 +107,9 @@ func runTests(m *testing.M) int {
 	testDeps.usersService = users_service.NewUsersService(testDeps.usersRepository, usersPasswordManager)
 	testDeps.usersTransportHTTP = users_transport_http.NewUsersHTTPHandler(testDeps.usersService)
 
-	app, err := core_app.NewApplication(ctx)
+	os.Setenv("SERVER_ADDR", freePort)
+
+	app, err := core_app.NewApplication(ctx, false)
 	if err != nil {
 		panic(fmt.Errorf("can not initialize the app: %w", err))
 	}
@@ -115,7 +128,7 @@ func runTests(m *testing.M) int {
 
 	healthCheckRequest, err := http.NewRequest(
 		"GET",
-		"http://localhost:8080/health",
+		fmt.Sprintf("http://localhost%s/health", freePort),
 		nil,
 	)
 	if err != nil {

@@ -14,7 +14,16 @@ SET deleted_at = NOW(),
 	version = version + 1
 WHERE id=$1
 	AND deleted_at IS NULL;
-	`
+`
+
+const deleteTripsQuery = `
+UPDATE app.trips
+SET deleted_at = NOW(),
+	updated_at = NOW(),
+	version = version + 1
+WHERE owner_id=$1
+	AND deleted_at IS NULL;
+`
 
 func (s *UsersRepository) DeleteUser(
 	ctx context.Context,
@@ -31,10 +40,15 @@ func (s *UsersRepository) DeleteUser(
 
 	cmdTag, err := tx.Exec(ctx, deleteUserQuery, userID)
 	if err != nil {
-		return fmt.Errorf("update deleted_at field: %w", err)
+		return fmt.Errorf("update user deleted_at field: %w", err)
 	}
 	if cmdTag.RowsAffected() == 0 {
 		return fmt.Errorf("the user %d does not exist: %w", userID, core_errors.ErrNotFound)
+	}
+
+	_, err = tx.Exec(ctx, deleteTripsQuery, userID)
+	if err != nil {
+		return fmt.Errorf("update trip deleted_at field: %w", err)
 	}
 
 	return tx.Commit(ctx)

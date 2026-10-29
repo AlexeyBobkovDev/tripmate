@@ -46,7 +46,7 @@ func TestUsersTransportHTTP_DeleteUser_E2E_Success(t *testing.T) {
 	}
 	deleteUserRequest, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", createdUser.ID),
+		fmt.Sprintf("%s/%d", baseURL, createdUser.ID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestUsersTransportHTTP_DeleteUser_E2E_InvalidUserID(t *testing.T) {
 	}
 	deleteUserRequest, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", -1),
+		fmt.Sprintf("%s/%d", baseURL, -1),
 		nil,
 	)
 	require.NoError(t, err)

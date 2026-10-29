@@ -14,6 +14,9 @@ import (
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
+	trips_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/repository/postgres"
+	trips_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/service"
+	trips_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/transport/http"
 	users_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/repository/postgres"
 	users_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service"
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
@@ -49,7 +52,7 @@ func (app *Application) Close() error {
 	return nil
 }
 
-func NewApplication(ctx context.Context) (*Application, error) {
+func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
 	if err != nil {
 		return nil, fmt.Errorf("initialize logger: %w", err)
@@ -90,25 +93,42 @@ func NewApplication(ctx context.Context) (*Application, error) {
 	)
 	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
 
+	tripsPostgresRepository := trips_postgres_repository.NewTripsRepository(pool)
+	tripsService := trips_service.NewTripsService(tripsPostgresRepository)
+	tripsTransport := trips_transport_http.NewTripsHTTPHandler(tripsService)
+	apiVersionRouterV1.RegisterRoutes(tripsTransport.Routes()...)
+
 	logger.Debug("initializing new server")
 
+	var server *core_server.HTTPServer
 	middlewareConfig := core_middleware.NewConfigMust()
-	// corsConfiguration := core_middleware.NewCORSConfigMust()
-	server := core_server.NewHTTPServer(
-		core_server.NewConfigMust(),
-		logger,
-		// core_middleware.CORSMiddleware(
-		// 	corsConfiguration,
-		// ),
-		core_middleware.RateLimiterMiddleware(
-			middlewareConfig.MaxReqAmount,
-			middlewareConfig.WindowSize,
-		),
-		core_middleware.LoggerMiddleware(logger),
-		core_middleware.RequestIDMiddleware(),
-		core_middleware.TraceMiddleware(),
-		core_middleware.RecoveryMiddleware(),
-	)
+	corsConfiguration := core_middleware.NewCORSConfigMust()
+	if isProd {
+		server = core_server.NewHTTPServer(
+			core_server.NewConfigMust(),
+			logger,
+			core_middleware.CORSMiddleware(
+				corsConfiguration,
+			),
+			core_middleware.RateLimiterMiddleware(
+				middlewareConfig.MaxReqAmount,
+				middlewareConfig.WindowSize,
+			),
+			core_middleware.LoggerMiddleware(logger),
+			core_middleware.RequestIDMiddleware(),
+			core_middleware.TraceMiddleware(),
+			core_middleware.RecoveryMiddleware(),
+		)
+	} else {
+		server = core_server.NewHTTPServer(
+			core_server.NewConfigMust(),
+			logger,
+			core_middleware.LoggerMiddleware(logger),
+			core_middleware.RequestIDMiddleware(),
+			core_middleware.TraceMiddleware(),
+			core_middleware.RecoveryMiddleware(),
+		)
+	}
 	server.RegisterHealth()
 	server.RegisterSwagger()
 	logger.Debug("successfully initialized server")

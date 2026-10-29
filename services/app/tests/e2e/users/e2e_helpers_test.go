@@ -18,11 +18,16 @@ import (
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
 )
 
+var (
+	baseURL        = fmt.Sprintf("http://localhost%s/api/v1/users", freePort)
+	requestTimeout = 5 * time.Second
+)
+
 func registerCleanup(t *testing.T, cleanup func(context.Context) error) {
 	t.Helper()
 
 	t.Cleanup(func() {
-		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cleanupCancel()
 
 		if err := cleanup(cleanupCtx); err != nil {
@@ -39,7 +44,7 @@ func createUser(t *testing.T, ctx context.Context, timeout time.Duration) (*doma
 	}
 	createUserRequest, err := http.NewRequest(
 		"POST",
-		"http://localhost:8080/api/v1/users",
+		baseURL,
 		testRequestBodyWithDefaults(),
 	)
 	require.NoError(t, err)

@@ -28,7 +28,7 @@ jobs:
     uses: ./.github/workflows/docs.yml
 
   docker:
-    needs: [lint, test, build]
+    needs: [lint, test, build, docs]
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/docker.yml
     secrets: inherit
