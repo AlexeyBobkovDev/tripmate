@@ -25,6 +25,279 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/trips/{ownerID}": {
+            "get": {
+                "description": "Gets trips",
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Gets Trip",
+                "operationId": "get-trips",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OwnerID ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved trip",
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.TripResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new trip",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Create Trip",
+                "operationId": "create-trip",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OwnerID ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Trip data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.CreateTripRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created trip",
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.TripResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip data",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/trips/{ownerID}/{tripID}": {
+            "get": {
+                "description": "Gets a trip",
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Get Trip",
+                "operationId": "get-trip",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OwnerID ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved trip",
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.TripResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a trip",
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Delete Trip",
+                "operationId": "delete-trip",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OwnerID ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted trip"
+                    },
+                    "400": {
+                        "description": "Invalid trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Partially updates a trip by ID\nIf a field is not sent, the field won't be changed\nIf a field is sent with the value of null, the field will be changed to null\nIf a field is sent with an ordinary value, the field will be changed to this value\nIf Birthdate is set as null, ErrBadRequest(400 status code) is returned",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Patch Trip",
+                "operationId": "patch-trip",
+                "parameters": [
+                    {
+                        "description": "Trip data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.PatchTripRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "OwnerID ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Patched trip",
+                        "schema": {
+                            "$ref": "#/definitions/trips_transport_http.TripResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip data",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Trip not found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "post": {
                 "description": "Creates a new user",
@@ -239,6 +512,218 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "short human-readable message"
+                }
+            }
+        },
+        "domain.Interest": {
+            "type": "string",
+            "enum": [
+                "history",
+                "nature",
+                "food",
+                "architecture"
+            ],
+            "x-enum-varnames": [
+                "InterestHistory",
+                "InterestNature",
+                "InterestFood",
+                "InterestArchitecture"
+            ]
+        },
+        "domain.Location": {
+            "type": "object",
+            "required": [
+                "latitude",
+                "longitude",
+                "name"
+            ],
+            "properties": {
+                "latitude": {
+                    "type": "number",
+                    "example": 55.7539
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 37.6208
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Red Square"
+                }
+            }
+        },
+        "domain.Money": {
+            "type": "object",
+            "required": [
+                "amount_minor_units",
+                "currency"
+            ],
+            "properties": {
+                "amount_minor_units": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1500000
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "RUB"
+                }
+            }
+        },
+        "trips_transport_http.CreateTripRequest": {
+            "type": "object",
+            "required": [
+                "budget",
+                "end_date",
+                "interests",
+                "name",
+                "planning_area",
+                "start_date",
+                "start_location",
+                "time_zone"
+            ],
+            "properties": {
+                "budget": {
+                    "$ref": "#/definitions/domain.Money"
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2026-11-16"
+                },
+                "interests": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Walk around Moscow"
+                },
+                "planning_area": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
+                    "example": "Moscow"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2026-11-14"
+                },
+                "start_location": {
+                    "$ref": "#/definitions/domain.Location"
+                },
+                "time_zone": {
+                    "type": "string",
+                    "example": "Europe/Moscow"
+                }
+            }
+        },
+        "trips_transport_http.PatchTripRequest": {
+            "type": "object",
+            "properties": {
+                "budget": {
+                    "$ref": "#/definitions/domain.Money"
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2026-11-16"
+                },
+                "interests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Walk around NYC"
+                },
+                "planning_area": {
+                    "type": "string",
+                    "example": "NYC"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2026-11-14"
+                },
+                "start_location": {
+                    "$ref": "#/definitions/domain.Location"
+                },
+                "time_zone": {
+                    "type": "string",
+                    "example": "Europe/Moscow"
+                },
+                "version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 5
+                }
+            }
+        },
+        "trips_transport_http.TripResponse": {
+            "type": "object",
+            "properties": {
+                "budget": {
+                    "$ref": "#/definitions/domain.Money"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "deleted_at": {
+                    "type": "string",
+                    "example": ""
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2026-11-16T00:00:00Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "interests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Walk around Moscow"
+                },
+                "owner_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "planning_area": {
+                    "type": "string",
+                    "example": "Moscow"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2026-11-14T00:00:00Z"
+                },
+                "start_location": {
+                    "$ref": "#/definitions/domain.Location"
+                },
+                "time_zone": {
+                    "type": "string",
+                    "example": "Europe/Moscow"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
