@@ -22,9 +22,6 @@ type TripCreate struct {
 }
 
 func (t *TripCreate) Validate() error {
-	if err := validateID(t.OwnerID); err != nil {
-		return err
-	}
 	if err := validateTripName(t.Name); err != nil {
 		return err
 	}
@@ -63,7 +60,6 @@ func (t *TripCreate) Validate() error {
 }
 
 func NewTripCreate(
-	ownerID int,
 	name string,
 	planningArea string,
 	startLocation Location,
@@ -74,7 +70,6 @@ func NewTripCreate(
 	timeZone string,
 ) *TripCreate {
 	return &TripCreate{
-		OwnerID:       ownerID,
 		Name:          name,
 		PlanningArea:  planningArea,
 		StartLocation: startLocation,

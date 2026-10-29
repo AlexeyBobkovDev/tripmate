@@ -17,7 +17,6 @@ func validTripCreate() *TripCreate {
 	endDate := startDate.AddDate(0, 0, 3)
 
 	return NewTripCreate(
-		1,
 		"Weekend in Moscow",
 		"Moscow",
 		Location{
@@ -64,15 +63,6 @@ func TestTripCreateValidate_Valid(t *testing.T) {
 
 		require.NoError(t, got.Validate())
 	})
-}
-
-func TestTripCreateValidate_InvalidOwnerID(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.OwnerID = 0
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidID)
 }
 
 func TestTripCreateValidate_InvalidName(t *testing.T) {
@@ -192,7 +182,6 @@ func TestNewTripCreate(t *testing.T) {
 	interests := []Interest{InterestHistory, InterestNature}
 
 	got := NewTripCreate(
-		42,
 		"Winter trip",
 		"Moscow",
 		startLocation,
@@ -204,7 +193,6 @@ func TestNewTripCreate(t *testing.T) {
 	)
 
 	require.NotNil(t, got)
-	assert.Equal(t, 42, got.OwnerID)
 	assert.Equal(t, "Winter trip", got.Name)
 	assert.Equal(t, "Moscow", got.PlanningArea)
 	assert.Equal(t, startLocation, got.StartLocation)
