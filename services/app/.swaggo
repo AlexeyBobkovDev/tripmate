@@ -1,0 +1,3 @@
+replace core_http_types.Nullable[domain.Money] domain.Money
+replace core_http_types.Nullable[domain.Location] domain.Location
+replace core_http_types.Nullable[[]domain.Interest] []domain.Interest
