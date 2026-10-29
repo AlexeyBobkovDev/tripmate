@@ -52,7 +52,7 @@ func (app *Application) Close() error {
 	return nil
 }
 
-func NewApplication(ctx context.Context) (*Application, error) {
+func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 	logger, err := core_logger.NewLogger(core_logger.NewConfigMust())
 	if err != nil {
 		return nil, fmt.Errorf("initialize logger: %w", err)
@@ -100,23 +100,35 @@ func NewApplication(ctx context.Context) (*Application, error) {
 
 	logger.Debug("initializing new server")
 
+	var server *core_server.HTTPServer
 	middlewareConfig := core_middleware.NewConfigMust()
-	// corsConfiguration := core_middleware.NewCORSConfigMust()
-	server := core_server.NewHTTPServer(
-		core_server.NewConfigMust(),
-		logger,
-		// core_middleware.CORSMiddleware(
-		// 	corsConfiguration,
-		// ),
-		core_middleware.RateLimiterMiddleware(
-			middlewareConfig.MaxReqAmount,
-			middlewareConfig.WindowSize,
-		),
-		core_middleware.LoggerMiddleware(logger),
-		core_middleware.RequestIDMiddleware(),
-		core_middleware.TraceMiddleware(),
-		core_middleware.RecoveryMiddleware(),
-	)
+	corsConfiguration := core_middleware.NewCORSConfigMust()
+	if isProd {
+		server = core_server.NewHTTPServer(
+			core_server.NewConfigMust(),
+			logger,
+			core_middleware.CORSMiddleware(
+				corsConfiguration,
+			),
+			core_middleware.RateLimiterMiddleware(
+				middlewareConfig.MaxReqAmount,
+				middlewareConfig.WindowSize,
+			),
+			core_middleware.LoggerMiddleware(logger),
+			core_middleware.RequestIDMiddleware(),
+			core_middleware.TraceMiddleware(),
+			core_middleware.RecoveryMiddleware(),
+		)
+	} else {
+		server = core_server.NewHTTPServer(
+			core_server.NewConfigMust(),
+			logger,
+			core_middleware.LoggerMiddleware(logger),
+			core_middleware.RequestIDMiddleware(),
+			core_middleware.TraceMiddleware(),
+			core_middleware.RecoveryMiddleware(),
+		)
+	}
 	server.RegisterHealth()
 	server.RegisterSwagger()
 	logger.Debug("successfully initialized server")
