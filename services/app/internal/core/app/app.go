@@ -14,6 +14,9 @@ import (
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
+	trips_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/repository/postgres"
+	trips_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/service"
+	trips_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/transport/http"
 	users_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/repository/postgres"
 	users_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/service"
 	users_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http"
@@ -89,6 +92,11 @@ func NewApplication(ctx context.Context) (*Application, error) {
 		core_server.APIVersionV1,
 	)
 	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
+
+	tripsPostgresRepository := trips_postgres_repository.NewTripsRepository(pool)
+	tripsService := trips_service.NewTripsService(tripsPostgresRepository)
+	tripsTransport := trips_transport_http.NewTripsHTTPHandler(tripsService)
+	apiVersionRouterV1.RegisterRoutes(tripsTransport.Routes()...)
 
 	logger.Debug("initializing new server")
 
