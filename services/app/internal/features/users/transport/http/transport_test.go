@@ -4,9 +4,10 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+
+	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/users/transport/http/mocks"
 )
 
 func TestUsersHTTPHandler_Routes(t *testing.T) {
