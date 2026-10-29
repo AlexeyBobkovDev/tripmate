@@ -41,7 +41,7 @@ func TestUsersTransportHTTP_PatchUser_E2E_Success(t *testing.T) {
 
 	patchUserRequest, err := http.NewRequest(
 		"PATCH",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		testPatchRequestBody(),
 	)
 	require.NoError(t, err)
@@ -96,7 +96,7 @@ func TestUsersTransportHTTP_PatchUser_E2E_Conflict_MismatchingUserVersions(t *te
 	}
 	patchUserRequest, err := http.NewRequest(
 		"PATCH",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		testPatchRequestBodyWithIncreasedByOneVersion(createdUser.Version),
 	)
 	require.NoError(t, err)
@@ -120,7 +120,7 @@ func TestUsersTransportHTTP_PatchUser_E2E_NotFound_InvalidUserID(t *testing.T) {
 	}
 	patchUserRequest, err := http.NewRequest(
 		"PATCH",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		testPatchRequestBody(),
 	)
 	require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestUsersTransportHTTP_PatchUser_E2E_NotFound_AlreadyDeletedUser(t *testing
 
 	deleteUserRequest, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -165,7 +165,7 @@ func TestUsersTransportHTTP_PatchUser_E2E_NotFound_AlreadyDeletedUser(t *testing
 
 	patchUserRequest, err := http.NewRequest(
 		"PATCH",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		testPatchRequestBody(),
 	)
 	require.NoError(t, err)

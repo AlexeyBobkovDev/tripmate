@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/k0kubun/pp/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -36,7 +35,7 @@ func TestUsersTransportHTTP_GetUser_E2E_Success(t *testing.T) {
 
 	getUserRequest, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -50,7 +49,6 @@ func TestUsersTransportHTTP_GetUser_E2E_Success(t *testing.T) {
 
 	gotUser := userDomainFromDTO(retrievedUser)
 
-	pp.Println(retrievedUser)
 	require.NotNil(t, retrievedUser)
 
 	assert.NotZero(t, createdUser.ID)
@@ -90,7 +88,7 @@ func TestUsersTransportHTTP_GetUser_E2E_BadRequest(t *testing.T) {
 	}
 	getUserRequest, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -122,7 +120,7 @@ func TestUsersTransportHTTP_GetUser_E2E_AlreadyDeleted(t *testing.T) {
 
 	deleteUserRequest, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		nil,
 	)
 	require.NoError(t, err)
@@ -135,7 +133,7 @@ func TestUsersTransportHTTP_GetUser_E2E_AlreadyDeleted(t *testing.T) {
 
 	getUserRequest, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("http://localhost:8080/api/v1/users/%d", userID),
+		fmt.Sprintf("%s/%d", baseURL, userID),
 		nil,
 	)
 	require.NoError(t, err)
