@@ -42,7 +42,7 @@ func run() error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	app, err := core_app.NewApplication(ctx)
+	app, err := core_app.NewApplication(ctx, true)
 	if err != nil {
 		log.Printf("failed to initialize the application: %v", err)
 	}
