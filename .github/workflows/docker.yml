@@ -41,7 +41,7 @@ jobs:
       - name: Build and push image
         uses: docker/build-push-action@v7.4.0
         with:
-          context: ${{ matrix.module }}
+          context: .
           push: true
           file: ${{ matrix.module }}/cmd/${{ matrix.service }}/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
