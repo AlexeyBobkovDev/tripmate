@@ -1,0 +1,8 @@
+go 1.27.3
+
+use (
+	./contracts
+	./services/app
+	./services/notification
+	./services/route_generator
+)
