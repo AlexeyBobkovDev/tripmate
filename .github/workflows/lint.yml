@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        service: ["services/app", "services/notification"]
+        service: ["services/app"]
 
     steps:
       - name: Checkout Go files

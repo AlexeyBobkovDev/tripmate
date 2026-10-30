@@ -17,8 +17,6 @@ jobs:
         include:
           - service: "services/app"
             go-version-file: "services/app/go.mod"
-          - service: "services/notification"
-            go-version-file: "services/notification/go.mod"
 
     steps:
       - name: Checkout files
@@ -42,8 +40,6 @@ jobs:
         include:
           - service: "services/app"
             go-version-file: "services/app/go.mod"
-          - service: "services/notification"
-            go-version-file: "services/notification/go.mod"
     steps:
       - name: Checkout files
         uses: actions/checkout@v7.0.1

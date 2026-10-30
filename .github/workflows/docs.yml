@@ -12,9 +12,6 @@ jobs:
         include:
           - service: "app"
             module: "services/app"
-          # TODO: Deactivated while the notification microservice is not evolved
-          # - service: "notification"
-          #   module: "services/notification"
 
     steps:
       - name: Check out project files
