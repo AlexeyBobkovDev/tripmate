@@ -1,4 +1,4 @@
-include .env
+include ../../.env
 export
 
 # .SILENT
@@ -11,15 +11,18 @@ export PROJECT_ROOT := $(CURDIR)
 export MIGRATE_DIR := migrations
 export LOGS_DIR := $(PROJECT_ROOT)/out/logs
 export APP_SERVICE_NAME := app
+
+ROOT_DIR := $(abspath ../..)
+
 export APP_UID := $(shell id -u)
 export APP_GID := $(shell id -g)
 
+export ROUTE_GENERATOR_UID := $(shell id -u)
+export ROUTE_GENERATOR_GID := $(shell id -g)
 
-# ===========================App===========================
-.PHONY: app-run
-app-run:
-	@docker compose up --build $(APP_SERVICE_NAME)
-
+COMPOSE := docker compose \
+	--env-file $(ROOT_DIR)/.env \
+	-f $(ROOT_DIR)/deploy/docker-compose.dev.yml
 
 
 # ===========================Migrate===========================
@@ -40,7 +43,7 @@ migrate-create:
 	$(MAKE) migrate-action action=create name=$(name)
 
 .PHONY: migrate-action
-MIGRATE_CMD = docker compose run --rm postgres-migrate
+MIGRATE_CMD = $(COMPOSE) run --rm postgres-migrate
 migrate-action:
 	@if [ -z "$(action)" ]; then \
 		echo "Action Must be specified! E.g. action=up"; \
@@ -59,7 +62,7 @@ migrate-action:
 	elif [ "$(action)" = "up" ] || [ "$(action)" = "down" ]; then \
 		$(MIGRATE_CMD) \
 			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(APP_POSTGRES_HOST):$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
 			$(action); \
 	elif [ "$(action)" = "force" ]; then \
 		if [ -z "$(v)" ]; then \
@@ -68,7 +71,7 @@ migrate-action:
 		fi; \
 		$(MIGRATE_CMD) \
 			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(APP_POSTGRES_HOST):$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
 			$(action) $(v); \
 	fi;
 
@@ -79,44 +82,13 @@ migrate-action:
 cleanup-logs:
 	@read -p "Would you like to cleanup all logs? DANGER OPERATION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		rm -rf $(LOGS_DIR); \
+		rm -rf $(LOGS_DIR)/*; \
 	fi;
-
-
-
-# ===========================Env===========================
-.PHONY: postgres-up
-postgres-up:
-	@docker compose up -d postgres
-
-.PHONY: postgres-down
-postgres-down:
-	@docker compose down postgres
-
-.PHONY: postgres-cleanup
-postgres-cleanup:
-	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
-	if [ "$$answer" = "y" ]; then \
-		docker compose down postgres-port-forwarder && \
-		docker volume rm $(APP_SERVICE_NAME)_pgdata; \
-	fi;
-
-
-
-# ===========================Port forwarder===========================
-.PHONY: postgres-port-forward
-postgres-port-forward:
-	@docker compose up -d postgres-port-forwarder
-
-.PHONY: postgres-port-close
-postgres-port-close:
-	@docker compose down postgres-port-forwarder
-
 
 
 # ===========================Documentation===========================
 .PHONY: swagger-gen
-SWAGGER_CMD = docker compose run --build --rm swagger \
+SWAGGER_CMD = $(COMPOSE) run --build --rm swagger \
 		init \
 		-g ./cmd/$(APP_SERVICE_NAME)/main.go \
 		-o docs \
@@ -127,7 +99,7 @@ swagger-gen: swagger-fmt
 
 .PHONY: swagger-fmt
 swagger-fmt:
-	@docker compose run --rm --build swagger fmt \
+	@$(COMPOSE) run --rm --build swagger fmt \
 		--dir ./cmd/$(APP_SERVICE_NAME),./internal
 
 

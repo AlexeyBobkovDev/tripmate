@@ -8,7 +8,7 @@ type Config struct {
 
 func NewConfig() (Config, error) {
 	var config Config
-	if err := envconfig.Process("SERVER", &config); err != nil {
+	if err := envconfig.Process("APP_SERVER", &config); err != nil {
 		return Config{}, err
 	}
 

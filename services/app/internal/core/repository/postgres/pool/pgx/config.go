@@ -11,8 +11,8 @@ import (
 type Config struct {
 	User      string        `envconfig:"USER" required:"true"`
 	Password  string        `envconfig:"PASSWORD" required:"true"`
-	Host      string        `envconfig:"HOST" required:"true"`
-	Port      int           `envconfig:"PORT" default:"5432"`
+	Host      string        `envconfig:"APP_POSTGRES_HOST" required:"true"`
+	Port      int           `envconfig:"APP_POSTGRES_PORT" default:"5432"`
 	DB        string        `envconfig:"DB" required:"true"`
 	SSLMode   string        `envconfig:"SSLMODE" required:"true"`
 	OpTimeout time.Duration `envconfig:"OPTIMEOUT" required:"true"`

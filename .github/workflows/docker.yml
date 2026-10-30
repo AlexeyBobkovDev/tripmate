@@ -13,8 +13,6 @@ jobs:
         include:
           - service: "app"
             module: "services/app"
-          - service: "notification"
-            module: "services/notification"
 
     steps:
       - name: Checkout Go code

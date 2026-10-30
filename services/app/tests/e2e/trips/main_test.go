@@ -26,7 +26,7 @@ import (
 
 const (
 	pathToMigrationsFiles = "file://../../../migrations/"
-	pathToDotEnvFile      = "../../../.env.test"
+	pathToDotEnvFile      = "../../../../../.env.test"
 )
 
 type tripTestDeps struct {
@@ -83,18 +83,18 @@ func runTests(m *testing.M) int {
 		panic(fmt.Errorf("failed to get PostgreSQL port: %w", err))
 	}
 
-	if err := os.Setenv("POSTGRES_HOST", host); err != nil {
-		panic(fmt.Errorf("failed to set POSTGRES_HOST: %w", err))
+	if err := os.Setenv("APP_POSTGRES_HOST", host); err != nil {
+		panic(fmt.Errorf("failed to set APP_POSTGRES_HOST: %w", err))
 	}
-	if err := os.Setenv("POSTGRES_PORT", port.Port()); err != nil {
-		panic(fmt.Errorf("failed to set POSTGRES_PORT: %w", err))
+	if err := os.Setenv("APP_POSTGRES_PORT", port.Port()); err != nil {
+		panic(fmt.Errorf("failed to set APP_POSTGRES_PORT: %w", err))
 	}
 
 	dsn := getDSN(ctx, postgresCtr)
 	applyMigrations(pathToMigrationsFiles, dsn)
 	testDeps.pool = setupPostgresPool(ctx, dsn)
 
-	os.Setenv("SERVER_ADDR", freePort)
+	os.Setenv("APP_SERVER_ADDR", freePort)
 
 	app, err := core_app.NewApplication(ctx, false)
 	if err != nil {
