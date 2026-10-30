@@ -31,7 +31,7 @@ import (
 
 const (
 	pathToMigrationsFiles = "file://../../../migrations/"
-	pathToDotEnvFile      = "../../../.env.test"
+	pathToDotEnvFile      = "../../../../../.env.test"
 )
 
 type userTestDeps struct {
