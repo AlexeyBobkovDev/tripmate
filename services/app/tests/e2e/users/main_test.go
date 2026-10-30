@@ -89,8 +89,8 @@ func runTests(m *testing.M) int {
 		panic(fmt.Errorf("failed to get PostgreSQL container's port: %w", err))
 	}
 
-	os.Setenv("POSTGRES_HOST", host)
-	os.Setenv("POSTGRES_PORT", port.Port())
+	os.Setenv("APP_POSTGRES_HOST", host)
+	os.Setenv("APP_POSTGRES_PORT", port.Port())
 
 	dsn := getDSN(ctx, postgresCtr)
 	applyMigrations(pathToMigrationsFiles, dsn)
@@ -107,7 +107,7 @@ func runTests(m *testing.M) int {
 	testDeps.usersService = users_service.NewUsersService(testDeps.usersRepository, usersPasswordManager)
 	testDeps.usersTransportHTTP = users_transport_http.NewUsersHTTPHandler(testDeps.usersService)
 
-	os.Setenv("SERVER_ADDR", freePort)
+	os.Setenv("APP_SERVER_ADDR", freePort)
 
 	app, err := core_app.NewApplication(ctx, false)
 	if err != nil {
