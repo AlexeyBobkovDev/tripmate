@@ -19,6 +19,7 @@ services:
         condition: service_healthy
     networks:
       - app-network
+      - backend-network
     healthcheck:
       test: ["CMD", "curl -fsS http://localhost:${APP_PORT}/healthcheck"]
       interval: 5s
@@ -38,7 +39,6 @@ services:
     restart: always
     networks:
       - app-network
-      - backend-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s

@@ -3,13 +3,13 @@ module github.com/AlexeyBobkovDev/tripmate/services/app
 go 1.27.3
 
 require (
-	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261029174339-98e21d30d6b0
+	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261030230354-a951d10f38b2
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/go-playground/validator/v10 v10.30.5
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
-	github.com/jackc/pgx/v5 v5.11.0
+	github.com/jackc/pgx/v5 v5.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/nyaruka/phonenumbers v1.8.1
