@@ -62,7 +62,7 @@ migrate-action:
 	elif [ "$(action)" = "up" ] || [ "$(action)" = "down" ]; then \
 		$(MIGRATE_CMD) \
 			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(APP_POSTGRES_HOST):$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
 			$(action); \
 	elif [ "$(action)" = "force" ]; then \
 		if [ -z "$(v)" ]; then \
@@ -71,7 +71,7 @@ migrate-action:
 		fi; \
 		$(MIGRATE_CMD) \
 			-path=$(MIGRATE_DIR) \
-			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(APP_POSTGRES_HOST):$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
+			-database=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(APP_POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable \
 			$(action) $(v); \
 	fi;
 
