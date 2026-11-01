@@ -12,9 +12,9 @@ type Trip struct {
 	OwnerID int
 	Version int
 
-	Name          string
-	PlanningArea  string
-	StartLocation Location
+	Name             string
+	PlanningArea     string
+	StartCoordinates Coordinates
 
 	StartDate time.Time
 	EndDate   time.Time
@@ -44,7 +44,7 @@ func (t *Trip) Validate() error {
 	if err := validatePlanningArea(t.PlanningArea); err != nil {
 		return err
 	}
-	if err := validateStartLocation(t.StartLocation); err != nil {
+	if err := validateStartCoordinates(t.StartCoordinates); err != nil {
 		return err
 	}
 	if err := validateStartDate(t.StartDate); err != nil {
@@ -95,8 +95,8 @@ func (t *Trip) ApplyPatch(patch *TripPatch) error {
 	if patch.PlanningArea.Set {
 		tmp.PlanningArea = *patch.PlanningArea.Value
 	}
-	if patch.StartLocation.Set {
-		tmp.StartLocation = *patch.StartLocation.Value
+	if patch.StartCoordinates.Set {
+		tmp.StartCoordinates = *patch.StartCoordinates.Value
 	}
 	if patch.StartDate.Set {
 		tmp.StartDate = *patch.StartDate.Value
@@ -129,7 +129,7 @@ func NewTrip(
 	version int,
 	name string,
 	planningArea string,
-	startLocation Location,
+	startCoordinates Coordinates,
 	startDate time.Time,
 	endDate time.Time,
 	budget Money,
@@ -140,19 +140,19 @@ func NewTrip(
 	deletedAt *time.Time,
 ) *Trip {
 	return &Trip{
-		ID:            id,
-		OwnerID:       ownerID,
-		Version:       version,
-		Name:          name,
-		PlanningArea:  planningArea,
-		StartLocation: startLocation,
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        budget,
-		Interests:     interests,
-		TimeZone:      timeZone,
-		CreatedAt:     createdAt,
-		UpdatedAt:     updatedAt,
-		DeletedAt:     deletedAt,
+		ID:               id,
+		OwnerID:          ownerID,
+		Version:          version,
+		Name:             name,
+		PlanningArea:     planningArea,
+		StartCoordinates: startCoordinates,
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           budget,
+		Interests:        interests,
+		TimeZone:         timeZone,
+		CreatedAt:        createdAt,
+		UpdatedAt:        updatedAt,
+		DeletedAt:        deletedAt,
 	}
 }

@@ -13,14 +13,13 @@ import (
 
 func validTripCreate() *TripCreate {
 	now := time.Now()
-	startDate := now.AddDate(0, 0, 30).UTC()
-	endDate := startDate.AddDate(0, 0, 3)
+	startDate := now.AddDate(0, 0, 10).UTC()
+	endDate := startDate
 
 	return NewTripCreate(
 		"Weekend in Moscow",
 		"Moscow",
-		Location{
-			Name:      "Red Square",
+		Coordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},
@@ -45,14 +44,13 @@ func TestTripCreateValidate_Valid(t *testing.T) {
 		require.NoError(t, got.Validate())
 	})
 
-	t.Run("optional location and budget omitted", func(t *testing.T) {
+	t.Run("optional location omitted", func(t *testing.T) {
 		t.Parallel()
 
 		got := validTripCreate()
-		got.StartLocation = Location{}
-		got.Budget = Money{}
+		got.StartCoordinates = Coordinates{}
 
-		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidLocationName)
+		require.NoError(t, got.Validate())
 	})
 
 	t.Run("empty interests", func(t *testing.T) {
@@ -83,12 +81,11 @@ func TestTripCreateValidate_InvalidPlanningArea(t *testing.T) {
 	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidPlanningArea)
 }
 
-func TestTripCreateValidate_InvalidStartLocation(t *testing.T) {
+func TestTripCreateValidate_InvalidStartCoordinates(t *testing.T) {
 	t.Parallel()
 
 	got := validTripCreate()
-	got.StartLocation = Location{
-		Name:      "Invalid location",
+	got.StartCoordinates = Coordinates{
 		Latitude:  math.NaN(),
 		Longitude: 37.6208,
 	}
@@ -101,7 +98,7 @@ func TestTripCreateValidate_InvalidStartDate(t *testing.T) {
 
 	got := validTripCreate()
 	got.StartDate = time.Now().AddDate(0, 0, -1)
-	got.EndDate = got.StartDate.AddDate(0, 0, 3)
+	got.EndDate = got.StartDate
 
 	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripStartDate)
 }
@@ -115,15 +112,23 @@ func TestTripCreateValidate_InvalidEndDate(t *testing.T) {
 	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
 }
 
-func TestTripCreateValidate_StartDateMustPrecedeEndDate(t *testing.T) {
+func TestTripCreateValidate_StartDateMustEqualEndDate(t *testing.T) {
 	t.Parallel()
+
+	t.Run("start date before end date", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.EndDate = got.StartDate.AddDate(0, 0, 1)
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
+	})
 
 	t.Run("start date after end date", func(t *testing.T) {
 		t.Parallel()
 
 		got := validTripCreate()
-		got.StartDate = time.Now().AddDate(0, 0, 40)
-		got.EndDate = time.Now().AddDate(0, 0, 39)
+		got.EndDate = got.StartDate.AddDate(0, 0, -1)
 
 		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
 	})
@@ -134,7 +139,7 @@ func TestTripCreateValidate_StartDateMustPrecedeEndDate(t *testing.T) {
 		got := validTripCreate()
 		got.EndDate = got.StartDate
 
-		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
+		require.NoError(t, got.Validate())
 	})
 }
 
@@ -171,20 +176,19 @@ func TestTripCreateValidate_InvalidTimeZone(t *testing.T) {
 func TestNewTripCreate(t *testing.T) {
 	t.Parallel()
 
-	startLocation := Location{
-		Name:      "Red Square",
+	startCoordinates := Coordinates{
 		Latitude:  55.7539,
 		Longitude: 37.6208,
 	}
 	startDate := time.Now().AddDate(0, 0, 60).UTC()
-	endDate := startDate.AddDate(0, 0, 3)
+	endDate := startDate
 	budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestNature}
 
 	got := NewTripCreate(
 		"Winter trip",
 		"Moscow",
-		startLocation,
+		startCoordinates,
 		startDate,
 		endDate,
 		budget,
@@ -195,7 +199,7 @@ func TestNewTripCreate(t *testing.T) {
 	require.NotNil(t, got)
 	assert.Equal(t, "Winter trip", got.Name)
 	assert.Equal(t, "Moscow", got.PlanningArea)
-	assert.Equal(t, startLocation, got.StartLocation)
+	assert.Equal(t, startCoordinates, got.StartCoordinates)
 	assert.True(t, startDate.Equal(got.StartDate))
 	assert.True(t, endDate.Equal(got.EndDate))
 	assert.Equal(t, budget, got.Budget)

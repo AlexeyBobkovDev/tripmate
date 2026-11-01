@@ -10,9 +10,9 @@ type TripPatch struct {
 	OwnerID int
 	Version int
 
-	Name          Nullable[string]
-	PlanningArea  Nullable[string]
-	StartLocation Nullable[Location]
+	Name             Nullable[string]
+	PlanningArea     Nullable[string]
+	StartCoordinates Nullable[Coordinates]
 
 	StartDate Nullable[time.Time]
 	EndDate   Nullable[time.Time]
@@ -45,11 +45,11 @@ func (t *TripPatch) Validate() error {
 			return err
 		}
 	}
-	if t.StartLocation.Set {
-		if t.StartLocation.Value == nil {
+	if t.StartCoordinates.Set {
+		if t.StartCoordinates.Value == nil {
 			return core_errors.ErrInvalidArgument
 		}
-		if err := validateStartLocation(*t.StartLocation.Value); err != nil {
+		if err := validateStartCoordinates(*t.StartCoordinates.Value); err != nil {
 			return err
 		}
 	}
@@ -102,7 +102,7 @@ func NewTripPatch(
 	version int,
 	name Nullable[string],
 	planningArea Nullable[string],
-	startLocation Nullable[Location],
+	startCoordinates Nullable[Coordinates],
 	startDate Nullable[time.Time],
 	endDate Nullable[time.Time],
 	budget Nullable[Money],
@@ -110,15 +110,15 @@ func NewTripPatch(
 	timeZone Nullable[string],
 ) *TripPatch {
 	return &TripPatch{
-		OwnerID:       ownerID,
-		Version:       version,
-		Name:          name,
-		PlanningArea:  planningArea,
-		StartLocation: startLocation,
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        budget,
-		Interests:     interests,
-		TimeZone:      timeZone,
+		OwnerID:          ownerID,
+		Version:          version,
+		Name:             name,
+		PlanningArea:     planningArea,
+		StartCoordinates: startCoordinates,
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           budget,
+		Interests:        interests,
+		TimeZone:         timeZone,
 	}
 }
