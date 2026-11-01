@@ -23,7 +23,7 @@ func TestTripsService_PatchTrip_Integration_Success(t *testing.T) {
 
 	originalVersion := createdTrip.Version
 	originalPlanningArea := createdTrip.PlanningArea
-	originalStartLocation := createdTrip.StartLocation
+	originalStartCoordinates := createdTrip.StartCoordinates
 	originalStartDate := createdTrip.StartDate
 	originalEndDate := createdTrip.EndDate
 	originalBudget := createdTrip.Budget
@@ -54,7 +54,7 @@ func TestTripsService_PatchTrip_Integration_Success(t *testing.T) {
 	assert.Equal(t, createdTrip.ID, patchedTrip.ID)
 	assert.Equal(t, createdTrip.OwnerID, patchedTrip.OwnerID)
 	assert.Equal(t, originalPlanningArea, patchedTrip.PlanningArea)
-	assert.Equal(t, originalStartLocation, patchedTrip.StartLocation)
+	assert.Equal(t, originalStartCoordinates, patchedTrip.StartCoordinates)
 	assert.True(t, originalStartDate.Equal(patchedTrip.StartDate))
 	assert.True(t, originalEndDate.Equal(patchedTrip.EndDate))
 	assert.Equal(t, originalBudget, patchedTrip.Budget)

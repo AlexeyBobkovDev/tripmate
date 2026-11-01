@@ -248,8 +248,8 @@ func validatePlanningArea(planningArea string) error {
 	return nil
 }
 
-func validateStartLocation(startLocation Location) error {
-	return startLocation.Validate()
+func validateStartCoordinates(startCoordinates Coordinates) error {
+	return startCoordinates.Validate()
 }
 
 func validateInterests(interests []Interest) error {

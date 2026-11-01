@@ -6,20 +6,20 @@ import (
 
 func tripDTOFromDomain(trip *domain.Trip) TripResponse {
 	return TripResponse{
-		ID:            trip.ID,
-		OwnerID:       trip.OwnerID,
-		Version:       trip.Version,
-		Name:          trip.Name,
-		PlanningArea:  trip.PlanningArea,
-		StartLocation: trip.StartLocation,
-		StartDate:     trip.StartDate,
-		EndDate:       trip.EndDate,
-		Budget:        trip.Budget,
-		Interests:     trip.Interests,
-		TimeZone:      trip.TimeZone,
-		CreatedAt:     trip.CreatedAt,
-		UpdatedAt:     trip.UpdatedAt,
-		DeletedAt:     trip.DeletedAt,
+		ID:               trip.ID,
+		OwnerID:          trip.OwnerID,
+		Version:          trip.Version,
+		Name:             trip.Name,
+		PlanningArea:     trip.PlanningArea,
+		StartCoordinates: trip.StartCoordinates,
+		StartDate:        trip.StartDate,
+		EndDate:          trip.EndDate,
+		Budget:           trip.Budget,
+		Interests:        trip.Interests,
+		TimeZone:         trip.TimeZone,
+		CreatedAt:        trip.CreatedAt,
+		UpdatedAt:        trip.UpdatedAt,
+		DeletedAt:        trip.DeletedAt,
 	}
 }
 

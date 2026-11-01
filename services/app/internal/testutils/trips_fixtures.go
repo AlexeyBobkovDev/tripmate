@@ -17,8 +17,7 @@ func TripTest() domain.Trip {
 		Version:      1,
 		Name:         "Walk around Moscow",
 		PlanningArea: "Moscow",
-		StartLocation: domain.Location{
-			Name:      "Red Square",
+		StartCoordinates: domain.Coordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},
@@ -43,7 +42,7 @@ func TripPatchTest() domain.TripPatch {
 		1,
 		domain.Nullable[string]{Value: &name, Set: true},
 		domain.Nullable[string]{Set: false},
-		domain.Nullable[domain.Location]{Set: false},
+		domain.Nullable[domain.Coordinates]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
 		domain.Nullable[domain.Money]{Set: false},
@@ -60,8 +59,7 @@ func TripCreateTest(ownerID int, name string) *domain.TripCreate {
 	trip := domain.NewTripCreate(
 		name,
 		"Moscow",
-		domain.Location{
-			Name:      "Red Square",
+		domain.Coordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},

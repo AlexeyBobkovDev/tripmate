@@ -455,12 +455,12 @@ func TestValidatePlanningArea(t *testing.T) {
 	}
 }
 
-func TestValidateStartLocation(t *testing.T) {
-	require.ErrorIs(t, validateStartLocation(Location{}), core_errors.ErrInvalidLocationName)
-	require.NoError(t, validateStartLocation(Location{Name: "Moscow", Latitude: 55.75, Longitude: 37.62}))
-	require.ErrorIs(t, validateStartLocation(Location{Name: "", Latitude: 55.75, Longitude: 37.62}), core_errors.ErrInvalidLocationName)
-	require.ErrorIs(t, validateStartLocation(Location{Name: "Moscow", Latitude: 91, Longitude: 37.62}), core_errors.ErrInvalidLatitude)
-	require.ErrorIs(t, validateStartLocation(Location{Name: "Moscow", Latitude: 55.75, Longitude: 181}), core_errors.ErrInvalidLongitude)
+func TestValidateStartCoordinates(t *testing.T) {
+	require.ErrorIs(t, validateStartCoordinates(Coordinates{}), nil)
+	require.NoError(t, validateStartCoordinates(Coordinates{Latitude: 55.75, Longitude: 37.62}))
+	require.NoError(t, validateStartCoordinates(Coordinates{Latitude: 55.75, Longitude: 37.62}))
+	require.ErrorIs(t, validateStartCoordinates(Coordinates{Latitude: 91, Longitude: 37.62}), core_errors.ErrInvalidLatitude)
+	require.ErrorIs(t, validateStartCoordinates(Coordinates{Latitude: 55.75, Longitude: 181}), core_errors.ErrInvalidLongitude)
 }
 
 func TestValidateInterests(t *testing.T) {

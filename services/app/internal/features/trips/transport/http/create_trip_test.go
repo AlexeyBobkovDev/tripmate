@@ -59,7 +59,7 @@ func TestTripsTransportHTTP_CreateTrip_Success(t *testing.T) {
 	assert.Equal(t, testExpectedTripResponse().Version, trip.Version)
 	assert.Equal(t, testExpectedTripResponse().Name, trip.Name)
 	assert.Equal(t, testExpectedTripResponse().PlanningArea, trip.PlanningArea)
-	assert.Equal(t, testExpectedTripResponse().StartLocation, trip.StartLocation)
+	assert.Equal(t, testExpectedTripResponse().StartCoordinates, trip.StartCoordinates)
 	assert.True(t, testExpectedTripResponse().StartDate.Equal(trip.StartDate))
 	assert.True(t, testExpectedTripResponse().EndDate.Equal(trip.EndDate))
 	assert.Equal(t, testExpectedTripResponse().Budget, trip.Budget)
@@ -151,7 +151,7 @@ func TestTripsTransportHTTP_CreateTrip_ValidationError(t *testing.T) {
 				"owner_id": 1,
 				"name": "",
 				"planning_area": "Moscow",
-				"start_location": {"name": "Red Square", "latitude": 55.7539, "longitude": 37.6208},
+				"start_location": {"latitude": 55.7539, "longitude": 37.6208},
 				"start_date": "2026-11-14",
 				"end_date": "2026-11-16",
 				"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
@@ -165,7 +165,7 @@ func TestTripsTransportHTTP_CreateTrip_ValidationError(t *testing.T) {
 				"owner_id": 0,
 				"name": "Trip",
 				"planning_area": "Moscow",
-				"start_location": {"name": "Red Square", "latitude": 55.7539, "longitude": 37.6208},
+				"start_location": {"latitude": 55.7539, "longitude": 37.6208},
 				"start_date": "2026-11-14",
 				"end_date": "2026-11-16",
 				"budget": {"amount_minor_units": 1500000, "currency": "RUB"},

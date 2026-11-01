@@ -27,7 +27,6 @@ var (
 	ErrInvalidTripEndDate   = NewError(errors.New("invalid trip end date"), CategoryBadRequest)
 	ErrInvalidBudget        = NewError(errors.New("invalid trip budget"), CategoryBadRequest)
 	ErrUnsupportedCurrency  = NewError(errors.New("unsupported trip currency"), CategoryBadRequest)
-	ErrInvalidLocationName  = NewError(errors.New("invalid trip location name"), CategoryBadRequest)
 	ErrInvalidLatitude      = NewError(errors.New("invalid trip latitude"), CategoryBadRequest)
 	ErrInvalidLongitude     = NewError(errors.New("invalid trip longitude"), CategoryBadRequest)
 	ErrInvalidTripName      = NewError(errors.New("invalid trip name"), CategoryBadRequest)

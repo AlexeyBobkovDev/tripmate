@@ -11,9 +11,9 @@ type TripResponse struct {
 	OwnerID int `json:"owner_id" example:"1"`
 	Version int `json:"version" example:"1"`
 
-	Name          string          `json:"name" example:"Walk around Moscow"`
-	PlanningArea  string          `json:"planning_area" example:"Moscow"`
-	StartLocation domain.Location `json:"start_location"`
+	Name             string             `json:"name" example:"Walk around Moscow"`
+	PlanningArea     string             `json:"planning_area" example:"Moscow"`
+	StartCoordinates domain.Coordinates `json:"start_location"`
 
 	StartDate time.Time `json:"start_date" example:"2026-11-14T00:00:00Z"`
 	EndDate   time.Time `json:"end_date" example:"2026-11-16T00:00:00Z"`

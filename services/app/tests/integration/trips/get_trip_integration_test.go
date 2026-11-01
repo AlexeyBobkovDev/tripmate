@@ -31,7 +31,7 @@ func TestTripsService_GetTrip_Integration_Success(t *testing.T) {
 	assert.Equal(t, createdTrip.Version, retrievedTrip.Version)
 	assert.Equal(t, createdTrip.Name, retrievedTrip.Name)
 	assert.Equal(t, createdTrip.PlanningArea, retrievedTrip.PlanningArea)
-	assert.Equal(t, createdTrip.StartLocation, retrievedTrip.StartLocation)
+	assert.Equal(t, createdTrip.StartCoordinates, retrievedTrip.StartCoordinates)
 	assert.True(t, createdTrip.StartDate.Equal(retrievedTrip.StartDate))
 	assert.True(t, createdTrip.EndDate.Equal(retrievedTrip.EndDate))
 	assert.Equal(t, createdTrip.Budget, retrievedTrip.Budget)

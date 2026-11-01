@@ -53,15 +53,15 @@ func TestTripsRepository_CreateTrip_Integration_Success(t *testing.T) {
 	endDate := startDate.Add(48 * time.Hour)
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       ownerID,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          ownerID,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	actualTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
@@ -78,7 +78,7 @@ func TestTripsRepository_CreateTrip_Integration_Success(t *testing.T) {
 	assert.Equal(t, ownerID, actualTrip.OwnerID)
 	assert.Equal(t, tripCreate.Name, actualTrip.Name)
 	assert.Equal(t, tripCreate.PlanningArea, actualTrip.PlanningArea)
-	assert.Equal(t, tripCreate.StartLocation, actualTrip.StartLocation)
+	assert.Equal(t, tripCreate.StartCoordinates, actualTrip.StartCoordinates)
 	assert.Equal(t, tripCreate.Budget, actualTrip.Budget)
 	assert.Equal(t, tripCreate.Interests, actualTrip.Interests)
 	assert.Equal(t, tripCreate.TimeZone, actualTrip.TimeZone)
@@ -98,15 +98,15 @@ func TestTripsRepository_CreateTrip_Integration_ForeignKeyViolation(t *testing.T
 	endDate := startDate.Add(48 * time.Hour)
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       999999, // Non-existent owner
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          999999, // Non-existent owner
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	actualTrip, err := tripsRepository.CreateTrip(ctx, tripCreate.OwnerID, &tripCreate)

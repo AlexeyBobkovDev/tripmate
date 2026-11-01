@@ -52,15 +52,15 @@ func TestTripsRepository_PatchTrip_Integration_Success(t *testing.T) {
 	endDate := startDate.Add(48 * time.Hour)
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       ownerID,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          ownerID,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
@@ -124,15 +124,15 @@ func TestTripsRepository_PatchTrip_Integration_Conflict(t *testing.T) {
 	endDate := startDate.Add(48 * time.Hour)
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       ownerID,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          ownerID,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
@@ -163,17 +163,17 @@ func TestTripsRepository_PatchTrip_Integration_NotFound(t *testing.T) {
 	endDate := startDate.Add(48 * time.Hour)
 
 	trip := &domain.Trip{
-		ID:            999999,
-		OwnerID:       1,
-		Version:       1,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		ID:               999999,
+		OwnerID:          1,
+		Version:          1,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	patchedTrip, err := tripsRepository.PatchTrip(ctx, 1, 999999, trip)

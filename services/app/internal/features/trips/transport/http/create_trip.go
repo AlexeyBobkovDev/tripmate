@@ -18,8 +18,8 @@ import (
 type CreateTripRequest struct {
 	Name string `json:"name"           validate:"required,min=1,max=100"       example:"Walk around Moscow"`
 
-	PlanningArea  string          `json:"planning_area"  validate:"required,min=1,max=100"       example:"Moscow"`
-	StartLocation domain.Location `json:"start_location" validate:"required"`
+	PlanningArea     string             `json:"planning_area"  validate:"required,min=1,max=100"       example:"Moscow"`
+	StartCoordinates domain.Coordinates `json:"start_location" validate:"required"`
 
 	StartDate string `json:"start_date"     validate:"required,datetime=2006-01-02" example:"2026-11-14"`
 	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2026-11-16"`
@@ -122,7 +122,7 @@ func createTripDomainFromDTO(dto CreateTripRequest) (*domain.TripCreate, error) 
 	return domain.NewTripCreate(
 		dto.Name,
 		dto.PlanningArea,
-		dto.StartLocation,
+		dto.StartCoordinates,
 		startDate,
 		endDate,
 		dto.Budget,

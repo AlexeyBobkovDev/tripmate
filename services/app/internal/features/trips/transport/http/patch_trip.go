@@ -19,9 +19,9 @@ import (
 type PatchTripRequest struct {
 	Version int `json:"version"        validate:"min=1"                  example:"5"`
 
-	Name          core_http_types.Nullable[string]          `json:"name"              swaggertype:"string"    example:"Walk around NYC"`
-	PlanningArea  core_http_types.Nullable[string]          `json:"planning_area"     swaggertype:"string"    example:"NYC"`
-	StartLocation core_http_types.Nullable[domain.Location] `json:"start_location"`
+	Name             core_http_types.Nullable[string]             `json:"name"              swaggertype:"string"    example:"Walk around NYC"`
+	PlanningArea     core_http_types.Nullable[string]             `json:"planning_area"     swaggertype:"string"    example:"NYC"`
+	StartCoordinates core_http_types.Nullable[domain.Coordinates] `json:"start_location"`
 
 	StartDate core_http_types.Nullable[string] `json:"start_date"   swaggertype:"string"   example:"2026-11-14"`
 	EndDate   core_http_types.Nullable[string] `json:"end_date"     swaggertype:"string"   example:"2026-11-16"`
@@ -194,7 +194,7 @@ func patchTripDomainFromDTO(
 		dto.Version,
 		dto.Name.ToDomain(),
 		dto.PlanningArea.ToDomain(),
-		dto.StartLocation.ToDomain(),
+		dto.StartCoordinates.ToDomain(),
 		startDate,
 		endDate,
 		dto.Budget.ToDomain(),

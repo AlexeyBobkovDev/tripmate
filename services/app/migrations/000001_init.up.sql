@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS app.trips
     version            BIGINT           NOT NULL DEFAULT 1,
     name               VARCHAR(100)     NOT NULL,
     planning_area      VARCHAR(100)     NOT NULL,
-    location_name      VARCHAR(100)     NOT NULL,
     location_latitude  DOUBLE PRECISION NOT NULL,
     location_longitude DOUBLE PRECISION NOT NULL,
     start_date         DATE             NOT NULL,
@@ -76,7 +75,6 @@ CREATE TABLE IF NOT EXISTS app.trips
     CONSTRAINT trips_version_check CHECK (version > 0),
     CONSTRAINT trips_name_check CHECK (CHAR_LENGTH(TRIM(name)) > 0),
     CONSTRAINT trips_planning_area_check CHECK (CHAR_LENGTH(TRIM(planning_area)) > 0),
-    CONSTRAINT trips_location_name_check CHECK (CHAR_LENGTH(TRIM(location_name)) > 0),
     CONSTRAINT trips_location_latitude_check CHECK (
         location_latitude BETWEEN -90
             AND 90
