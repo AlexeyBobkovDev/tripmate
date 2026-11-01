@@ -28,16 +28,16 @@ func (t *TripCreate) Validate() error {
 	if err := validatePlanningArea(t.PlanningArea); err != nil {
 		return err
 	}
-	if err := validateStartCoordinates(t.StartCoordinates); err != nil {
+	if err := validateCoordinates(t.StartCoordinates); err != nil {
 		return err
 	}
-	if err := validateStartDate(t.StartDate); err != nil {
+	if err := validateTripStartDate(t.StartDate); err != nil {
 		return err
 	}
 	if t.StartDate.Before(time.Now()) {
 		return core_errors.ErrInvalidTripStartDate
 	}
-	if err := validateEndDate(t.EndDate); err != nil {
+	if err := validateTripEndDate(t.EndDate); err != nil {
 		return err
 	}
 	if t.EndDate.Before(time.Now()) {

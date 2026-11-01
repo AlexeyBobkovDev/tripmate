@@ -23,3 +23,5 @@ func calculateAge(birthDate, now time.Time) int {
 
 	return age
 }
+
+func timePtr(value time.Time) *time.Time { return &value }

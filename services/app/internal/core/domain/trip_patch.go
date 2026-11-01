@@ -49,7 +49,7 @@ func (t *TripPatch) Validate() error {
 		if t.StartCoordinates.Value == nil {
 			return core_errors.ErrInvalidArgument
 		}
-		if err := validateStartCoordinates(*t.StartCoordinates.Value); err != nil {
+		if err := validateCoordinates(*t.StartCoordinates.Value); err != nil {
 			return err
 		}
 	}
@@ -57,7 +57,7 @@ func (t *TripPatch) Validate() error {
 		if t.StartDate.Value == nil {
 			return core_errors.ErrInvalidArgument
 		}
-		if err := validateStartDate(*t.StartDate.Value); err != nil {
+		if err := validateTripStartDate(*t.StartDate.Value); err != nil {
 			return err
 		}
 	}
@@ -65,7 +65,7 @@ func (t *TripPatch) Validate() error {
 		if t.EndDate.Value == nil {
 			return core_errors.ErrInvalidArgument
 		}
-		if err := validateEndDate(*t.EndDate.Value); err != nil {
+		if err := validateTripEndDate(*t.EndDate.Value); err != nil {
 			return err
 		}
 	}
