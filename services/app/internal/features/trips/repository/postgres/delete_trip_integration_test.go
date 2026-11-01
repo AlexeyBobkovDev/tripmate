@@ -54,7 +54,7 @@ func TestTripsRepository_DeleteTrip_Integration_Success(t *testing.T) {
 	})
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          ownerID,

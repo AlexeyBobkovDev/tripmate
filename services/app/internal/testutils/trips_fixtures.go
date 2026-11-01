@@ -8,7 +8,7 @@ import (
 
 func TripTest() domain.Trip {
 	startDate, _ := time.Parse("2006-01-02", "2026-11-14")
-	endDate, _ := time.Parse("2006-01-02", "2026-11-16")
+	endDate := startDate
 	now := time.Now()
 
 	return domain.Trip{
@@ -54,7 +54,7 @@ func TripPatchTest() domain.TripPatch {
 
 func TripCreateTest(ownerID int, name string) *domain.TripCreate {
 	startDate := time.Date(time.Now().Year()+1, time.March, 10, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(time.Now().Year()+1, time.March, 12, 0, 0, 0, 0, time.UTC)
+	endDate := startDate
 
 	trip := domain.NewTripCreate(
 		name,

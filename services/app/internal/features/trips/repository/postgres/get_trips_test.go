@@ -24,7 +24,7 @@ func TestTripsRepository_GetTrips_Success(t *testing.T) {
 
 	ownerID := 1
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	createdAt := time.Now()
 	updatedAt := time.Now()
 

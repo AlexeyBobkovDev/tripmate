@@ -25,7 +25,7 @@ func TestTripsRepository_PatchTrip_Success(t *testing.T) {
 	ownerID := 1
 	tripID := 1
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
@@ -120,7 +120,7 @@ func TestTripsRepository_PatchTrip_ScanError(t *testing.T) {
 	tripID := 1
 	scanError := errors.New("scan error")
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	patchTripRequest := domain.Trip{
 		ID:               tripID,
 		OwnerID:          ownerID,
@@ -168,7 +168,7 @@ func TestTripsRepository_PatchTrip_UserNotFound(t *testing.T) {
 	ownerID := 1
 	tripID := 1
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	patchTripRequest := domain.Trip{
 		ID:               tripID,
 		OwnerID:          ownerID,
@@ -236,7 +236,7 @@ func TestTripsRepository_PatchTrip_ErrConflict(t *testing.T) {
 	ownerID := 1
 	tripID := 1
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	patchTripRequest := domain.Trip{
 		ID:               tripID,
 		OwnerID:          ownerID,

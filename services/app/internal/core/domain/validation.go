@@ -219,7 +219,7 @@ func validateTripDatesOrder(
 	updatedAt time.Time,
 	deletedAt *time.Time,
 ) error {
-	if !startDate.Before(endDate) {
+	if !startDate.Equal(endDate) {
 		return core_errors.ErrInvalidTripEndDate
 	}
 

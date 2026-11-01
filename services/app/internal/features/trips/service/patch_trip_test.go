@@ -45,7 +45,7 @@ func TestTripsService_PatchTrip_InvalidIDs(t *testing.T) {
 	}
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	tripPatch := domain.NewTripPatch(
 		1,
 		1,
@@ -81,7 +81,7 @@ func TestTripsService_PatchTrip_Success(t *testing.T) {
 	srv := NewTripsService(mockRepo)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	existingTrip := &domain.Trip{
 		ID:               1,

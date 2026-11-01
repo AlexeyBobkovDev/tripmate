@@ -410,13 +410,13 @@ func TestValidateTripDatesOrder(t *testing.T) {
 		deleted                          *time.Time
 		want                             error
 	}{
-		{name: "valid future trip", start: created.Add(time.Hour), end: created.Add(2 * time.Hour), createdAt: created, updatedAt: created},
-		{name: "start before end", start: created.Add(time.Hour), end: created.Add(time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripEndDate},
-		{name: "start after end", start: created.Add(2 * time.Hour), end: created.Add(time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripEndDate},
-		{name: "start before creation", start: created.Add(-time.Hour), end: created.Add(time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripStartDate},
-		{name: "start equals creation", start: created, end: created.Add(time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripStartDate},
-		{name: "system dates invalid", start: created.Add(time.Hour), end: created.Add(2 * time.Hour), createdAt: created, updatedAt: created.Add(-time.Second), want: core_errors.ErrInvalidUpdatedAt},
-		{name: "deleted before updated", start: created.Add(time.Hour), end: created.Add(2 * time.Hour), createdAt: created, updatedAt: created.Add(time.Hour), deleted: timePtr(created.Add(30 * time.Minute)), want: core_errors.ErrInvalidDeletedAt},
+		{name: "valid future trip", start: created.Add(time.Hour), end: created.Add(time.Hour), createdAt: created, updatedAt: created},
+		{name: "start before end", start: created.Add(1 * time.Hour), end: created.Add(2 * time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripEndDate},
+		{name: "start after end", start: created.Add(2 * time.Hour), end: created.Add(1 * time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripEndDate},
+		{name: "start before creation", start: created.Add(-time.Hour), end: created.Add(-time.Hour), createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripStartDate},
+		{name: "start equals creation", start: created, end: created, createdAt: created, updatedAt: created, want: core_errors.ErrInvalidTripStartDate},
+		{name: "system dates invalid", start: created.Add(time.Hour), end: created.Add(time.Hour), createdAt: created, updatedAt: created.Add(-time.Second), deleted: nil, want: core_errors.ErrInvalidUpdatedAt},
+		{name: "deleted before updated", start: created.Add(2 * time.Hour), end: created.Add(2 * time.Hour), createdAt: created, updatedAt: created.Add(time.Hour), deleted: timePtr(created.Add(30 * time.Minute)), want: core_errors.ErrInvalidDeletedAt},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

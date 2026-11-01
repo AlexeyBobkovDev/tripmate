@@ -20,7 +20,7 @@ func TestTripsService_CreateTrip_Success(t *testing.T) {
 	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          1,
@@ -105,7 +105,7 @@ func TestTripsService_CreateTrip_RepositoryError(t *testing.T) {
 	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          1,

@@ -49,7 +49,7 @@ func TestTripsRepository_PatchTrip_Integration_Success(t *testing.T) {
 	})
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          ownerID,
@@ -121,7 +121,7 @@ func TestTripsRepository_PatchTrip_Integration_Conflict(t *testing.T) {
 	})
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          ownerID,
@@ -160,7 +160,7 @@ func TestTripsRepository_PatchTrip_Integration_NotFound(t *testing.T) {
 	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	trip := &domain.Trip{
 		ID:               999999,

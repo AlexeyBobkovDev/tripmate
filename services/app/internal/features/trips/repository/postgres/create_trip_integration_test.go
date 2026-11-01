@@ -50,7 +50,7 @@ func TestTripsRepository_CreateTrip_Integration_Success(t *testing.T) {
 	})
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          ownerID,
@@ -95,7 +95,7 @@ func TestTripsRepository_CreateTrip_Integration_ForeignKeyViolation(t *testing.T
 	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
 		OwnerID:          999999, // Non-existent owner
