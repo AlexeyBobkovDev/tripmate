@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package tripmate.route_generator.api.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "tripmate/route_generator/common/v1/coordinates.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
+
+message RouteStop {
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+  int64 place_id = 2 [(buf.validate.field).int64.gt = 0];
+
+  int32 position = 3 [(buf.validate.field).int32.gt = 0];
+  string name = 4 [(buf.validate.field).string.min_len = 1];
+  string description = 5 [(buf.validate.field).string.min_len = 1];
+
+  tripmate.route_generator.common.v1.Coordinates coordinates = 6;
+  google.protobuf.Timestamp arrival_time = 7;
+  google.protobuf.Timestamp departure_time = 8;
+  google.protobuf.Duration visit_duration = 9 [(buf.validate.field).duration.gt = {seconds: 0}];
+}

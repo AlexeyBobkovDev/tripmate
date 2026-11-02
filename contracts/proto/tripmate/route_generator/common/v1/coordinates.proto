@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tripmate.route_generator.common.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/common/v1;route_generator_common_v1";
+
+message Coordinates {
+  double latitude = 1 [(buf.validate.field).double = {
+    gte: -90
+    lte: 90
+  }];
+  double longitude = 2 [(buf.validate.field).double = {
+    gte: -180
+    lte: 180
+  }];
+}

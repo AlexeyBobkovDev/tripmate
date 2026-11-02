@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package tripmate.route_generator.api.v1;
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
+
+enum RouteStatus {
+  ROUTE_STATUS_UNSPECIFIED = 0;
+  ROUTE_STATUS_GENERATED = 1;
+  ROUTE_STATUS_EDITED = 2;
+}
+
+enum TravelMode {
+  TRAVEL_MODE_UNSPECIFIED = 0;
+  TRAVEL_MODE_WALKING = 1;
+  TRAVEL_MODE_CYCLING = 2;
+  TRAVEL_MODE_DRIVING = 3;
+  TRAVEL_MODE_TRANSIT = 4;
+}
+
+enum Interest {
+  INTEREST_UNSPECIFIED = 0;
+  INTEREST_HISTORY = 1;
+  INTEREST_NATURE = 2;
+  INTEREST_FOOD = 3;
+  INTEREST_ARCHITECTURE = 4;
+}

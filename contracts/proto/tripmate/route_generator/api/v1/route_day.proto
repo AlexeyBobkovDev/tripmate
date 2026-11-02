@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package tripmate.route_generator.api.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "tripmate/route_generator/api/v1/route_leg.proto";
+import "tripmate/route_generator/api/v1/route_stop.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
+
+message RouteDay {
+  int64 id = 1 [(buf.validate.field).int64.gt = 0];
+
+  google.protobuf.Timestamp date = 2 [(buf.validate.field).timestamp.gt_now = true];
+  int32 day_number = 3 [(buf.validate.field).int32.gt = 0];
+
+  repeated RouteStop stops = 4 [(buf.validate.field).repeated.min_items = 1];
+  repeated RouteLeg legs = 5 [(buf.validate.field).repeated.min_items = 1];
+}
