@@ -3,14 +3,12 @@ module github.com/AlexeyBobkovDev/tripmate/services/route_generator
 go 1.27.3
 
 require (
-	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0
-	github.com/alexedwards/argon2id v1.0.0
-	github.com/go-playground/validator/v10 v10.30.5
+	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261031072315-7f385c3872ca
+	github.com/go-playground/validator/v10 v10.30.6
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
-	github.com/jackc/pgx/v5 v5.11.0
+	github.com/jackc/pgx/v5 v5.12.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/nyaruka/phonenumbers v1.8.1
 	github.com/stretchr/testify v1.12.1
 	github.com/swaggo/http-swagger/v2 v2.0.2
 	github.com/swaggo/swag/v2 v2.0.0-rc6
@@ -45,7 +43,7 @@ require (
 	github.com/swaggo/files/v2 v2.0.2 // indirect
 	github.com/swaggo/swag v1.16.6 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.5 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/crypto v0.58.0 // indirect
 	golang.org/x/mod v0.42.0 // indirect
 	golang.org/x/net v0.62.0 // indirect
