@@ -103,11 +103,30 @@ func TestTripCreateValidate_InvalidStartDate(t *testing.T) {
 	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripStartDate)
 }
 
+func TestTripCreateValidate_ZeroStartDate(t *testing.T) {
+	t.Parallel()
+
+	got := validTripCreate()
+	got.StartDate = time.Time{}
+	got.EndDate = got.StartDate
+
+	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripStartDate)
+}
+
 func TestTripCreateValidate_InvalidEndDate(t *testing.T) {
 	t.Parallel()
 
 	got := validTripCreate()
 	got.EndDate = time.Now().AddDate(0, 0, -1)
+
+	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
+}
+
+func TestTripCreateValidate_ZeroEndDate(t *testing.T) {
+	t.Parallel()
+
+	got := validTripCreate()
+	got.EndDate = time.Time{}
 
 	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
 }

@@ -61,6 +61,8 @@ func TestTrip_Validate(t *testing.T) {
 		{name: "updated before created", mutate: func(trip *Trip) { trip.UpdatedAt = trip.CreatedAt.Add(-time.Second) }, wantErr: core_errors.ErrInvalidUpdatedAt},
 		{name: "start date before creation", mutate: func(trip *Trip) { trip.StartDate = trip.CreatedAt.Add(-time.Hour); trip.EndDate = trip.StartDate }, wantErr: core_errors.ErrInvalidTripStartDate},
 		{name: "deleted before updated", mutate: func(trip *Trip) { deleted := trip.UpdatedAt.Add(-time.Second); trip.DeletedAt = &deleted }, wantErr: core_errors.ErrInvalidDeletedAt},
+		{name: "deleted at in future", mutate: func(trip *Trip) { deleted := time.Now().Add(time.Hour); trip.DeletedAt = &deleted }, wantErr: core_errors.ErrInvalidDeletedAt},
+		{name: "future updated at", mutate: func(trip *Trip) { trip.UpdatedAt = time.Now().Add(time.Hour) }, wantErr: core_errors.ErrInvalidUpdatedAt},
 	}
 
 	for _, tt := range tests {
@@ -163,6 +165,35 @@ func TestTrip_ApplyPatch(t *testing.T) {
 
 		require.NoError(t, trip.ApplyPatch(patch))
 		assert.Equal(t, Coordinates{}, trip.StartCoordinates)
+	})
+
+	t.Run("applies valid start and end dates", func(t *testing.T) {
+		trip := tripTestValidTrip()
+		newStartDate := trip.StartDate.Add(24 * time.Hour)
+		newEndDate := newStartDate
+		patch := &TripPatch{
+			OwnerID:   trip.OwnerID,
+			Version:   trip.Version,
+			StartDate: Nullable[time.Time]{Value: &newStartDate, Set: true},
+			EndDate:   Nullable[time.Time]{Value: &newEndDate, Set: true},
+		}
+
+		require.NoError(t, trip.ApplyPatch(patch))
+		assert.True(t, trip.StartDate.Equal(newStartDate))
+		assert.True(t, trip.EndDate.Equal(newEndDate))
+	})
+
+	t.Run("applies valid budget", func(t *testing.T) {
+		trip := tripTestValidTrip()
+		newBudget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
+		patch := &TripPatch{
+			OwnerID: trip.OwnerID,
+			Version: trip.Version,
+			Budget:  Nullable[Money]{Value: &newBudget, Set: true},
+		}
+
+		require.NoError(t, trip.ApplyPatch(patch))
+		assert.Equal(t, newBudget, trip.Budget)
 	})
 
 	t.Run("clear budget", func(t *testing.T) {
