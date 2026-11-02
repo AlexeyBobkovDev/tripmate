@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
@@ -101,6 +103,20 @@ func TestUserCreateValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUserCreateValidatePassword(t *testing.T) {
+	t.Run("valid password", func(t *testing.T) {
+		t.Parallel()
+
+		require.NoError(t, ValidatePassword("Abcd123!"))
+	})
+
+	t.Run("weak password", func(t *testing.T) {
+		t.Parallel()
+
+		require.ErrorIs(t, ValidatePassword("weak"), core_errors.ErrInvalidUserPassword)
+	})
 }
 
 func TestUserCreateValidateAllowsNilDeletedAt(t *testing.T) {
