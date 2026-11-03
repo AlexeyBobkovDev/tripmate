@@ -14,11 +14,8 @@ export APP_SERVICE_NAME := app
 
 ROOT_DIR := $(abspath ../..)
 
-export APP_UID := $(shell id -u)
-export APP_GID := $(shell id -g)
-
-export ROUTE_GENERATOR_UID := $(shell id -u)
-export ROUTE_GENERATOR_GID := $(shell id -g)
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 
 COMPOSE := docker compose \
 	--env-file $(ROOT_DIR)/.env \
