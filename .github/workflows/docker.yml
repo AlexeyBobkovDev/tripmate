@@ -13,6 +13,8 @@ jobs:
         include:
           - service: "app"
             module: "services/app"
+          - service: "route_generator"
+            module: "services/route_generator"
 
     steps:
       - name: Checkout Go code
