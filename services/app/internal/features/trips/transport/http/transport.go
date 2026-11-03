@@ -35,11 +35,6 @@ type TripsService interface {
 		tripID int,
 		tripPatch *domain.TripPatch,
 	) (*domain.Trip, error)
-	GenerateRoute(
-		ctx context.Context,
-		ownerID int,
-		tripID int,
-	) (*domain.Route, error)
 }
 
 type TripsHTTPHandler struct {
@@ -65,11 +60,6 @@ func (h *TripsHTTPHandler) Routes() []*core_server.Route {
 			Method:  http.MethodGet,
 			Path:    "/trips/{" + OwnerIDParam + "}" + "/" + "{" + TripIDParam + "}",
 			Handler: h.GetTrip,
-		},
-		{
-			Method:  http.MethodGet,
-			Path:    "/trips/generate-trip/{" + OwnerIDParam + "}" + "/" + "{" + TripIDParam + "}",
-			Handler: h.GenerateRoute,
 		},
 		{
 			Method:  http.MethodGet,
