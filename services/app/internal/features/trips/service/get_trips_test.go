@@ -33,7 +33,7 @@ func TestTripsService_GetTrips_InvalidOwnerID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockRepo := mocks.NewMockTripsRepository(ctrl)
-			srv := NewTripsService(mockRepo)
+			srv := NewTripsService(mockRepo, nil)
 
 			mockRepo.EXPECT().GetTrips(gomock.Any(), gomock.Any()).Times(0)
 
@@ -47,7 +47,7 @@ func TestTripsService_GetTrips_InvalidOwnerID(t *testing.T) {
 func TestTripsService_GetTrips_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	expectedTrips := []domain.Trip{
 		{ID: 1, OwnerID: 1, Name: "Moscow Trip"},
@@ -65,7 +65,7 @@ func TestTripsService_GetTrips_Success(t *testing.T) {
 func TestTripsService_GetTrips_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	repoErr := errors.New("database error")
 	mockRepo.EXPECT().

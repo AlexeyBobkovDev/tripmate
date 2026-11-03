@@ -63,7 +63,7 @@ func TestTripsService_PatchTrip_InvalidIDs(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockRepo := mocks.NewMockTripsRepository(ctrl)
-			srv := NewTripsService(mockRepo)
+			srv := NewTripsService(mockRepo, nil)
 
 			mockRepo.EXPECT().GetTrip(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			mockRepo.EXPECT().PatchTrip(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
@@ -78,7 +78,7 @@ func TestTripsService_PatchTrip_InvalidIDs(t *testing.T) {
 func TestTripsService_PatchTrip_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	startDate := time.Now().Add(24 * time.Hour)
 	endDate := startDate
@@ -133,7 +133,7 @@ func TestTripsService_PatchTrip_Success(t *testing.T) {
 func TestTripsService_PatchTrip_GetTripError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	getErr := errors.New("not found")
 	tripPatch := domain.NewTripPatch(
@@ -161,7 +161,7 @@ func TestTripsService_PatchTrip_GetTripError(t *testing.T) {
 func TestTripsService_PatchTrip_VersionMismatch(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	existingTrip := &domain.Trip{
 		ID:      1,
@@ -194,7 +194,7 @@ func TestTripsService_PatchTrip_VersionMismatch(t *testing.T) {
 func TestTripsService_PatchTrip_ApplyPatchError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mocks.NewMockTripsRepository(ctrl)
-	srv := NewTripsService(mockRepo)
+	srv := NewTripsService(mockRepo, nil)
 
 	existingTrip := &domain.Trip{
 		ID:      1,

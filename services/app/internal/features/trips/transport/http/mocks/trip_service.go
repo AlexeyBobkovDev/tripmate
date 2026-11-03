@@ -71,6 +71,21 @@ func (mr *MockTripsServiceMockRecorder) DeleteTrip(ctx, ownerID, tripID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTrip", reflect.TypeOf((*MockTripsService)(nil).DeleteTrip), ctx, ownerID, tripID)
 }
 
+// GenerateRoute mocks base method.
+func (m *MockTripsService) GenerateRoute(ctx context.Context, ownerID, tripID int) (*domain.Route, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GenerateRoute", ctx, ownerID, tripID)
+	ret0, _ := ret[0].(*domain.Route)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GenerateRoute indicates an expected call of GenerateRoute.
+func (mr *MockTripsServiceMockRecorder) GenerateRoute(ctx, ownerID, tripID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateRoute", reflect.TypeOf((*MockTripsService)(nil).GenerateRoute), ctx, ownerID, tripID)
+}
+
 // GetTrip mocks base method.
 func (m *MockTripsService) GetTrip(ctx context.Context, ownerID, tripID int) (*domain.Trip, error) {
 	m.ctrl.T.Helper()
