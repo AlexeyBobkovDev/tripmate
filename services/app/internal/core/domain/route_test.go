@@ -25,6 +25,11 @@ func validRoute() *Route {
 }
 
 func validRouteDay(futureDate time.Time) RouteDay {
+	secondValidStop := validStop(futureDate)
+	secondValidStop.ID = 2
+	secondValidStop.PlaceID = 2
+	secondValidStop.Position = 2
+
 	return RouteDay{
 		ID:        1,
 		Date:      futureDate,
@@ -41,6 +46,7 @@ func validRouteDay(futureDate time.Time) RouteDay {
 				DepartureTime: futureDate.Add(2 * time.Hour),
 				VisitDuration: 30 * time.Minute,
 			},
+			secondValidStop,
 		},
 		Legs: []RouteLeg{
 			{
@@ -52,6 +58,20 @@ func validRouteDay(futureDate time.Time) RouteDay {
 				Duration:   10 * time.Minute,
 			},
 		},
+	}
+}
+
+func validStop(futureDate time.Time) RouteStop {
+	return RouteStop{
+		ID:            1,
+		PlaceID:       1,
+		Position:      1,
+		Name:          "Stop",
+		Description:   "Stop description",
+		Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		ArrivalTime:   futureDate.Add(time.Hour),
+		DepartureTime: futureDate.Add(2 * time.Hour),
+		VisitDuration: 30 * time.Minute,
 	}
 }
 

@@ -35,13 +35,14 @@ func (d *RouteDay) Validate() error {
 		}
 	}
 
-	if len(d.Legs) == 0 {
-		return core_errors.ErrInvalidRouteDayLegsAmount
-	}
 	for _, leg := range d.Legs {
 		if err := leg.Validate(); err != nil {
 			return err
 		}
+	}
+
+	if err := validateStopsAndLegs(d.Stops, d.Legs); err != nil {
+		return err
 	}
 
 	return nil

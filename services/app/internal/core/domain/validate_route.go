@@ -118,3 +118,27 @@ func validateRouteDayDayNumber(dayNumber int) error {
 	}
 	return nil
 }
+
+func validateStopsAndLegs(stops []RouteStop, legs []RouteLeg) error {
+	existingStops := map[int]struct{}{}
+
+	for _, stop := range stops {
+		if _, ok := existingStops[stop.ID]; ok {
+			return core_errors.ErrDuplicateRouteStopID
+		}
+		existingStops[stop.ID] = struct{}{}
+	}
+
+	for _, leg := range legs {
+		if leg.FromStopID == leg.ToStopID {
+			return core_errors.ErrInvalidRouteLegStopReference
+		}
+		if _, ok := existingStops[leg.FromStopID]; !ok {
+			return core_errors.ErrInvalidRouteLegStopReference
+		}
+		if _, ok := existingStops[leg.ToStopID]; !ok {
+			return core_errors.ErrInvalidRouteLegStopReference
+		}
+	}
+	return nil
+}
