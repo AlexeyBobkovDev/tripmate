@@ -100,11 +100,11 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 
 	logger.Debug("initializing new server")
 
-	var server *core_server.HTTPServer
+	var httpServer *core_server.HTTPServer
 	middlewareConfig := core_middleware.NewConfigMust()
 	corsConfiguration := core_middleware.NewCORSConfigMust()
 	if isProd {
-		server = core_server.NewHTTPServer(
+		httpServer = core_server.NewHTTPServer(
 			core_server.NewConfigMust(),
 			logger,
 			core_middleware.CORSMiddleware(
@@ -120,7 +120,7 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 			core_middleware.RecoveryMiddleware(),
 		)
 	} else {
-		server = core_server.NewHTTPServer(
+		httpServer = core_server.NewHTTPServer(
 			core_server.NewConfigMust(),
 			logger,
 			core_middleware.LoggerMiddleware(logger),
@@ -129,15 +129,15 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 			core_middleware.RecoveryMiddleware(),
 		)
 	}
-	server.RegisterHealth()
-	server.RegisterSwagger()
+	httpServer.RegisterHealth()
+	httpServer.RegisterSwagger()
 	logger.Debug("successfully initialized server")
-	server.RegisterRouters(apiVersionRouterV1)
+	httpServer.RegisterRouters(apiVersionRouterV1)
 
 	return &Application{
 		Logger:         logger,
 		Pool:           pool,
 		PasswordHasher: passwordHasher,
-		server:         server,
+		server:         httpServer,
 	}, nil
 }
