@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	route_generator_api_v1 "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1"
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
 	_ "github.com/AlexeyBobkovDev/tripmate/services/app/docs"
 	core_crypto_argon2id "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/crypto/argon2id"
@@ -72,6 +76,20 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 		return nil, fmt.Errorf("initialize PostgreSQL pool: %w", err)
 	}
 
+	logger.Debug("initialize grpc client")
+
+	conn, err := grpc.NewClient(
+		"route-generator:8081",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize new grpc client: %w", err)
+	}
+
+	grpcClient := route_generator_api_v1.NewRouteGeneratorServiceClient(conn)
+
+	logger.Debug("successfully initialized grpc client")
+
 	passwordHasherCfg := core_config.NewPasswordHasherConfigMust()
 	passwordHasher := core_crypto_argon2id.NewArgon2IDHash(
 		passwordHasherCfg.Memory,
@@ -94,7 +112,7 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
 
 	tripsPostgresRepository := trips_postgres_repository.NewTripsRepository(pool)
-	tripsService := trips_service.NewTripsService(tripsPostgresRepository)
+	tripsService := trips_service.NewTripsService(tripsPostgresRepository, grpcClient)
 	tripsTransport := trips_transport_http.NewTripsHTTPHandler(tripsService)
 	apiVersionRouterV1.RegisterRoutes(tripsTransport.Routes()...)
 
