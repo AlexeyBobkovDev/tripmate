@@ -17,7 +17,7 @@ func TestTripsHTTPHandler_Routes(t *testing.T) {
 
 	routes := handler.Routes()
 
-	assert.Len(t, routes, 5)
+	assert.Len(t, routes, 6)
 
 	expected := []struct {
 		method string
@@ -25,6 +25,7 @@ func TestTripsHTTPHandler_Routes(t *testing.T) {
 	}{
 		{http.MethodPost, "/trips/{ownerID}"},
 		{http.MethodGet, "/trips/{ownerID}/{tripID}"},
+		{http.MethodGet, "/trips/generate-trip/{ownerID}/{tripID}"},
 		{http.MethodGet, "/trips/{ownerID}"},
 		{http.MethodDelete, "/trips/{ownerID}/{tripID}"},
 		{http.MethodPatch, "/trips/{ownerID}/{tripID}"},
