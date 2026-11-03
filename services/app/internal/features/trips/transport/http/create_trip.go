@@ -22,7 +22,7 @@ type CreateTripRequest struct {
 	StartCoordinates domain.Coordinates `json:"start_location" validate:"required"`
 
 	StartDate string `json:"start_date"     validate:"required,datetime=2006-01-02" example:"2026-11-14"`
-	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2026-11-16"`
+	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2026-11-14"`
 
 	Budget    domain.Money      `json:"budget"         validate:"required"`
 	Interests []domain.Interest `json:"interests"      validate:"required,min=1"`

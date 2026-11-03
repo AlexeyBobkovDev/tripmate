@@ -153,7 +153,7 @@ func TestTripsTransportHTTP_CreateTrip_ValidationError(t *testing.T) {
 				"planning_area": "Moscow",
 				"start_location": {"latitude": 55.7539, "longitude": 37.6208},
 				"start_date": "2026-11-14",
-				"end_date": "2026-11-16",
+				"end_date": "2026-11-14",
 				"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
 				"interests": ["history"],
 				"time_zone": "Europe/Moscow"
@@ -167,7 +167,7 @@ func TestTripsTransportHTTP_CreateTrip_ValidationError(t *testing.T) {
 				"planning_area": "Moscow",
 				"start_location": {"latitude": 55.7539, "longitude": 37.6208},
 				"start_date": "2026-11-14",
-				"end_date": "2026-11-16",
+				"end_date": "2026-11-14",
 				"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
 				"interests": ["history"],
 				"time_zone": "Europe/Moscow"

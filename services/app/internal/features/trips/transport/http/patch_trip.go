@@ -24,7 +24,7 @@ type PatchTripRequest struct {
 	StartCoordinates core_http_types.Nullable[domain.Coordinates] `json:"start_location"`
 
 	StartDate core_http_types.Nullable[string] `json:"start_date"   swaggertype:"string"   example:"2026-11-14"`
-	EndDate   core_http_types.Nullable[string] `json:"end_date"     swaggertype:"string"   example:"2026-11-16"`
+	EndDate   core_http_types.Nullable[string] `json:"end_date"     swaggertype:"string"   example:"2026-11-14"`
 
 	Budget    core_http_types.Nullable[domain.Money]      `json:"budget"`
 	Interests core_http_types.Nullable[[]domain.Interest] `json:"interests"`

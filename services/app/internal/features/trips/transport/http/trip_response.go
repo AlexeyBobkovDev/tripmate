@@ -16,7 +16,7 @@ type TripResponse struct {
 	StartCoordinates domain.Coordinates `json:"start_location"`
 
 	StartDate time.Time `json:"start_date" example:"2026-11-14T00:00:00Z"`
-	EndDate   time.Time `json:"end_date" example:"2026-11-16T00:00:00Z"`
+	EndDate   time.Time `json:"end_date" example:"2026-11-14T23:00:00Z"`
 
 	Budget    domain.Money      `json:"budget"`
 	Interests []domain.Interest `json:"interests"`
