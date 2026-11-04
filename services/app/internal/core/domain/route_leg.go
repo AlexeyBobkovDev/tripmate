@@ -3,14 +3,14 @@ package domain
 import "time"
 
 type RouteLeg struct {
-	ID int
+	ID int `json:"id"    example:"1"`
 
-	FromStopID int
-	ToStopID   int
+	FromStopID int `json:"from_stop_id"   example:"1"`
+	ToStopID   int `json:"to_stop_id"     example:"1"`
 
-	TravelMode TravelMode
-	Distance   int
-	Duration   time.Duration
+	TravelMode TravelMode    `json:"travel_mode"                              example:"walking"`
+	Distance   int           `json:"distance"                                 example:"100"`
+	Duration   time.Duration `json:"duration"      swaggertype:"integer"      example:"800"`
 }
 
 func (l *RouteLeg) Validate() error {

@@ -7,10 +7,10 @@ import (
 )
 
 type RouteDay struct {
-	ID int
+	ID int `json:"id"    example:"1"`
 
-	Date      time.Time
-	DayNumber int
+	Date      time.Time `json:"date"         example:"2026-10-28T12:00:00Z"`
+	DayNumber int       `json:"day_number"   example:"1"`
 
 	Stops []RouteStop
 	Legs  []RouteLeg

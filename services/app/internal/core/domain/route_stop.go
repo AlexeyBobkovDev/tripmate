@@ -3,18 +3,18 @@ package domain
 import "time"
 
 type RouteStop struct {
-	ID      int
-	PlaceID int
+	ID      int `json:"id"           example:"1"`
+	PlaceID int `json:"place_id"     example:"1"`
 
-	Position    int
-	Name        string
-	Description string
+	Position    int    `json:"position"         example:"1"`
+	Name        string `json:"name"             example:"Name"`
+	Description string `json:"description"      example:"Description"`
 
 	Coordinates Coordinates
 
-	ArrivalTime   time.Time
-	DepartureTime time.Time
-	VisitDuration time.Duration
+	ArrivalTime   time.Time     `json:"arrival_time"                           example:"2026-10-28T12:00:00Z"`
+	DepartureTime time.Time     `json:"departure_time"                         example:"2026-10-28T14:00:00Z"`
+	VisitDuration time.Duration `json:"visit_duration"  swaggertype:"integer"  example:"7200"`
 }
 
 func (s *RouteStop) Validate() error {
