@@ -73,7 +73,8 @@ services:
       test:
         [
           "CMD",
-          "curl -fsS http://localhost:${ROUTE_GENERATOR_PORT}/healthcheck",
+          "/bin/grpc_health_probe",
+          "--addr=localhost:${ROUTE_GENERATOR_PORT}",
         ]
       interval: 5s
       retries: 5
