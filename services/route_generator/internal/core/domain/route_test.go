@@ -10,17 +10,9 @@ import (
 )
 
 func validRoute() *Route {
-	createdAt := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
-	updatedAt := createdAt.Add(time.Hour)
 	return &Route{
-		ID:          1,
-		TripID:      1,
-		TripVersion: 1,
-		Version:     1,
-		Status:      RouteStatusGenerated,
-		Days:        []RouteDay{validRouteDay(time.Now().Add(24 * time.Hour))},
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+		Status: RouteStatusGenerated,
+		Days:   []RouteDay{validRouteDay(time.Now().Add(24 * time.Hour))},
 	}
 }
 
@@ -62,10 +54,7 @@ func TestRoute_Validate(t *testing.T) {
 		wantErr error
 	}{
 		{name: "valid route"},
-		{name: "invalid route ID", mutate: func(r *Route) { r.ID = 0 }, wantErr: core_errors.ErrInvalidID},
-		{name: "invalid trip ID", mutate: func(r *Route) { r.TripID = 0 }, wantErr: core_errors.ErrInvalidID},
-		{name: "invalid trip version", mutate: func(r *Route) { r.TripVersion = 0 }, wantErr: core_errors.ErrInvalidVersion},
-		{name: "invalid version", mutate: func(r *Route) { r.Version = 0 }, wantErr: core_errors.ErrInvalidVersion},
+
 		{name: "unsupported status", mutate: func(r *Route) { r.Status = "planned" }, wantErr: core_errors.ErrUnsupportedRouteStatus},
 		{name: "no days", mutate: func(r *Route) { r.Days = nil }, wantErr: core_errors.ErrInvalidRouteDaysAmount},
 		{name: "day without stops", mutate: func(r *Route) { r.Days = []RouteDay{{ID: 1, Date: time.Now().Add(24 * time.Hour), DayNumber: 1}} }, wantErr: core_errors.ErrInvalidRouteDayStopsAmount},
@@ -78,11 +67,6 @@ func TestRoute_Validate(t *testing.T) {
 		{name: "day with invalid day number", mutate: func(r *Route) {
 			r.Days = []RouteDay{{ID: 1, Date: time.Now().Add(24 * time.Hour), DayNumber: 0, Stops: validRouteDay(time.Now().Add(24 * time.Hour)).Stops, Legs: validRouteDay(time.Now().Add(24 * time.Hour)).Legs}}
 		}, wantErr: core_errors.ErrInvalidRouteDayDayNumber},
-		{name: "zero created at", mutate: func(r *Route) { r.CreatedAt = time.Time{} }, wantErr: core_errors.ErrInvalidCreatedAt},
-		{name: "future created at", mutate: func(r *Route) { r.CreatedAt = time.Now().Add(time.Hour) }, wantErr: core_errors.ErrInvalidCreatedAt},
-		{name: "zero updated at", mutate: func(r *Route) { r.UpdatedAt = time.Time{} }, wantErr: core_errors.ErrInvalidUpdatedAt},
-		{name: "future updated at", mutate: func(r *Route) { r.UpdatedAt = time.Now().Add(time.Hour) }, wantErr: core_errors.ErrInvalidUpdatedAt},
-		{name: "updated before created", mutate: func(r *Route) { r.UpdatedAt = r.CreatedAt.Add(-time.Second) }, wantErr: core_errors.ErrInvalidUpdatedAt},
 	}
 
 	for _, tt := range tests {
