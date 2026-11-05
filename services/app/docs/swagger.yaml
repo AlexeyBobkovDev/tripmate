@@ -11,6 +11,18 @@ definitions:
         example: short human-readable message
         type: string
     type: object
+  domain.Coordinates:
+    properties:
+      latitude:
+        example: 55.7539
+        type: number
+      longitude:
+        example: 37.6208
+        type: number
+    required:
+    - latitude
+    - longitude
+    type: object
   domain.Interest:
     enum:
     - history
@@ -23,24 +35,6 @@ definitions:
     - InterestNature
     - InterestFood
     - InterestArchitecture
-  domain.Location:
-    properties:
-      latitude:
-        example: 55.7539
-        type: number
-      longitude:
-        example: 37.6208
-        type: number
-      name:
-        example: Red Square
-        maxLength: 100
-        minLength: 1
-        type: string
-    required:
-    - latitude
-    - longitude
-    - name
-    type: object
   domain.Money:
     properties:
       amount_minor_units:
@@ -54,12 +48,123 @@ definitions:
     - amount_minor_units
     - currency
     type: object
+  domain.RouteDay:
+    properties:
+      date:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      day_number:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      legs:
+        items:
+          $ref: '#/definitions/domain.RouteLeg'
+        type: array
+      stops:
+        items:
+          $ref: '#/definitions/domain.RouteStop'
+        type: array
+    type: object
+  domain.RouteLeg:
+    properties:
+      distance:
+        example: 100
+        type: integer
+      duration:
+        example: 800
+        type: integer
+      from_stop_id:
+        example: 1
+        type: integer
+      id:
+        example: 1
+        type: integer
+      to_stop_id:
+        example: 1
+        type: integer
+      travel_mode:
+        allOf:
+        - $ref: '#/definitions/domain.TravelMode'
+        example: walking
+    type: object
+  domain.RouteStop:
+    properties:
+      arrival_time:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      coordinates:
+        $ref: '#/definitions/domain.Coordinates'
+      departure_time:
+        example: "2026-10-28T14:00:00Z"
+        type: string
+      description:
+        example: Description
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Name
+        type: string
+      place_id:
+        example: 1
+        type: integer
+      position:
+        example: 1
+        type: integer
+      visit_duration:
+        example: 7200
+        type: integer
+    type: object
+  domain.TravelMode:
+    enum:
+    - walking
+    - cycling
+    - driving
+    - transit
+    type: string
+    x-enum-varnames:
+    - TravelModeWalking
+    - TravelModeCycling
+    - TravelModeDriving
+    - TravelModeTransit
+  routes_transport_http.RouteResponse:
+    properties:
+      created_at:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      days:
+        items:
+          $ref: '#/definitions/domain.RouteDay'
+        type: array
+      id:
+        example: 1
+        type: integer
+      owner_id:
+        example: 1
+        type: integer
+      status:
+        example: generated
+        type: string
+      trip_version:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2026-10-28T12:00:00Z"
+        type: string
+      version:
+        example: 1
+        type: integer
+    type: object
   trips_transport_http.CreateTripRequest:
     properties:
       budget:
         $ref: '#/definitions/domain.Money'
       end_date:
-        example: "2026-11-16"
+        example: "2026-11-14"
         type: string
       interests:
         items:
@@ -80,7 +185,7 @@ definitions:
         example: "2026-11-14"
         type: string
       start_location:
-        $ref: '#/definitions/domain.Location'
+        $ref: '#/definitions/domain.Coordinates'
       time_zone:
         example: Europe/Moscow
         type: string
@@ -99,7 +204,7 @@ definitions:
       budget:
         $ref: '#/definitions/domain.Money'
       end_date:
-        example: "2026-11-16"
+        example: "2026-11-14"
         type: string
       interests:
         items:
@@ -115,7 +220,7 @@ definitions:
         example: "2026-11-14"
         type: string
       start_location:
-        $ref: '#/definitions/domain.Location'
+        $ref: '#/definitions/domain.Coordinates'
       time_zone:
         example: Europe/Moscow
         type: string
@@ -135,7 +240,7 @@ definitions:
         example: ""
         type: string
       end_date:
-        example: "2026-11-16T00:00:00Z"
+        example: "2026-11-14T23:00:00Z"
         type: string
       id:
         example: 1
@@ -157,7 +262,7 @@ definitions:
         example: "2026-11-14T00:00:00Z"
         type: string
       start_location:
-        $ref: '#/definitions/domain.Location'
+        $ref: '#/definitions/domain.Coordinates'
       time_zone:
         example: Europe/Moscow
         type: string
@@ -290,6 +395,144 @@ info:
   title: TripMate API
   version: "1.0"
 paths:
+  /routes/{ownerID}/{tripID}:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new route
+      operationId: create-route
+      parameters:
+      - description: Owner ID
+        in: path
+        name: ownerID
+        required: true
+        type: integer
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created route
+          schema:
+            $ref: '#/definitions/routes_transport_http.RouteResponse'
+        "400":
+          description: Invalid owner/trip ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Create Route
+      tags:
+      - routes
+  /routes/{tripID}:
+    get:
+      description: Gets routes
+      operationId: get-routes
+      parameters:
+      - description: TripID ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved routes
+          schema:
+            items:
+              $ref: '#/definitions/routes_transport_http.RouteResponse'
+            type: array
+        "400":
+          description: Invalid TripID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Gets Routes
+      tags:
+      - routes
+  /routes/{tripID}/{routeID}:
+    delete:
+      description: Deletes a route
+      operationId: delete-route
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      - description: Route ID
+        in: path
+        name: routeID
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Deleted route
+        "400":
+          description: Invalid trip/route ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Delete Route
+      tags:
+      - routes
+    get:
+      description: Gets a route
+      operationId: get-route
+      parameters:
+      - description: Trip ID
+        in: path
+        name: tripID
+        required: true
+        type: integer
+      - description: Route ID
+        in: path
+        name: routeID
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Successfully retrieved route
+          schema:
+            $ref: '#/definitions/routes_transport_http.RouteResponse'
+        "400":
+          description: Invalid trip/route ID
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/core_http_response.ErrorResponse'
+      summary: Get Route
+      tags:
+      - routes
   /trips/{ownerID}:
     get:
       description: Gets trips
