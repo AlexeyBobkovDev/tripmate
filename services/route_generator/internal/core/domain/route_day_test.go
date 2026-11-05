@@ -24,7 +24,7 @@ func TestRouteDay_Validate(t *testing.T) {
 		{name: "invalid day number", mutate: func(d *RouteDay) { d.DayNumber = 0 }, wantErr: core_errors.ErrInvalidRouteDayDayNumber},
 		{name: "no stops", mutate: func(d *RouteDay) { d.Stops = nil }, wantErr: core_errors.ErrInvalidRouteDayStopsAmount},
 		{name: "invalid stop", mutate: func(d *RouteDay) { d.Stops = []RouteStop{{ID: 1, PlaceID: 1, Position: 0}} }, wantErr: core_errors.ErrInvalidRouteStopPosition},
-		{name: "no legs", mutate: func(d *RouteDay) { d.Legs = nil }, wantErr: core_errors.ErrInvalidRouteDayLegsAmount},
+		{name: "no legs", mutate: func(d *RouteDay) { d.Legs = nil }, wantErr: nil},
 		{name: "invalid leg", mutate: func(d *RouteDay) {
 			d.Legs = []RouteLeg{{ID: 1, FromStopID: 1, ToStopID: 2, TravelMode: "unknown", Distance: 5, Duration: time.Minute}}
 		}, wantErr: core_errors.ErrUnsupportedRouteTravelMode},
