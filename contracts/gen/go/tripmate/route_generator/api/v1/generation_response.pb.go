@@ -14,7 +14,6 @@ import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 const (
@@ -26,14 +25,8 @@ const (
 
 type GenerateRouteResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	TripId        int64                  `protobuf:"varint,2,opt,name=trip_id,json=tripId,proto3" json:"trip_id,omitempty"`
-	TripVersion   int64                  `protobuf:"varint,3,opt,name=trip_version,json=tripVersion,proto3" json:"trip_version,omitempty"`
-	Version       int64                  `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"`
-	Status        RouteStatus            `protobuf:"varint,5,opt,name=status,proto3,enum=tripmate.route_generator.api.v1.RouteStatus" json:"status,omitempty"`
-	Days          []*RouteDay            `protobuf:"bytes,6,rep,name=days,proto3" json:"days,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Status        RouteStatus            `protobuf:"varint,1,opt,name=status,proto3,enum=tripmate.route_generator.api.v1.RouteStatus" json:"status,omitempty"`
+	Days          []*RouteDay            `protobuf:"bytes,2,rep,name=days,proto3" json:"days,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -68,34 +61,6 @@ func (*GenerateRouteResponse) Descriptor() ([]byte, []int) {
 	return file_tripmate_route_generator_api_v1_generation_response_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GenerateRouteResponse) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *GenerateRouteResponse) GetTripId() int64 {
-	if x != nil {
-		return x.TripId
-	}
-	return 0
-}
-
-func (x *GenerateRouteResponse) GetTripVersion() int64 {
-	if x != nil {
-		return x.TripVersion
-	}
-	return 0
-}
-
-func (x *GenerateRouteResponse) GetVersion() int64 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
-}
-
 func (x *GenerateRouteResponse) GetStatus() RouteStatus {
 	if x != nil {
 		return x.Status
@@ -110,36 +75,14 @@ func (x *GenerateRouteResponse) GetDays() []*RouteDay {
 	return nil
 }
 
-func (x *GenerateRouteResponse) GetCreatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return nil
-}
-
-func (x *GenerateRouteResponse) GetUpdatedAt() *timestamppb.Timestamp {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return nil
-}
-
 var File_tripmate_route_generator_api_v1_generation_response_proto protoreflect.FileDescriptor
 
 const file_tripmate_route_generator_api_v1_generation_response_proto_rawDesc = "" +
 	"\n" +
-	"9tripmate/route_generator/api/v1/generation_response.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a/tripmate/route_generator/api/v1/route_day.proto\"\xb0\x03\n" +
-	"\x15GenerateRouteResponse\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12 \n" +
-	"\atrip_id\x18\x02 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x06tripId\x12*\n" +
-	"\ftrip_version\x18\x03 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\vtripVersion\x12!\n" +
-	"\aversion\x18\x04 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\aversion\x12N\n" +
-	"\x06status\x18\x05 \x01(\x0e2,.tripmate.route_generator.api.v1.RouteStatusB\b\xbaH\x05\x82\x01\x02\x10\x01R\x06status\x12G\n" +
-	"\x04days\x18\x06 \x03(\v2).tripmate.route_generator.api.v1.RouteDayB\b\xbaH\x05\x92\x01\x02\b\x01R\x04days\x129\n" +
-	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
-	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAtBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
+	"9tripmate/route_generator/api/v1/generation_response.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a/tripmate/route_generator/api/v1/route_day.proto\"\xb0\x01\n" +
+	"\x15GenerateRouteResponse\x12N\n" +
+	"\x06status\x18\x01 \x01(\x0e2,.tripmate.route_generator.api.v1.RouteStatusB\b\xbaH\x05\x82\x01\x02\x10\x01R\x06status\x12G\n" +
+	"\x04days\x18\x02 \x03(\v2).tripmate.route_generator.api.v1.RouteDayB\b\xbaH\x05\x92\x01\x02\b\x01R\x04daysBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
 
 var (
 	file_tripmate_route_generator_api_v1_generation_response_proto_rawDescOnce sync.Once
@@ -159,20 +102,17 @@ var (
 		(*GenerateRouteResponse)(nil), // 0: tripmate.route_generator.api.v1.GenerateRouteResponse
 		(RouteStatus)(0),              // 1: tripmate.route_generator.api.v1.RouteStatus
 		(*RouteDay)(nil),              // 2: tripmate.route_generator.api.v1.RouteDay
-		(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
 	}
 )
 
 var file_tripmate_route_generator_api_v1_generation_response_proto_depIdxs = []int32{
 	1, // 0: tripmate.route_generator.api.v1.GenerateRouteResponse.status:type_name -> tripmate.route_generator.api.v1.RouteStatus
 	2, // 1: tripmate.route_generator.api.v1.GenerateRouteResponse.days:type_name -> tripmate.route_generator.api.v1.RouteDay
-	3, // 2: tripmate.route_generator.api.v1.GenerateRouteResponse.created_at:type_name -> google.protobuf.Timestamp
-	3, // 3: tripmate.route_generator.api.v1.GenerateRouteResponse.updated_at:type_name -> google.protobuf.Timestamp
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_tripmate_route_generator_api_v1_generation_response_proto_init() }

@@ -3,22 +3,12 @@ syntax = "proto3";
 package tripmate.route_generator.api.v1;
 
 import "buf/validate/validate.proto";
-import "google/protobuf/timestamp.proto";
 import "tripmate/route_generator/api/v1/enums.proto";
 import "tripmate/route_generator/api/v1/route_day.proto";
 
 option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
 
 message GenerateRouteResponse {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  int64 trip_id = 2 [(buf.validate.field).int64.gt = 0];
-
-  int64 trip_version = 3 [(buf.validate.field).int64.gt = 0];
-  int64 version = 4 [(buf.validate.field).int64.gt = 0];
-
-  RouteStatus status = 5 [(buf.validate.field).enum.defined_only = true];
-  repeated RouteDay days = 6 [(buf.validate.field).repeated.min_items = 1];
-
-  google.protobuf.Timestamp created_at = 7;
-  google.protobuf.Timestamp updated_at = 8;
+  RouteStatus status = 1 [(buf.validate.field).enum.defined_only = true];
+  repeated RouteDay days = 2 [(buf.validate.field).repeated.min_items = 1];
 }

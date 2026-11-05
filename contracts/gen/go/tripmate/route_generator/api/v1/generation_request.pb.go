@@ -28,16 +28,14 @@ const (
 
 type GenerateRouteRequest struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	OwnerId          int64                  `protobuf:"varint,2,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
-	Version          int64                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
-	Name             string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	PlanningArea     string                 `protobuf:"bytes,5,opt,name=planning_area,json=planningArea,proto3" json:"planning_area,omitempty"`
-	StartCoordinates *v1.Coordinates        `protobuf:"bytes,6,opt,name=start_coordinates,json=startCoordinates,proto3" json:"start_coordinates,omitempty"`
-	StartDate        *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
-	EndDate          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
-	Interests        []Interest             `protobuf:"varint,9,rep,packed,name=interests,proto3,enum=tripmate.route_generator.api.v1.Interest" json:"interests,omitempty"`
-	TimeZone         string                 `protobuf:"bytes,10,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
+	Name             string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	PlanningArea     string                 `protobuf:"bytes,2,opt,name=planning_area,json=planningArea,proto3" json:"planning_area,omitempty"`
+	StartCoordinates *v1.Coordinates        `protobuf:"bytes,3,opt,name=start_coordinates,json=startCoordinates,proto3" json:"start_coordinates,omitempty"`
+	StartDate        *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	Budget           *v1.Money              `protobuf:"bytes,6,opt,name=budget,proto3" json:"budget,omitempty"`
+	Interests        []Interest             `protobuf:"varint,7,rep,packed,name=interests,proto3,enum=tripmate.route_generator.api.v1.Interest" json:"interests,omitempty"`
+	TimeZone         string                 `protobuf:"bytes,8,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -70,27 +68,6 @@ func (x *GenerateRouteRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GenerateRouteRequest.ProtoReflect.Descriptor instead.
 func (*GenerateRouteRequest) Descriptor() ([]byte, []int) {
 	return file_tripmate_route_generator_api_v1_generation_request_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *GenerateRouteRequest) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-func (x *GenerateRouteRequest) GetOwnerId() int64 {
-	if x != nil {
-		return x.OwnerId
-	}
-	return 0
-}
-
-func (x *GenerateRouteRequest) GetVersion() int64 {
-	if x != nil {
-		return x.Version
-	}
-	return 0
 }
 
 func (x *GenerateRouteRequest) GetName() string {
@@ -128,6 +105,13 @@ func (x *GenerateRouteRequest) GetEndDate() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *GenerateRouteRequest) GetBudget() *v1.Money {
+	if x != nil {
+		return x.Budget
+	}
+	return nil
+}
+
 func (x *GenerateRouteRequest) GetInterests() []Interest {
 	if x != nil {
 		return x.Interests
@@ -146,20 +130,17 @@ var File_tripmate_route_generator_api_v1_generation_request_proto protoreflect.F
 
 const file_tripmate_route_generator_api_v1_generation_request_proto_rawDesc = "" +
 	"\n" +
-	"8tripmate/route_generator/api/v1/generation_request.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\"\x97\x04\n" +
-	"\x14GenerateRouteRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\"\n" +
-	"\bowner_id\x18\x02 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\aownerId\x12!\n" +
-	"\aversion\x18\x03 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\aversion\x12\x1b\n" +
-	"\x04name\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12,\n" +
-	"\rplanning_area\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fplanningArea\x12\\\n" +
-	"\x11start_coordinates\x18\x06 \x01(\v2/.tripmate.route_generator.common.v1.CoordinatesR\x10startCoordinates\x129\n" +
+	"8tripmate/route_generator/api/v1/generation_request.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\x1a.tripmate/route_generator/common/v1/money.proto\"\xfa\x03\n" +
+	"\x14GenerateRouteRequest\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12,\n" +
+	"\rplanning_area\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fplanningArea\x12\\\n" +
+	"\x11start_coordinates\x18\x03 \x01(\v2/.tripmate.route_generator.common.v1.CoordinatesR\x10startCoordinates\x129\n" +
 	"\n" +
-	"start_date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12Q\n" +
-	"\tinterests\x18\t \x03(\x0e2).tripmate.route_generator.api.v1.InterestB\b\xbaH\x05\x92\x01\x02\b\x01R\tinterests\x121\n" +
-	"\ttime_zone\x18\n" +
-	" \x01(\tB\x14\xbaH\x11r\x0f2\rEurope/MoscowR\btimeZoneBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
+	"start_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
+	"\bend_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12A\n" +
+	"\x06budget\x18\x06 \x01(\v2).tripmate.route_generator.common.v1.MoneyR\x06budget\x12Q\n" +
+	"\tinterests\x18\a \x03(\x0e2).tripmate.route_generator.api.v1.InterestB\b\xbaH\x05\x92\x01\x02\b\x01R\tinterests\x121\n" +
+	"\ttime_zone\x18\b \x01(\tB\x14\xbaH\x11r\x0f2\rEurope/MoscowR\btimeZoneBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
 
 var (
 	file_tripmate_route_generator_api_v1_generation_request_proto_rawDescOnce sync.Once
@@ -179,7 +160,8 @@ var (
 		(*GenerateRouteRequest)(nil),  // 0: tripmate.route_generator.api.v1.GenerateRouteRequest
 		(*v1.Coordinates)(nil),        // 1: tripmate.route_generator.common.v1.Coordinates
 		(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-		(Interest)(0),                 // 3: tripmate.route_generator.api.v1.Interest
+		(*v1.Money)(nil),              // 3: tripmate.route_generator.common.v1.Money
+		(Interest)(0),                 // 4: tripmate.route_generator.api.v1.Interest
 	}
 )
 
@@ -187,12 +169,13 @@ var file_tripmate_route_generator_api_v1_generation_request_proto_depIdxs = []in
 	1, // 0: tripmate.route_generator.api.v1.GenerateRouteRequest.start_coordinates:type_name -> tripmate.route_generator.common.v1.Coordinates
 	2, // 1: tripmate.route_generator.api.v1.GenerateRouteRequest.start_date:type_name -> google.protobuf.Timestamp
 	2, // 2: tripmate.route_generator.api.v1.GenerateRouteRequest.end_date:type_name -> google.protobuf.Timestamp
-	3, // 3: tripmate.route_generator.api.v1.GenerateRouteRequest.interests:type_name -> tripmate.route_generator.api.v1.Interest
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	3, // 3: tripmate.route_generator.api.v1.GenerateRouteRequest.budget:type_name -> tripmate.route_generator.common.v1.Money
+	4, // 4: tripmate.route_generator.api.v1.GenerateRouteRequest.interests:type_name -> tripmate.route_generator.api.v1.Interest
+	5, // [5:5] is the sub-list for method output_type
+	5, // [5:5] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_tripmate_route_generator_api_v1_generation_request_proto_init() }
