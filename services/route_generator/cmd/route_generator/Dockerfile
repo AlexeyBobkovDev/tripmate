@@ -5,6 +5,8 @@ LABEL email="alexeybobkovdev@outlook.com"
 
 WORKDIR /workspace
 
+RUN CGO_ENABLED=0 go install github.com/grpc-ecosystem/grpc-health-probe@latest
+
 COPY services/route_generator/go.mod services/route_generator/go.sum /workspace/services/route_generator/
 COPY contracts/go.mod /workspace/contracts/
 
@@ -32,6 +34,7 @@ RUN addgroup -S -g 10001 route_generator && \
             -s /sbin/nologin route_generator \
             route_generator
 
+COPY --from=builder --chown=10001:10001 /go/bin/grpc-health-probe /bin/grpc_health_probe
 COPY --from=builder --chown=10001:10001 /workspace/services/route_generator/out/exe /workspace/
 
 USER 10001:10001
