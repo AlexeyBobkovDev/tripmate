@@ -78,8 +78,9 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 
 	logger.Debug("initialize grpc client")
 
+	routeGeneratorConfig := core_config.NewRouteGeneratorConfigMust()
 	conn, err := grpc.NewClient(
-		"route-generator:8081",
+		routeGeneratorConfig.RouteGeneratorServerAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
