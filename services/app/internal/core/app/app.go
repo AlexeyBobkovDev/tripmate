@@ -112,7 +112,7 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 	apiVersionRouterV1.RegisterRoutes(usersTransport.Routes()...)
 
 	tripsPostgresRepository := trips_postgres_repository.NewTripsRepository(pool)
-	tripsService := trips_service.NewTripsService(tripsPostgresRepository, grpcClient)
+	tripsService := trips_service.NewTripsService(tripsPostgresRepository)
 	tripsTransport := trips_transport_http.NewTripsHTTPHandler(tripsService)
 	apiVersionRouterV1.RegisterRoutes(tripsTransport.Routes()...)
 

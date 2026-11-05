@@ -63,7 +63,7 @@ func runTests(m *testing.M) int {
 	testDeps.pool = setupPostgresPool(ctx, dsn)
 
 	testDeps.tripsRepository = trips_postgres_repository.NewTripsRepository(testDeps.pool)
-	testDeps.tripsService = trips_service.NewTripsService(testDeps.tripsRepository, nil)
+	testDeps.tripsService = trips_service.NewTripsService(testDeps.tripsRepository)
 	testDeps.tripsHTTPHandler = trips_transport_http.NewTripsHTTPHandler(testDeps.tripsService)
 
 	testDeps.usersRepository = users_postgres_repository.NewUsersRepository(testDeps.pool)

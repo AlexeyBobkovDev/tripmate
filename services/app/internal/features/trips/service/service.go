@@ -3,7 +3,6 @@ package trips_service
 import (
 	"context"
 
-	route_generator_api_v1 "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
@@ -37,16 +36,13 @@ type TripsRepository interface {
 }
 
 type TripsService struct {
-	tripsRepository     TripsRepository
-	generateRouteClient route_generator_api_v1.RouteGeneratorServiceClient
+	tripsRepository TripsRepository
 }
 
 func NewTripsService(
 	tripsRepository TripsRepository,
-	generateRouteClient route_generator_api_v1.RouteGeneratorServiceClient,
 ) *TripsService {
 	return &TripsService{
-		tripsRepository:     tripsRepository,
-		generateRouteClient: generateRouteClient,
+		tripsRepository: tripsRepository,
 	}
 }

@@ -17,7 +17,7 @@ import (
 func TestTripsService_CreateTrip_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockTripsRepository := mocks.NewMockTripsRepository(ctrl)
-	tripsService := NewTripsService(mockTripsRepository, nil)
+	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
 	endDate := startDate
@@ -64,7 +64,7 @@ func TestTripsService_CreateTrip_Success(t *testing.T) {
 func TestTripsService_CreateTrip_ValidationError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockTripsRepository := mocks.NewMockTripsRepository(ctrl)
-	tripsService := NewTripsService(mockTripsRepository, nil)
+	tripsService := NewTripsService(mockTripsRepository)
 
 	tests := []struct {
 		name    string
@@ -102,7 +102,7 @@ func TestTripsService_CreateTrip_ValidationError(t *testing.T) {
 func TestTripsService_CreateTrip_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockTripsRepository := mocks.NewMockTripsRepository(ctrl)
-	tripsService := NewTripsService(mockTripsRepository, nil)
+	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
 	endDate := startDate
