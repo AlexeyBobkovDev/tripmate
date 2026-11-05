@@ -40,7 +40,7 @@ migrate-create:
 	$(MAKE) migrate-action action=create name=$(name)
 
 .PHONY: migrate-action
-MIGRATE_CMD = $(COMPOSE) run --rm postgres-migrate
+MIGRATE_CMD = $(COMPOSE) run --rm --volume ./migrations:/migrations postgres-migrate
 migrate-action:
 	@if [ -z "$(action)" ]; then \
 		echo "Action Must be specified! E.g. action=up"; \
