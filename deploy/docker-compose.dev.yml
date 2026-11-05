@@ -17,6 +17,8 @@ services:
     depends_on:
       app-postgres:
         condition: service_healthy
+      route-generator:
+        condition: service_healthy
     networks:
       - app-network
       - backend-network
