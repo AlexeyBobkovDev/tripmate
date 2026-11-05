@@ -114,7 +114,7 @@ services:
     networks:
       - app-network
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${APP_POSTGRES_PORT}:5432"
 
   route-generator-postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
@@ -123,7 +123,7 @@ services:
     networks:
       - route-generator-network
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${ROUTE_GENERATOR_POSTGRES_PORT}:5432"
 
   swagger:
     build:
