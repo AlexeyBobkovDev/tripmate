@@ -119,7 +119,7 @@ services:
   route-generator-postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
     container_name: route-generator-postgres-port-forwarder
-    command: tcp-listen:5433,fork,reuseaddr tcp-connect:route-generator-postgres:5432
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:route-generator-postgres:5432
     networks:
       - route-generator-network
     ports:
