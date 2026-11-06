@@ -148,10 +148,10 @@ func runTests(m *testing.M) int {
 	defer routeGeneratorServer.GracefulStop()
 
 	if err := os.Setenv(
-		"ROUTE_GENERATOR_SERVER_ADDR",
+		"ROUTE_GENERATOR_SERVER_TO_CONNECT",
 		routeGeneratorListener.Addr().String(),
 	); err != nil {
-		panic(fmt.Errorf("failed to set ROUTE_GENERATOR_SERVER_ADDR: %w", err))
+		panic(fmt.Errorf("failed to set ROUTE_GENERATOR_SERVER_TO_CONNECT: %w", err))
 	}
 
 	if err := os.Setenv("APP_SERVER_ADDR", freePort); err != nil {
