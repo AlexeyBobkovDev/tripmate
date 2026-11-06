@@ -112,6 +112,10 @@ lint:
 update-deps:
 	@go get -u ./... && go mod tidy
 
+.PHONY: generate
+generate:
+	@go generate ./...
+
 
 # ===========================Test===========================
 .PHONY: benchmark
