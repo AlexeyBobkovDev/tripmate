@@ -3,7 +3,7 @@ module github.com/AlexeyBobkovDev/tripmate/services/app
 go 1.27.3
 
 require (
-	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261031072315-7f385c3872ca
+	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261106152544-8965d6f0e9a6
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/go-playground/validator/v10 v10.30.6
 	github.com/golang-migrate/migrate/v4 v4.20.1
