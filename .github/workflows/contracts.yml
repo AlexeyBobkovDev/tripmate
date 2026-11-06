@@ -13,7 +13,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch main branch
+      - name: Fetch main branch if we are on a separate branch
+        if: github.ref != 'refs/heads/main'
         run: git fetch origin main:refs/heads/main
 
       - name: Check contracts
