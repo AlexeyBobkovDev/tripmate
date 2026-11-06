@@ -7,7 +7,6 @@ var (
 	ErrDifferentVersions = NewError(errors.New("invalid patch version"), CategoryBadRequest)
 )
 
-// TODO: refactor Unsupported and Invalid
 var (
 	ErrInvalidTripStartDate = NewError(errors.New("invalid trip start date"), CategoryBadRequest)
 	ErrInvalidTripEndDate   = NewError(errors.New("invalid trip end date"), CategoryBadRequest)

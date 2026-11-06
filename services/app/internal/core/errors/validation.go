@@ -22,7 +22,6 @@ var (
 	ErrInvalidUserPassword    = NewError(errors.New("invalid user password"), CategoryBadRequest)
 )
 
-// TODO: refactor Unsupported and Invalid
 var (
 	ErrInvalidTripStartDate = NewError(errors.New("invalid trip start date"), CategoryBadRequest)
 	ErrInvalidTripEndDate   = NewError(errors.New("invalid trip end date"), CategoryBadRequest)
