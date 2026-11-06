@@ -24,19 +24,11 @@ func validateTripEndDate(endDate time.Time) error {
 func validateTripDatesOrder(
 	startDate,
 	endDate time.Time,
-	createdAt,
-	updatedAt time.Time,
-	deletedAt *time.Time,
 ) error {
 	if !startDate.Equal(endDate) {
 		return core_errors.ErrInvalidTripEndDate
 	}
-
-	if startDate.Before(createdAt) || startDate.Equal(createdAt) {
-		return core_errors.ErrInvalidTripStartDate
-	}
-
-	return validateSystemDatesOrder(createdAt, updatedAt, deletedAt)
+	return nil
 }
 
 func validateBudget(budget Money) error {
