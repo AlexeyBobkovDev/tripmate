@@ -10,7 +10,9 @@ jobs:
 
     strategy:
       matrix:
-        service: ["services/app"]
+        include:
+          - service: "services/app"
+          - service: "services/route_generator"
 
     steps:
       - name: Checkout Go files

@@ -29,25 +29,25 @@ func (u *User) Validate() error {
 	if err := validateVersion(u.Version); err != nil {
 		return err
 	}
-	if err := validateName(u.Name); err != nil {
+	if err := validateUserName(u.Name); err != nil {
 		return err
 	}
-	if err := validateSurname(u.Surname); err != nil {
+	if err := validateUserSurname(u.Surname); err != nil {
 		return err
 	}
-	if err := validateUserName(u.Username); err != nil {
+	if err := validateUserUsername(u.Username); err != nil {
 		return err
 	}
-	if err := validateBirthDate(u.BirthDate); err != nil {
+	if err := validateUserBirthDate(u.BirthDate); err != nil {
 		return err
 	}
-	if err := validateDescription(u.Description); err != nil {
+	if err := validateUserDescription(u.Description); err != nil {
 		return err
 	}
-	if err := validateEmail(u.Email); err != nil {
+	if err := validateUserEmail(u.Email); err != nil {
 		return err
 	}
-	if err := validatePhoneNumber(u.PhoneNumber); err != nil {
+	if err := validateUserPhoneNumber(u.PhoneNumber); err != nil {
 		return err
 	}
 	if err := validateCreatedAt(u.CreatedAt); err != nil {

@@ -45,13 +45,13 @@ func TestTripsService_PatchTrip_InvalidIDs(t *testing.T) {
 	}
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 	tripPatch := domain.NewTripPatch(
 		1,
 		1,
 		domain.Nullable[string]{Value: nil, Set: false},
 		domain.Nullable[string]{Value: nil, Set: false},
-		domain.Nullable[domain.Location]{Value: nil, Set: false},
+		domain.Nullable[domain.Coordinates]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: &startDate, Set: true},
 		domain.Nullable[time.Time]{Value: &endDate, Set: true},
 		domain.Nullable[domain.Money]{Value: nil, Set: false},
@@ -81,22 +81,22 @@ func TestTripsService_PatchTrip_Success(t *testing.T) {
 	srv := NewTripsService(mockRepo)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	existingTrip := &domain.Trip{
-		ID:            1,
-		OwnerID:       1,
-		Version:       1,
-		Name:          "Old Trip",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
-		CreatedAt:     time.Now().Add(-72 * time.Hour),
-		UpdatedAt:     time.Now().Add(-72 * time.Hour),
+		ID:               1,
+		OwnerID:          1,
+		Version:          1,
+		Name:             "Old Trip",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
+		CreatedAt:        time.Now().Add(-72 * time.Hour),
+		UpdatedAt:        time.Now().Add(-72 * time.Hour),
 	}
 
 	newName := "Updated Trip"
@@ -105,7 +105,7 @@ func TestTripsService_PatchTrip_Success(t *testing.T) {
 		1,
 		domain.Nullable[string]{Value: &newName, Set: true},
 		domain.Nullable[string]{Value: nil, Set: false},
-		domain.Nullable[domain.Location]{Value: nil, Set: false},
+		domain.Nullable[domain.Coordinates]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[domain.Money]{Value: nil, Set: false},
@@ -141,7 +141,7 @@ func TestTripsService_PatchTrip_GetTripError(t *testing.T) {
 		1,
 		domain.Nullable[string]{Value: nil, Set: false},
 		domain.Nullable[string]{Value: nil, Set: false},
-		domain.Nullable[domain.Location]{Value: nil, Set: false},
+		domain.Nullable[domain.Coordinates]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[domain.Money]{Value: nil, Set: false},
@@ -174,7 +174,7 @@ func TestTripsService_PatchTrip_VersionMismatch(t *testing.T) {
 		1, // Mismatched version
 		domain.Nullable[string]{Value: nil, Set: false},
 		domain.Nullable[string]{Value: nil, Set: false},
-		domain.Nullable[domain.Location]{Value: nil, Set: false},
+		domain.Nullable[domain.Coordinates]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[domain.Money]{Value: nil, Set: false},
@@ -208,7 +208,7 @@ func TestTripsService_PatchTrip_ApplyPatchError(t *testing.T) {
 		1,
 		domain.Nullable[string]{Value: &tooLongName, Set: true},
 		domain.Nullable[string]{Value: nil, Set: false},
-		domain.Nullable[domain.Location]{Value: nil, Set: false},
+		domain.Nullable[domain.Coordinates]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[time.Time]{Value: nil, Set: false},
 		domain.Nullable[domain.Money]{Value: nil, Set: false},

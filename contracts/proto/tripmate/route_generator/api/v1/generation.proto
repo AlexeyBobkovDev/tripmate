@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package tripmate.route_generator.api.v1;
+
+import "tripmate/route_generator/api/v1/generation_request.proto";
+import "tripmate/route_generator/api/v1/generation_response.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
+
+service RouteGeneratorService {
+  rpc GenerateRoute(GenerateRouteRequest) returns (GenerateRouteResponse);
+}

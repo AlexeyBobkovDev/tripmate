@@ -17,6 +17,8 @@ jobs:
         include:
           - service: "services/app"
             go-version-file: "services/app/go.mod"
+          - service: "services/route_generator"
+            go-version-file: "services/route_generator/go.mod"
 
     steps:
       - name: Checkout files
@@ -40,6 +42,8 @@ jobs:
         include:
           - service: "services/app"
             go-version-file: "services/app/go.mod"
+          - service: "services/route_generator"
+            go-version-file: "services/route_generator/go.mod"
     steps:
       - name: Checkout files
         uses: actions/checkout@v7.0.1

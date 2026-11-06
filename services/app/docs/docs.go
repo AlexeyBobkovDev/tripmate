@@ -25,6 +25,211 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/routes/{ownerID}/{tripID}": {
+            "post": {
+                "description": "Creates a new route",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "routes"
+                ],
+                "summary": "Create Route",
+                "operationId": "create-route",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Owner ID",
+                        "name": "ownerID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created route",
+                        "schema": {
+                            "$ref": "#/definitions/routes_transport_http.RouteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid owner/trip ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/routes/{tripID}": {
+            "get": {
+                "description": "Gets routes",
+                "tags": [
+                    "routes"
+                ],
+                "summary": "Gets Routes",
+                "operationId": "get-routes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "TripID ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved routes",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/routes_transport_http.RouteResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid TripID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/routes/{tripID}/{routeID}": {
+            "get": {
+                "description": "Gets a route",
+                "tags": [
+                    "routes"
+                ],
+                "summary": "Get Route",
+                "operationId": "get-route",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Route ID",
+                        "name": "routeID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved route",
+                        "schema": {
+                            "$ref": "#/definitions/routes_transport_http.RouteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid trip/route ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a route",
+                "tags": [
+                    "routes"
+                ],
+                "summary": "Delete Route",
+                "operationId": "delete-route",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "tripID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Route ID",
+                        "name": "routeID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted route"
+                    },
+                    "400": {
+                        "description": "Invalid trip/route ID",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/core_http_response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/trips/{ownerID}": {
             "get": {
                 "description": "Gets trips",
@@ -515,6 +720,23 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.Coordinates": {
+            "type": "object",
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "properties": {
+                "latitude": {
+                    "type": "number",
+                    "example": 55.7539
+                },
+                "longitude": {
+                    "type": "number",
+                    "example": 37.6208
+                }
+            }
+        },
         "domain.Interest": {
             "type": "string",
             "enum": [
@@ -529,30 +751,6 @@ const docTemplate = `{
                 "InterestFood",
                 "InterestArchitecture"
             ]
-        },
-        "domain.Location": {
-            "type": "object",
-            "required": [
-                "latitude",
-                "longitude",
-                "name"
-            ],
-            "properties": {
-                "latitude": {
-                    "type": "number",
-                    "example": 55.7539
-                },
-                "longitude": {
-                    "type": "number",
-                    "example": 37.6208
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 1,
-                    "example": "Red Square"
-                }
-            }
         },
         "domain.Money": {
             "type": "object",
@@ -569,6 +767,162 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "RUB"
+                }
+            }
+        },
+        "domain.RouteDay": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "day_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "legs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.RouteLeg"
+                    }
+                },
+                "stops": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.RouteStop"
+                    }
+                }
+            }
+        },
+        "domain.RouteLeg": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 800
+                },
+                "from_stop_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "to_stop_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "travel_mode": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.TravelMode"
+                        }
+                    ],
+                    "example": "walking"
+                }
+            }
+        },
+        "domain.RouteStop": {
+            "type": "object",
+            "properties": {
+                "arrival_time": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "coordinates": {
+                    "$ref": "#/definitions/domain.Coordinates"
+                },
+                "departure_time": {
+                    "type": "string",
+                    "example": "2026-10-28T14:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Description"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Name"
+                },
+                "place_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "position": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "visit_duration": {
+                    "type": "integer",
+                    "example": 7200
+                }
+            }
+        },
+        "domain.TravelMode": {
+            "type": "string",
+            "enum": [
+                "walking",
+                "cycling",
+                "driving",
+                "transit"
+            ],
+            "x-enum-varnames": [
+                "TravelModeWalking",
+                "TravelModeCycling",
+                "TravelModeDriving",
+                "TravelModeTransit"
+            ]
+        },
+        "routes_transport_http.RouteResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "days": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.RouteDay"
+                    }
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "owner_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "type": "string",
+                    "example": "generated"
+                },
+                "trip_version": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2026-10-28T12:00:00Z"
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -590,7 +944,7 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string",
-                    "example": "2026-11-16"
+                    "example": "2026-11-14"
                 },
                 "interests": {
                     "type": "array",
@@ -616,7 +970,7 @@ const docTemplate = `{
                     "example": "2026-11-14"
                 },
                 "start_location": {
-                    "$ref": "#/definitions/domain.Location"
+                    "$ref": "#/definitions/domain.Coordinates"
                 },
                 "time_zone": {
                     "type": "string",
@@ -632,7 +986,7 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string",
-                    "example": "2026-11-16"
+                    "example": "2026-11-14"
                 },
                 "interests": {
                     "type": "array",
@@ -653,7 +1007,7 @@ const docTemplate = `{
                     "example": "2026-11-14"
                 },
                 "start_location": {
-                    "$ref": "#/definitions/domain.Location"
+                    "$ref": "#/definitions/domain.Coordinates"
                 },
                 "time_zone": {
                     "type": "string",
@@ -682,7 +1036,7 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string",
-                    "example": "2026-11-16T00:00:00Z"
+                    "example": "2026-11-14T23:00:00Z"
                 },
                 "id": {
                     "type": "integer",
@@ -711,7 +1065,7 @@ const docTemplate = `{
                     "example": "2026-11-14T00:00:00Z"
                 },
                 "start_location": {
-                    "$ref": "#/definitions/domain.Location"
+                    "$ref": "#/definitions/domain.Coordinates"
                 },
                 "time_zone": {
                     "type": "string",

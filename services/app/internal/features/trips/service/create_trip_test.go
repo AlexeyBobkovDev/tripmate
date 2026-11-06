@@ -20,35 +20,35 @@ func TestTripsService_CreateTrip_Success(t *testing.T) {
 	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       1,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          1,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	expectedTrip := &domain.Trip{
-		ID:            1,
-		OwnerID:       tripCreate.OwnerID,
-		Version:       1,
-		Name:          tripCreate.Name,
-		PlanningArea:  tripCreate.PlanningArea,
-		StartLocation: tripCreate.StartLocation,
-		StartDate:     tripCreate.StartDate,
-		EndDate:       tripCreate.EndDate,
-		Budget:        tripCreate.Budget,
-		Interests:     tripCreate.Interests,
-		TimeZone:      tripCreate.TimeZone,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-		DeletedAt:     nil,
+		ID:               1,
+		OwnerID:          tripCreate.OwnerID,
+		Version:          1,
+		Name:             tripCreate.Name,
+		PlanningArea:     tripCreate.PlanningArea,
+		StartCoordinates: tripCreate.StartCoordinates,
+		StartDate:        tripCreate.StartDate,
+		EndDate:          tripCreate.EndDate,
+		Budget:           tripCreate.Budget,
+		Interests:        tripCreate.Interests,
+		TimeZone:         tripCreate.TimeZone,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+		DeletedAt:        nil,
 	}
 
 	mockTripsRepository.
@@ -105,18 +105,18 @@ func TestTripsService_CreateTrip_RepositoryError(t *testing.T) {
 	tripsService := NewTripsService(mockTripsRepository)
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       1,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          1,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	repoError := fmt.Errorf("database error")

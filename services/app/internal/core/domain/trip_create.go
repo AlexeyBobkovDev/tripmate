@@ -9,9 +9,9 @@ import (
 type TripCreate struct {
 	OwnerID int
 
-	Name          string
-	PlanningArea  string
-	StartLocation Location
+	Name             string
+	PlanningArea     string
+	StartCoordinates Coordinates
 
 	StartDate time.Time
 	EndDate   time.Time
@@ -28,22 +28,22 @@ func (t *TripCreate) Validate() error {
 	if err := validatePlanningArea(t.PlanningArea); err != nil {
 		return err
 	}
-	if err := validateStartLocation(t.StartLocation); err != nil {
+	if err := validateCoordinates(t.StartCoordinates); err != nil {
 		return err
 	}
-	if err := validateStartDate(t.StartDate); err != nil {
+	if err := validateTripStartDate(t.StartDate); err != nil {
 		return err
 	}
 	if t.StartDate.Before(time.Now()) {
 		return core_errors.ErrInvalidTripStartDate
 	}
-	if err := validateEndDate(t.EndDate); err != nil {
+	if err := validateTripEndDate(t.EndDate); err != nil {
 		return err
 	}
 	if t.EndDate.Before(time.Now()) {
 		return core_errors.ErrInvalidTripEndDate
 	}
-	if !t.StartDate.Before(t.EndDate) {
+	if !t.StartDate.Equal(t.EndDate) {
 		return core_errors.ErrInvalidTripEndDate
 	}
 	if err := validateBudget(t.Budget); err != nil {
@@ -62,7 +62,7 @@ func (t *TripCreate) Validate() error {
 func NewTripCreate(
 	name string,
 	planningArea string,
-	startLocation Location,
+	startCoordinates Coordinates,
 	startDate time.Time,
 	endDate time.Time,
 	budget Money,
@@ -70,13 +70,13 @@ func NewTripCreate(
 	timeZone string,
 ) *TripCreate {
 	return &TripCreate{
-		Name:          name,
-		PlanningArea:  planningArea,
-		StartLocation: startLocation,
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        budget,
-		Interests:     interests,
-		TimeZone:      timeZone,
+		Name:             name,
+		PlanningArea:     planningArea,
+		StartCoordinates: startCoordinates,
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           budget,
+		Interests:        interests,
+		TimeZone:         timeZone,
 	}
 }

@@ -1,0 +1,29 @@
+name: Contracts
+
+on:
+  workflow_call:
+
+jobs:
+  check-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out project files
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Fetch main branch
+        run: git fetch origin main:refs/heads/main
+
+      - name: Check contracts
+        run: |
+          buf () {
+            docker run \
+            --volume "${GITHUB_WORKSPACE}:/workspace" \
+            --workdir /workspace/contracts bufbuild/buf "$@"
+          }
+          buf format --diff --exit-code
+          buf lint
+          buf generate
+          # buf breaking --against '/workspace/.git#branch=main,subdir=contracts/proto'

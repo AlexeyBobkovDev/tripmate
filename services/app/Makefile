@@ -14,11 +14,8 @@ export APP_SERVICE_NAME := app
 
 ROOT_DIR := $(abspath ../..)
 
-export APP_UID := $(shell id -u)
-export APP_GID := $(shell id -g)
-
-export ROUTE_GENERATOR_UID := $(shell id -u)
-export ROUTE_GENERATOR_GID := $(shell id -g)
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 
 COMPOSE := docker compose \
 	--env-file $(ROOT_DIR)/.env \
@@ -43,7 +40,7 @@ migrate-create:
 	$(MAKE) migrate-action action=create name=$(name)
 
 .PHONY: migrate-action
-MIGRATE_CMD = $(COMPOSE) run --rm postgres-migrate
+MIGRATE_CMD = $(COMPOSE) run --rm --volume ./migrations:/migrations postgres-migrate
 migrate-action:
 	@if [ -z "$(action)" ]; then \
 		echo "Action Must be specified! E.g. action=up"; \
@@ -88,7 +85,7 @@ cleanup-logs:
 
 # ===========================Documentation===========================
 .PHONY: swagger-gen
-SWAGGER_CMD = $(COMPOSE) run --build --rm swagger \
+SWAGGER_CMD = $(COMPOSE) run --build --rm --volume .:/code swagger \
 		init \
 		-g ./cmd/$(APP_SERVICE_NAME)/main.go \
 		-o docs \
@@ -99,7 +96,7 @@ swagger-gen: swagger-fmt
 
 .PHONY: swagger-fmt
 swagger-fmt:
-	@$(COMPOSE) run --rm --build swagger fmt \
+	@$(COMPOSE) run --rm --build --volume .:/code swagger fmt \
 		--dir ./cmd/$(APP_SERVICE_NAME),./internal
 
 
@@ -128,6 +125,13 @@ fmt:
 lint:
 	@golangci-lint run ./...
 
+.PHONY: update-deps
+update-deps:
+	@go get -u ./... && go mod tidy
+
+.PHONY: generate
+generate:
+	@go generate ./...
 
 
 # ===========================Test===========================

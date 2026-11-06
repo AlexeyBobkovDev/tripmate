@@ -97,8 +97,7 @@ func createTestUser(t *testing.T, ctx context.Context) *users_transport_http.Use
 	return &user
 }
 
-type tripRequestLocation struct {
-	Name      string  `json:"name"`
+type tripRequestCoordinates struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
@@ -109,28 +108,27 @@ type tripRequestBudget struct {
 }
 
 type tripRequestBody struct {
-	OwnerID       int                 `json:"owner_id"`
-	Version       int                 `json:"version,omitempty"`
-	Name          string              `json:"name"`
-	PlanningArea  string              `json:"planning_area"`
-	StartLocation tripRequestLocation `json:"start_location"`
-	StartDate     string              `json:"start_date"`
-	EndDate       string              `json:"end_date"`
-	Budget        tripRequestBudget   `json:"budget"`
-	Interests     []string            `json:"interests"`
-	TimeZone      string              `json:"time_zone"`
+	OwnerID          int                    `json:"owner_id"`
+	Version          int                    `json:"version,omitempty"`
+	Name             string                 `json:"name"`
+	PlanningArea     string                 `json:"planning_area"`
+	StartCoordinates tripRequestCoordinates `json:"start_location"`
+	StartDate        string                 `json:"start_date"`
+	EndDate          string                 `json:"end_date"`
+	Budget           tripRequestBudget      `json:"budget"`
+	Interests        []string               `json:"interests"`
+	TimeZone         string                 `json:"time_zone"`
 }
 
 func newTripRequestBody(ownerID int, name string) tripRequestBody {
 	startDate := time.Now().Add(48 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	return tripRequestBody{
 		OwnerID:      ownerID,
 		Name:         name,
 		PlanningArea: "Moscow",
-		StartLocation: tripRequestLocation{
-			Name:      "Red Square",
+		StartCoordinates: tripRequestCoordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},

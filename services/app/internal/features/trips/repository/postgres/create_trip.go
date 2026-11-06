@@ -12,7 +12,6 @@ INSERT INTO app.trips (
     owner_id,
     name,
     planning_area,
-    location_name,
     location_latitude,
     location_longitude,
     start_date,
@@ -22,14 +21,13 @@ INSERT INTO app.trips (
     interests,
     time_zone
 )
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
 RETURNING
 	id,
 	owner_id,
 	version,
 	name,
 	planning_area,
-	location_name,
 	location_latitude,
 	location_longitude,
 	start_date,
@@ -58,9 +56,9 @@ func (r *TripsRepository) CreateTrip(
 		ownerID,
 		trip.Name,
 		trip.PlanningArea,
-		trip.StartLocation.Name,
-		trip.StartLocation.Latitude,
-		trip.StartLocation.Longitude,
+
+		trip.StartCoordinates.Latitude,
+		trip.StartCoordinates.Longitude,
 		trip.StartDate,
 		trip.EndDate,
 		trip.Budget.AmountMinorUnits,
@@ -73,9 +71,9 @@ func (r *TripsRepository) CreateTrip(
 		&tripResponse.Version,
 		&tripResponse.Name,
 		&tripResponse.PlanningArea,
-		&tripResponse.StartLocation.Name,
-		&tripResponse.StartLocation.Latitude,
-		&tripResponse.StartLocation.Longitude,
+
+		&tripResponse.StartCoordinates.Latitude,
+		&tripResponse.StartCoordinates.Longitude,
 		&tripResponse.StartDate,
 		&tripResponse.EndDate,
 		&tripResponse.Budget.AmountMinorUnits,

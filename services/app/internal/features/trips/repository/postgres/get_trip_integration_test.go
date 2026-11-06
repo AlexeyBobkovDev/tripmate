@@ -50,18 +50,18 @@ func TestTripsRepository_GetTrip_Integration_Success(t *testing.T) {
 	})
 
 	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate.Add(48 * time.Hour)
+	endDate := startDate
 
 	tripCreate := domain.TripCreate{
-		OwnerID:       ownerID,
-		Name:          "Trip to Moscow",
-		PlanningArea:  "Moscow",
-		StartLocation: domain.Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:     startDate,
-		EndDate:       endDate,
-		Budget:        domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:     []domain.Interest{"history"},
-		TimeZone:      "Europe/Moscow",
+		OwnerID:          ownerID,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        startDate,
+		EndDate:          endDate,
+		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests:        []domain.Interest{"history"},
+		TimeZone:         "Europe/Moscow",
 	}
 
 	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
@@ -83,7 +83,7 @@ func TestTripsRepository_GetTrip_Integration_Success(t *testing.T) {
 	assert.Equal(t, createdTrip.Version, retrievedTrip.Version)
 	assert.Equal(t, createdTrip.Name, retrievedTrip.Name)
 	assert.Equal(t, createdTrip.PlanningArea, retrievedTrip.PlanningArea)
-	assert.Equal(t, createdTrip.StartLocation, retrievedTrip.StartLocation)
+	assert.Equal(t, createdTrip.StartCoordinates, retrievedTrip.StartCoordinates)
 	assert.Equal(t, createdTrip.Budget, retrievedTrip.Budget)
 	assert.Equal(t, createdTrip.Interests, retrievedTrip.Interests)
 	assert.Equal(t, createdTrip.TimeZone, retrievedTrip.TimeZone)

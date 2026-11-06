@@ -10,116 +10,71 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func TestLocation_Validate(t *testing.T) {
+func TestCoordinates_Validate(t *testing.T) {
 	tests := []struct {
 		name     string
-		location Location
+		location Coordinates
 		wantErr  error
 	}{
 		{
 			name: "valid location",
-			location: Location{
-				Name:      "Nizhny Novgorod",
+			location: Coordinates{
 				Latitude:  56.2965,
 				Longitude: 43.9361,
 			},
 		},
 		{
 			name: "valid minimum latitude",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  -90,
 				Longitude: 0,
 			},
 		},
 		{
 			name: "valid maximum latitude",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  90,
 				Longitude: 0,
 			},
 		},
 		{
 			name: "valid minimum longitude",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: -180,
 			},
 		},
 		{
 			name: "valid maximum longitude",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: 180,
 			},
 		},
 		{
 			name: "valid zero coordinates",
-			location: Location{
-				Name:      "Null Island",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: 0,
 			},
 		},
 		{
 			name: "valid coordinates near upper boundaries",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  89.999999,
 				Longitude: 179.999999,
 			},
 		},
 		{
 			name: "name with surrounding whitespace",
-			location: Location{
-				Name:      "  Nizhny Novgorod  ",
+			location: Coordinates{
 				Latitude:  56.3,
 				Longitude: 43.9,
 			},
-		},
-		{
-			name: "empty name",
-			location: Location{
-				Name:      "",
-				Latitude:  56.3,
-				Longitude: 43.9,
-			},
-			wantErr: core_errors.ErrInvalidLocationName,
-		},
-		{
-			name: "name containing only spaces",
-			location: Location{
-				Name:      "     ",
-				Latitude:  56.3,
-				Longitude: 43.9,
-			},
-			wantErr: core_errors.ErrInvalidLocationName,
-		},
-		{
-			name: "name containing tabs and newlines",
-			location: Location{
-				Name:      "\t\n\r ",
-				Latitude:  56.3,
-				Longitude: 43.9,
-			},
-			wantErr: core_errors.ErrInvalidLocationName,
-		},
-		{
-			name: "name containing Unicode whitespace",
-			location: Location{
-				Name:      "\u00A0\u2003",
-				Latitude:  56.3,
-				Longitude: 43.9,
-			},
-			wantErr: core_errors.ErrInvalidLocationName,
 		},
 		{
 			name: "latitude below minimum",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  -90.000001,
 				Longitude: 0,
 			},
@@ -127,8 +82,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "latitude above maximum",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  90.000001,
 				Longitude: 0,
 			},
@@ -136,8 +90,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "latitude negative infinity",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  math.Inf(-1),
 				Longitude: 0,
 			},
@@ -145,8 +98,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "latitude positive infinity",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  math.Inf(1),
 				Longitude: 0,
 			},
@@ -154,8 +106,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "latitude NaN",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  math.NaN(),
 				Longitude: 0,
 			},
@@ -163,8 +114,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "longitude below minimum",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: -180.000001,
 			},
@@ -172,8 +122,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "longitude above maximum",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: 180.000001,
 			},
@@ -181,8 +130,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "longitude negative infinity",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: math.Inf(-1),
 			},
@@ -190,8 +138,7 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "longitude positive infinity",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: math.Inf(1),
 			},
@@ -199,26 +146,15 @@ func TestLocation_Validate(t *testing.T) {
 		},
 		{
 			name: "longitude NaN",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  0,
 				Longitude: math.NaN(),
 			},
 			wantErr: core_errors.ErrInvalidLongitude,
 		},
 		{
-			name: "invalid name takes precedence",
-			location: Location{
-				Name:      " ",
-				Latitude:  100,
-				Longitude: 200,
-			},
-			wantErr: core_errors.ErrInvalidLocationName,
-		},
-		{
 			name: "invalid latitude takes precedence",
-			location: Location{
-				Name:      "Location",
+			location: Coordinates{
 				Latitude:  100,
 				Longitude: 200,
 			},

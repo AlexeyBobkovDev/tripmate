@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package tripmate.route_generator.common.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/common/v1;route_generator_common_v1";
+
+message Money {
+  int64 amount_minor_units = 1 [(buf.validate.field).int64.gt = 0];
+  string currency = 2 [(buf.validate.field).string = {
+    in: ["RUB"]
+    max_len: 3
+  }];
+}

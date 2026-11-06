@@ -1,4 +1,1 @@
-DROP TABLE IF EXISTS app.trips;
-DROP TABLE IF EXISTS app.users;
-
 DROP SCHEMA IF EXISTS app;

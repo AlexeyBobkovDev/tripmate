@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	route_generator_api_v1 "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1"
 	core_config "github.com/AlexeyBobkovDev/tripmate/services/app/config"
 	_ "github.com/AlexeyBobkovDev/tripmate/services/app/docs"
 	core_crypto_argon2id "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/crypto/argon2id"
@@ -14,6 +18,9 @@ import (
 	core_pgx_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/pgx"
 	core_middleware "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/middleware"
 	core_server "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/server"
+	routes_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/routes/repository/postgres"
+	routes_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/routes/service"
+	routes_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/routes/transport/http"
 	trips_postgres_repository "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/repository/postgres"
 	trips_service "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/service"
 	trips_transport_http "github.com/AlexeyBobkovDev/tripmate/services/app/internal/features/trips/transport/http"
@@ -72,6 +79,21 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 		return nil, fmt.Errorf("initialize PostgreSQL pool: %w", err)
 	}
 
+	logger.Debug("initialize grpc client")
+
+	routeGeneratorConfig := core_config.NewRouteGeneratorConfigMust()
+	conn, err := grpc.NewClient(
+		routeGeneratorConfig.RouteGeneratorServerToConnect,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize new grpc client: %w", err)
+	}
+
+	grpcClient := route_generator_api_v1.NewRouteGeneratorServiceClient(conn)
+
+	logger.Debug("successfully initialized grpc client")
+
 	passwordHasherCfg := core_config.NewPasswordHasherConfigMust()
 	passwordHasher := core_crypto_argon2id.NewArgon2IDHash(
 		passwordHasherCfg.Memory,
@@ -98,13 +120,18 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 	tripsTransport := trips_transport_http.NewTripsHTTPHandler(tripsService)
 	apiVersionRouterV1.RegisterRoutes(tripsTransport.Routes()...)
 
+	routesPostgresRepository := routes_postgres_repository.NewRoutesRepository(pool)
+	routesService := routes_service.NewRoutesService(routesPostgresRepository, tripsService, grpcClient)
+	routesTransport := routes_transport_http.NewRoutesHTTPHandler(routesService)
+	apiVersionRouterV1.RegisterRoutes(routesTransport.Routes()...)
+
 	logger.Debug("initializing new server")
 
-	var server *core_server.HTTPServer
+	var httpServer *core_server.HTTPServer
 	middlewareConfig := core_middleware.NewConfigMust()
 	corsConfiguration := core_middleware.NewCORSConfigMust()
 	if isProd {
-		server = core_server.NewHTTPServer(
+		httpServer = core_server.NewHTTPServer(
 			core_server.NewConfigMust(),
 			logger,
 			core_middleware.CORSMiddleware(
@@ -120,7 +147,7 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 			core_middleware.RecoveryMiddleware(),
 		)
 	} else {
-		server = core_server.NewHTTPServer(
+		httpServer = core_server.NewHTTPServer(
 			core_server.NewConfigMust(),
 			logger,
 			core_middleware.LoggerMiddleware(logger),
@@ -129,15 +156,15 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 			core_middleware.RecoveryMiddleware(),
 		)
 	}
-	server.RegisterHealth()
-	server.RegisterSwagger()
+	httpServer.RegisterHealth()
+	httpServer.RegisterSwagger()
 	logger.Debug("successfully initialized server")
-	server.RegisterRouters(apiVersionRouterV1)
+	httpServer.RegisterRouters(apiVersionRouterV1)
 
 	return &Application{
 		Logger:         logger,
 		Pool:           pool,
 		PasswordHasher: passwordHasher,
-		server:         server,
+		server:         httpServer,
 	}, nil
 }

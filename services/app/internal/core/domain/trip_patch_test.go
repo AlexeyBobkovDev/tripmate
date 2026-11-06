@@ -80,17 +80,17 @@ func TestTripPatchValidate(t *testing.T) {
 		{
 			name: "start location value is nil when set",
 			mutate: func(p *TripPatch) {
-				p.StartLocation = Nullable[Location]{Set: true}
+				p.StartCoordinates = Nullable[Coordinates]{Set: true}
 			},
 			wantErr: core_errors.ErrInvalidArgument,
 		},
 		{
 			name: "invalid start location",
 			mutate: func(p *TripPatch) {
-				location := &Location{Name: " ", Latitude: 0, Longitude: 0}
-				p.StartLocation = Nullable[Location]{Set: true, Value: location}
+				location := &Coordinates{Latitude: 100, Longitude: 37.6208}
+				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: location}
 			},
-			wantErr: core_errors.ErrInvalidLocationName,
+			wantErr: core_errors.ErrInvalidLatitude,
 		},
 		{
 			name: "start date value is nil when set",
@@ -180,16 +180,16 @@ func TestTripPatchValidate(t *testing.T) {
 			mutate: func(p *TripPatch) {
 				name := "Weekend trip"
 				area := "Moscow"
-				location := Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
+				location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
 				start := time.Now().Add(48 * time.Hour)
-				end := start.Add(24 * time.Hour)
+				end := start
 				budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 				interests := []Interest{InterestHistory, InterestFood}
 				timeZone := "Europe/Moscow"
 
 				p.Name = Nullable[string]{Set: true, Value: &name}
 				p.PlanningArea = Nullable[string]{Set: true, Value: &area}
-				p.StartLocation = Nullable[Location]{Set: true, Value: &location}
+				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: &location}
 				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
 				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
 				p.Budget = Nullable[Money]{Set: true, Value: &budget}
@@ -200,10 +200,10 @@ func TestTripPatchValidate(t *testing.T) {
 		{
 			name: "location cleared",
 			mutate: func(p *TripPatch) {
-				var location Location
-				p.StartLocation = Nullable[Location]{Set: true, Value: &location}
+				var location Coordinates
+				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: &location}
 			},
-			wantErr: core_errors.ErrInvalidLocationName,
+			wantErr: nil,
 		},
 		{
 			name: "budget cleared",
@@ -245,14 +245,14 @@ func TestNewTripPatch(t *testing.T) {
 	endDate := time.Date(2027, time.June, 3, 12, 0, 0, 0, time.UTC)
 	name := "Summer trip"
 	area := "Moscow"
-	location := Location{Name: "Red Square", Latitude: 55.7539, Longitude: 37.6208}
+	location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
 	budget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestArchitecture}
 	timeZone := "Europe/Moscow"
 
 	nameField := Nullable[string]{Set: true, Value: &name}
 	areaField := Nullable[string]{Set: true, Value: &area}
-	locationField := Nullable[Location]{Set: true, Value: &location}
+	locationField := Nullable[Coordinates]{Set: true, Value: &location}
 	startDateField := Nullable[time.Time]{Set: true, Value: &startDate}
 	endDateField := Nullable[time.Time]{Set: true, Value: &endDate}
 	budgetField := Nullable[Money]{Set: true, Value: &budget}
@@ -277,7 +277,7 @@ func TestNewTripPatch(t *testing.T) {
 	assert.Equal(t, 7, got.Version)
 	assert.Equal(t, nameField, got.Name)
 	assert.Equal(t, areaField, got.PlanningArea)
-	assert.Equal(t, locationField, got.StartLocation)
+	assert.Equal(t, locationField, got.StartCoordinates)
 	assert.Equal(t, startDateField, got.StartDate)
 	assert.Equal(t, endDateField, got.EndDate)
 	assert.Equal(t, budgetField, got.Budget)

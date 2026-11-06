@@ -8,7 +8,7 @@ import (
 
 func TripTest() domain.Trip {
 	startDate, _ := time.Parse("2006-01-02", "2026-11-14")
-	endDate, _ := time.Parse("2006-01-02", "2026-11-16")
+	endDate := startDate
 	now := time.Now()
 
 	return domain.Trip{
@@ -17,8 +17,7 @@ func TripTest() domain.Trip {
 		Version:      1,
 		Name:         "Walk around Moscow",
 		PlanningArea: "Moscow",
-		StartLocation: domain.Location{
-			Name:      "Red Square",
+		StartCoordinates: domain.Coordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},
@@ -43,7 +42,7 @@ func TripPatchTest() domain.TripPatch {
 		1,
 		domain.Nullable[string]{Value: &name, Set: true},
 		domain.Nullable[string]{Set: false},
-		domain.Nullable[domain.Location]{Set: false},
+		domain.Nullable[domain.Coordinates]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
 		domain.Nullable[domain.Money]{Set: false},
@@ -55,13 +54,12 @@ func TripPatchTest() domain.TripPatch {
 
 func TripCreateTest(ownerID int, name string) *domain.TripCreate {
 	startDate := time.Date(time.Now().Year()+1, time.March, 10, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(time.Now().Year()+1, time.March, 12, 0, 0, 0, 0, time.UTC)
+	endDate := startDate
 
 	trip := domain.NewTripCreate(
 		name,
 		"Moscow",
-		domain.Location{
-			Name:      "Red Square",
+		domain.Coordinates{
 			Latitude:  55.7539,
 			Longitude: 37.6208,
 		},

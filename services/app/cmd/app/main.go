@@ -45,6 +45,7 @@ func run() error {
 	app, err := core_app.NewApplication(ctx, true)
 	if err != nil {
 		log.Printf("failed to initialize the application: %v", err)
+		return fmt.Errorf("failed to initialize the application: %v", err)
 	}
 	defer func() {
 		if closeErr := app.Close(); closeErr != nil {

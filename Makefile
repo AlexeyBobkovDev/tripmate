@@ -9,12 +9,10 @@ export
 SHELL := /bin/bash
 
 export APP_SERVICE_NAME := app
-export APP_UID := $(shell id -u)
-export APP_GID := $(shell id -g)
+export UID := $(shell id -u)
+export GID := $(shell id -g)
 
 export ROUTE_GENERATOR_SERVICE_NAME := route-generator
-export ROUTE_GENERATOR_UID := $(shell id -u)
-export ROUTE_GENERATOR_GID := $(shell id -g)
 
 # ===========================App===========================
 .PHONY: app-run

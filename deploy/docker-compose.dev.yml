@@ -6,7 +6,7 @@ services:
       dockerfile: services/app/cmd/app/Dockerfile
     container_name: app
     env_file: ../.env
-    user: "${APP_UID:?APP_UID is not set up}:${APP_GID:?APP_GID is not set up}"
+    user: "${UID:?UID is not set up}:${GID:?GID is not set up}"
     environment:
       - LOGGER_FOLDER=/app/out/logs
     volumes:
@@ -16,6 +16,8 @@ services:
       - "${APP_PORT}:${APP_PORT}"
     depends_on:
       app-postgres:
+        condition: service_healthy
+      route-generator:
         condition: service_healthy
     networks:
       - app-network
@@ -53,7 +55,7 @@ services:
       dockerfile: services/route_generator/cmd/route_generator/Dockerfile
     container_name: route-generator
     env_file: ../.env
-    user: "${ROUTE_GENERATOR_UID:?ROUTE_GENERATOR_UID is not set up}:${ROUTE_GENERATOR_GID:?ROUTE_GENERATOR_GID is not set up}"
+    user: "${UID:?UID is not set up}:${GID:?GID is not set up}"
     environment:
       - LOGGER_FOLDER=/app/out/logs
     volumes:
@@ -71,7 +73,8 @@ services:
       test:
         [
           "CMD",
-          "curl -fsS http://localhost:${ROUTE_GENERATOR_PORT}/healthcheck",
+          "/bin/grpc_health_probe",
+          "--addr=localhost:${ROUTE_GENERATOR_PORT}",
         ]
       interval: 5s
       retries: 5
@@ -102,8 +105,7 @@ services:
     image: migrate/migrate:v4.19.1
     container_name: postgres-migrate
     network_mode: host
-    volumes:
-      - ../services/${APP_SERVICE_NAME}/migrations:/migrations
+    user: "${UID:?UID is not set up}:${GID:?GID is not set up}"
 
   app-postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
@@ -112,20 +114,20 @@ services:
     networks:
       - app-network
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${APP_EXTERNAL_POSTGRES_PORT}:5432"
 
   route-generator-postgres-port-forwarder:
     image: alpine/socat:1.8.1.1
     container_name: route-generator-postgres-port-forwarder
-    command: tcp-listen:5433,fork,reuseaddr tcp-connect:route-generator-postgres:5432
+    command: tcp-listen:5432,fork,reuseaddr tcp-connect:route-generator-postgres:5432
     networks:
       - route-generator-network
     ports:
-      - "127.0.0.1:5433:5432"
+      - "127.0.0.1:${ROUTE_GENERATOR_EXTERNAL_POSTGRES_PORT}:5432"
 
   swagger:
     build:
-      context: .
+      context: ..
       dockerfile_inline: |
         FROM golang:1.27.3-alpine
         RUN apk add --no-cache git
@@ -134,11 +136,7 @@ services:
             go install github.com/swaggo/swag/v2/cmd/swag@v2.0.0-rc5
         WORKDIR /code
         ENTRYPOINT ["swag"]
-    environment:
-      - APP_SERVICE_NAME=${APP_SERVICE_NAME}
     container_name: swagger
-    volumes:
-      - .:/code
 
 volumes:
   app_pgdata:

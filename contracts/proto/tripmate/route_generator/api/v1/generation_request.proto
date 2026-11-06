@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package tripmate.route_generator.api.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+import "tripmate/route_generator/api/v1/enums.proto";
+import "tripmate/route_generator/common/v1/coordinates.proto";
+import "tripmate/route_generator/common/v1/money.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
+
+message GenerateRouteRequest {
+  string name = 1 [(buf.validate.field).string.min_len = 1];
+  string planning_area = 2 [(buf.validate.field).string.min_len = 1];
+  tripmate.route_generator.common.v1.Coordinates start_coordinates = 3;
+
+  google.protobuf.Timestamp start_date = 4;
+  google.protobuf.Timestamp end_date = 5;
+
+  tripmate.route_generator.common.v1.Money budget = 6;
+  repeated Interest interests = 7 [(buf.validate.field).repeated.min_items = 1];
+  string time_zone = 8 [(buf.validate.field).string.pattern = "Europe/Moscow"];
+}
