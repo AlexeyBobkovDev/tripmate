@@ -83,7 +83,7 @@ func NewApplication(ctx context.Context, isProd bool) (*Application, error) {
 
 	routeGeneratorConfig := core_config.NewRouteGeneratorConfigMust()
 	conn, err := grpc.NewClient(
-		routeGeneratorConfig.RouteGeneratorServerAddr,
+		routeGeneratorConfig.RouteGeneratorServerToConnect,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

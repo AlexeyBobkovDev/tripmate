@@ -3,7 +3,7 @@ package core_config
 import "github.com/kelseyhightower/envconfig"
 
 type RouteGeneratorConfig struct {
-	RouteGeneratorServerAddr string `envconfig:"SERVER_ADDR" default:"route-generator:8081"`
+	RouteGeneratorServerToConnect string `envconfig:"SERVER_TO_CONNECT" default:"route-generator:8081"`
 }
 
 func NewRouteGeneratorConfig() (RouteGeneratorConfig, error) {
