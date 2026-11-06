@@ -4,4 +4,9 @@ TripMate is a travel planning platform that enables users to design, optimize, a
 
 ## License
 
-This project is proprietary and all rights are reserved.
+TripMate is proprietary software. All rights reserved.
+
+No license is granted to use, reproduce, modify, distribute,
+or commercially exploit this project.
+
+See [LICENSE](LICENSE) for the complete licensing terms.
