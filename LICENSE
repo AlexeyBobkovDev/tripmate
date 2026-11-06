@@ -1,13 +1,106 @@
-Copyright (c) 2026 Alexey Bobkov. All rights reserved
+# TRIPMATE PROPRIETARY LICENSE
 
-This software and associated documentation files (the "Software") are proprietary to Alexey Bobkov.
+ALL RIGHTS RESERVED
 
-Permission is hereby granted to view the source code publicly on GitHub for educational and evaluation purposes only.
+Copyright (c) 2026 Alexey Bobkov. All rights reserved.
 
-Strictly prohibited actions include, but are not limited to:
+1. DEFINITIONS
 
-- Modification, distribution, or sublicensing of the Software.
-- Using the Software, or any portion thereof, for commercial purposes.
-- Copying or hosting the Software for production use without explicit written consent from the copyright holder.
+"TripMate" or the "Software" means the software project known as TripMate, including its source code, object code, application components, microservices, APIs and API definitions, protocols, interfaces, data models, schemas, documentation, configuration files, build scripts, deployment configurations, tests, original designs, original visual assets, and other original materials contained in this repository or otherwise distributed by the copyright holder.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+"Project Materials" means all materials forming part of TripMate that are owned by the copyright holder, including the Software.
+
+"Copyright Holder" means Alexey Bobkov, the owner of the copyright in the original Project Materials, to the extent such rights belong to him.
+
+1. OWNERSHIP AND RESERVATION OF RIGHTS
+
+The original Project Materials are proprietary and protected by applicable copyright, intellectual property, and other relevant laws and international treaties.
+
+All rights, title, and interest in and to the original Project Materials, including all associated intellectual property rights, are and shall remain exclusively with the Copyright Holder, to the extent owned by the Copyright Holder.
+
+ALL RIGHTS ARE EXPRESSLY RESERVED.
+
+Nothing in this repository, its source code, documentation, or public availability shall be interpreted as a transfer, assignment, waiver, or grant of intellectual property rights.
+
+1. NO LICENSE GRANTED
+
+NO LICENSE OR OTHER RIGHT TO USE THE SOFTWARE IS GRANTED BY THIS NOTICE.
+
+Except for rights that arise independently under applicable law or the GitHub Terms of Service, no express or implied permission is granted to any individual, organization, company, or other entity to use the Project Materials.
+
+Without prior written authorization from the Copyright Holder, and to the extent prohibited by applicable law, no person or entity may:
+
+- Copy, reproduce, or duplicate the Software or any substantial portion of it.
+- Modify, adapt, translate, alter, or create derivative works based on the Software.
+- Distribute, publish, transmit, sublicense, sell, rent, lease, or otherwise make the Software available to third parties.
+- Use, execute, install, deploy, host, or operate the Software, whether for personal, educational, research, commercial, or other purposes.
+- Incorporate any portion of the Software into another software product, application, service, or project.
+- Use the Software or its components for commercial exploitation or competitive purposes.
+- Remove, alter, or obscure copyright notices, proprietary notices, or other attribution information.
+- Claim ownership of, or misrepresent authorship of, the original Project Materials.
+
+1. PUBLIC REPOSITORY ACCESS
+
+The public availability of this repository on GitHub is provided for source-code visibility and inspection.
+
+Such availability does not constitute an open-source license, public-domain dedication, or general authorization to use, reproduce, modify, distribute, or commercially exploit the Project Materials.
+
+Nothing in this License purports to override rights that GitHub grants its users under its Terms of Service, including applicable rights relating to viewing and forking public repositories.
+
+No additional permission to use or exploit the Project Materials is granted by the Copyright Holder.
+
+1. THIRD-PARTY MATERIALS
+
+TripMate may incorporate, reference, or depend upon third-party software, libraries, frameworks, tools, generated code, APIs, services, datasets, or other materials.
+
+Such third-party materials are not claimed as exclusively owned by the Copyright Holder. They remain subject to their respective copyright notices, licenses, terms of service, and intellectual property rights.
+
+This License does not modify, supersede, or restrict any independent rights granted by the applicable licenses of third-party materials.
+
+The Copyright Holder's reservation of rights applies only to materials and intellectual property rights that the Copyright Holder owns or is legally entitled to license.
+
+1. TRADEMARKS AND BRANDING
+
+The TripMate name, logo, branding, visual identity, and associated brand materials are not licensed under this License.
+
+No right to use, reproduce, register, or otherwise exploit any trademarks, service marks, logos, or branding associated with TripMate is granted, except where expressly authorized in writing by the relevant rights holder or permitted by applicable law.
+
+1. CONTRIBUTIONS AND OWNERSHIP
+
+Nothing in this License transfers ownership of intellectual property belonging to third-party contributors.
+
+Any contribution incorporated into TripMate remains subject to the applicable ownership arrangements and any separate written agreement between its author and the Copyright Holder.
+
+Submission of a contribution does not, by itself, constitute an assignment of copyright.
+
+1. NO WARRANTY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE AND PROJECT MATERIALS ARE PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, WHETHER EXPRESS, IMPLIED, OR STATUTORY.
+
+THE COPYRIGHT HOLDER DISCLAIMS ALL WARRANTIES, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, ACCURACY, AND RELIABILITY, TO THE EXTENT PERMITTED BY APPLICABLE LAW.
+
+1. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF PROFITS, REVENUE, DATA, BUSINESS, OR GOODWILL ARISING OUT OF OR RELATING TO THE SOFTWARE OR THIS LICENSE.
+
+Nothing in this section excludes or limits liability that cannot lawfully be excluded or limited.
+
+1. PERMISSIONS AND EXCEPTIONS
+
+Any permission to use, reproduce, modify, distribute, or otherwise exploit the Project Materials beyond the rights independently granted under applicable law or the GitHub Terms of Service must be obtained through prior explicit written authorization from the Copyright Holder.
+
+Any authorization shall be limited to the specific scope, purpose, duration, and conditions expressly stated in that authorization.
+
+No permission shall be inferred from silence, repository visibility, access to source code, or the absence of an enforcement action.
+
+1. SEVERABILITY
+
+If any provision of this License is determined to be invalid or unenforceable under applicable law, that provision shall be enforced to the maximum extent legally permissible, and the remaining provisions shall remain in effect.
+
+1. FINAL PROVISION
+
+This License expresses the Copyright Holder's intention to retain all intellectual property rights in the original Project Materials to the fullest extent permitted by applicable law.
+
+ALL RIGHTS NOT EXPRESSLY GRANTED BY THE COPYRIGHT HOLDER ARE RESERVED.
+
+END OF LICENSE
