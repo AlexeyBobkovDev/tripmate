@@ -31,7 +31,7 @@ RUN addgroup -S -g 10001 route_generator && \
             -u 10001 \
             -G route_generator \
             -H \
-            -s /sbin/nologin route_generator \
+            -s /sbin/nologin \
             route_generator
 
 COPY --from=builder --chown=10001:10001 /go/bin/grpc-health-probe /bin/grpc_health_probe
