@@ -21,6 +21,18 @@ func TestValidateTripEndDate(t *testing.T) {
 	require.NoError(t, validateTripEndDate(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)))
 }
 
+func TestValidateTripStartTime(t *testing.T) {
+	require.ErrorIs(t, validateTripStartTime(time.Time{}), core_errors.ErrInvalidTripStartTime)
+	require.NoError(t, validateTripStartTime(time.Now()))
+	require.NoError(t, validateTripStartTime(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)))
+}
+
+func TestValidateTripEndTime(t *testing.T) {
+	require.ErrorIs(t, validateTripEndTime(time.Time{}), core_errors.ErrInvalidTripEndTime)
+	require.NoError(t, validateTripEndTime(time.Now()))
+	require.NoError(t, validateTripEndTime(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)))
+}
+
 func TestValidateTripDatesOrder(t *testing.T) {
 	created := time.Date(2026, time.January, 1, 10, 0, 0, 0, time.UTC)
 	tests := []struct {
