@@ -29,7 +29,7 @@ RUN addgroup -S -g 10001 app && \
             -u 10001 \
             -G app \
             -H \
-            -s /sbin/nologin app \
+            -s /sbin/nologin \
             app
 
 COPY --from=builder --chown=10001:10001 /workspace/services/app/out/exe /workspace/
