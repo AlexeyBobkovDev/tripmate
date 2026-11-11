@@ -92,13 +92,17 @@ SWAGGER_CMD = $(COMPOSE) run --build --rm --volume .:/code swagger \
 		--parseInternal
 
 swagger-gen: swagger-fmt
-	@$(SWAGGER_CMD) || $(SWAGGER_CMD) --parseDependency
+	@if $(SWAGGER_CMD) || $(SWAGGER_CMD) --parseDependency; then \
+		printf '\033[32m%s\033[0m\n' "Generated successfully"; \
+	else \
+		printf '\033[31m%s\033[0m\n' "Failed to generate docs"; \
+	fi;
+
 
 .PHONY: swagger-fmt
 swagger-fmt:
 	@$(COMPOSE) run --rm --build --volume .:/code swagger fmt \
 		--dir ./cmd/$(APP_SERVICE_NAME),./internal
-
 
 
 # ===========================Go===========================
