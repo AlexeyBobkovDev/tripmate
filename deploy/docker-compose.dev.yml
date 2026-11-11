@@ -137,6 +137,7 @@ services:
         WORKDIR /code
         ENTRYPOINT ["swag"]
     container_name: swagger
+    user: "${UID:?UID is not set up}:${GID:?GID is not set up}"
 
 volumes:
   app_pgdata:
