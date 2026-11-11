@@ -17,6 +17,9 @@ type TripPatch struct {
 	StartDate Nullable[time.Time]
 	EndDate   Nullable[time.Time]
 
+	DailySchedule    Nullable[DailySchedule]
+	MealRequirements Nullable[[]MealRequirement]
+
 	Budget    Nullable[Money]
 	Interests Nullable[[]Interest]
 	TimeZone  Nullable[string]
@@ -53,6 +56,7 @@ func (t *TripPatch) Validate() error {
 			return err
 		}
 	}
+
 	if t.StartDate.Set {
 		if t.StartDate.Value == nil {
 			return core_errors.ErrInvalidArgument
@@ -69,6 +73,34 @@ func (t *TripPatch) Validate() error {
 			return err
 		}
 	}
+	if t.StartDate.Set && t.EndDate.Set {
+		if t.StartDate.Value != nil && t.EndDate.Value != nil {
+			if t.StartDate.Value.After(*t.EndDate.Value) {
+				return core_errors.ErrInvalidTripEndDate
+			}
+		}
+	}
+
+	if t.DailySchedule.Set {
+		if t.DailySchedule.Value == nil {
+			return core_errors.ErrInvalidArgument
+		}
+		if err := t.DailySchedule.Value.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if t.MealRequirements.Set {
+		if t.MealRequirements.Value == nil {
+			return core_errors.ErrInvalidArgument
+		}
+		for _, mealRequirement := range *t.MealRequirements.Value {
+			if err := mealRequirement.Validate(); err != nil {
+				return err
+			}
+		}
+	}
+
 	if t.Budget.Set {
 		if t.Budget.Value == nil {
 			return core_errors.ErrInvalidArgument
@@ -105,6 +137,8 @@ func NewTripPatch(
 	startCoordinates Nullable[Coordinates],
 	startDate Nullable[time.Time],
 	endDate Nullable[time.Time],
+	dailySchedule Nullable[DailySchedule],
+	mealRequirements Nullable[[]MealRequirement],
 	budget Nullable[Money],
 	interests Nullable[[]Interest],
 	timeZone Nullable[string],
@@ -117,6 +151,8 @@ func NewTripPatch(
 		StartCoordinates: startCoordinates,
 		StartDate:        startDate,
 		EndDate:          endDate,
+		DailySchedule:    dailySchedule,
+		MealRequirements: mealRequirements,
 		Budget:           budget,
 		Interests:        interests,
 		TimeZone:         timeZone,

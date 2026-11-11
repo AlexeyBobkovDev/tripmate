@@ -123,6 +123,101 @@ func TestTripPatchValidate(t *testing.T) {
 			wantErr: core_errors.ErrInvalidTripEndDate,
 		},
 		{
+			name: "start date after end date",
+			mutate: func(p *TripPatch) {
+				start := time.Now().Add(48 * time.Hour)
+				end := time.Now().Add(24 * time.Hour)
+				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
+				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
+		},
+		{
+			name: "start date equals end date",
+			mutate: func(p *TripPatch) {
+				date := time.Now().Add(24 * time.Hour)
+				p.StartDate = Nullable[time.Time]{Set: true, Value: &date}
+				p.EndDate = Nullable[time.Time]{Set: true, Value: &date}
+			},
+		},
+		{
+			name: "daily schedule value is nil when set",
+			mutate: func(p *TripPatch) {
+				p.DailySchedule = Nullable[DailySchedule]{Set: true}
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "invalid daily schedule start time",
+			mutate: func(p *TripPatch) {
+				schedule := DailySchedule{StartTime: "25:00", EndTime: "18:00"}
+				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
+			},
+			wantErr: core_errors.ErrInvalidLocalTime,
+		},
+		{
+			name: "daily schedule start after end",
+			mutate: func(p *TripPatch) {
+				schedule := DailySchedule{StartTime: "18:00", EndTime: "09:00"}
+				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
+			},
+			wantErr: core_errors.ErrInvalidTripEndTime,
+		},
+		{
+			name: "valid daily schedule",
+			mutate: func(p *TripPatch) {
+				schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
+				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
+			},
+		},
+		{
+			name: "meal requirements value is nil when set",
+			mutate: func(p *TripPatch) {
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true}
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "invalid meal requirement",
+			mutate: func(p *TripPatch) {
+				requirements := []MealRequirement{validMealRequirement()}
+				requirements[0].Type = "brunch"
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
+			},
+			wantErr: core_errors.ErrUnsupportedMealType,
+		},
+		{
+			name: "meal duration exceeds window",
+			mutate: func(p *TripPatch) {
+				requirements := []MealRequirement{validMealRequirement()}
+				requirements[0].Duration = 2 * time.Hour
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
+			},
+			wantErr: core_errors.ErrInvalidMealTimeEndTime,
+		},
+		{
+			name: "valid meal requirements",
+			mutate: func(p *TripPatch) {
+				requirements := []MealRequirement{
+					validMealRequirement(),
+					{
+						Type:     MealDinner,
+						Window:   TimeWindow{Start: "18:00", End: "20:00"},
+						Duration: time.Hour,
+						Budget:   validMealBudget(),
+					},
+				}
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
+			},
+		},
+		{
+			name: "empty meal requirements list is valid",
+			mutate: func(p *TripPatch) {
+				requirements := []MealRequirement{}
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
+			},
+		},
+		{
 			name: "budget value is nil when set",
 			mutate: func(p *TripPatch) {
 				p.Budget = Nullable[Money]{Set: true}
@@ -183,6 +278,8 @@ func TestTripPatchValidate(t *testing.T) {
 				location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
 				start := time.Now().Add(48 * time.Hour)
 				end := start
+				schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
+				requirements := []MealRequirement{validMealRequirement()}
 				budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 				interests := []Interest{InterestHistory, InterestFood}
 				timeZone := "Europe/Moscow"
@@ -192,6 +289,8 @@ func TestTripPatchValidate(t *testing.T) {
 				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: &location}
 				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
 				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
+				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
+				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
 				p.Budget = Nullable[Money]{Set: true, Value: &budget}
 				p.Interests = Nullable[[]Interest]{Set: true, Value: &interests}
 				p.TimeZone = Nullable[string]{Set: true, Value: &timeZone}
@@ -246,6 +345,8 @@ func TestNewTripPatch(t *testing.T) {
 	name := "Summer trip"
 	area := "Moscow"
 	location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
+	schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
+	requirements := []MealRequirement{validMealRequirement()}
 	budget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestArchitecture}
 	timeZone := "Europe/Moscow"
@@ -255,6 +356,8 @@ func TestNewTripPatch(t *testing.T) {
 	locationField := Nullable[Coordinates]{Set: true, Value: &location}
 	startDateField := Nullable[time.Time]{Set: true, Value: &startDate}
 	endDateField := Nullable[time.Time]{Set: true, Value: &endDate}
+	scheduleField := Nullable[DailySchedule]{Set: true, Value: &schedule}
+	requirementsField := Nullable[[]MealRequirement]{Set: true, Value: &requirements}
 	budgetField := Nullable[Money]{Set: true, Value: &budget}
 	interestsField := Nullable[[]Interest]{Set: true, Value: &interests}
 	timeZoneField := Nullable[string]{Set: true, Value: &timeZone}
@@ -267,6 +370,8 @@ func TestNewTripPatch(t *testing.T) {
 		locationField,
 		startDateField,
 		endDateField,
+		scheduleField,
+		requirementsField,
 		budgetField,
 		interestsField,
 		timeZoneField,
@@ -280,6 +385,8 @@ func TestNewTripPatch(t *testing.T) {
 	assert.Equal(t, locationField, got.StartCoordinates)
 	assert.Equal(t, startDateField, got.StartDate)
 	assert.Equal(t, endDateField, got.EndDate)
+	assert.Equal(t, scheduleField, got.DailySchedule)
+	assert.Equal(t, requirementsField, got.MealRequirements)
 	assert.Equal(t, budgetField, got.Budget)
 	assert.Equal(t, interestsField, got.Interests)
 	assert.Equal(t, timeZoneField, got.TimeZone)
