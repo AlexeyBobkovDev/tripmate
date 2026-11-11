@@ -25,6 +25,8 @@ func validTripCreate() *TripCreate {
 		},
 		startDate,
 		endDate,
+		validDailySchedule(),
+		[]MealRequirement{validMealRequirement()},
 		Money{
 			AmountMinorUnits: 100000,
 			Currency:         "RUB",
@@ -58,6 +60,15 @@ func TestTripCreateValidate_Valid(t *testing.T) {
 
 		got := validTripCreate()
 		got.Interests = nil
+
+		require.NoError(t, got.Validate())
+	})
+
+	t.Run("empty meal requirements", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.MealRequirement = nil
 
 		require.NoError(t, got.Validate())
 	})
@@ -192,6 +203,72 @@ func TestTripCreateValidate_InvalidTimeZone(t *testing.T) {
 	require.ErrorIs(t, got.Validate(), core_errors.ErrUnsupportedTimezone)
 }
 
+func TestTripCreateValidate_InvalidDailySchedule(t *testing.T) {
+	t.Parallel()
+
+	t.Run("invalid start time", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.DailySchedule.StartTime = ""
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidLocalTime)
+	})
+
+	t.Run("start after end", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.DailySchedule = DailySchedule{StartTime: "18:00", EndTime: "09:00"}
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndTime)
+	})
+}
+
+func TestTripCreateValidate_InvalidMealRequirement(t *testing.T) {
+	t.Parallel()
+
+	t.Run("unsupported meal type", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.MealRequirement = []MealRequirement{validMealRequirement()}
+		got.MealRequirement[0].Type = "brunch"
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrUnsupportedMealType)
+	})
+
+	t.Run("invalid meal window", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.MealRequirement = []MealRequirement{validMealRequirement()}
+		got.MealRequirement[0].Window.Start = ""
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidLocalTime)
+	})
+
+	t.Run("invalid meal duration", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.MealRequirement = []MealRequirement{validMealRequirement()}
+		got.MealRequirement[0].Duration = 0
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidMealTimeDuration)
+	})
+
+	t.Run("invalid meal budget", func(t *testing.T) {
+		t.Parallel()
+
+		got := validTripCreate()
+		got.MealRequirement = []MealRequirement{validMealRequirement()}
+		got.MealRequirement[0].Budget = Money{AmountMinorUnits: 0, Currency: "RUB"}
+
+		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidBudget)
+	})
+}
+
 func TestNewTripCreate(t *testing.T) {
 	t.Parallel()
 
@@ -203,6 +280,8 @@ func TestNewTripCreate(t *testing.T) {
 	endDate := startDate
 	budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestNature}
+	dailySchedule := DailySchedule{StartTime: "08:00", EndTime: "22:00"}
+	mealRequirements := []MealRequirement{validMealRequirement()}
 
 	got := NewTripCreate(
 		"Winter trip",
@@ -210,6 +289,8 @@ func TestNewTripCreate(t *testing.T) {
 		startCoordinates,
 		startDate,
 		endDate,
+		dailySchedule,
+		mealRequirements,
 		budget,
 		interests,
 		"Europe/Moscow",
@@ -221,6 +302,8 @@ func TestNewTripCreate(t *testing.T) {
 	assert.Equal(t, startCoordinates, got.StartCoordinates)
 	assert.True(t, startDate.Equal(got.StartDate))
 	assert.True(t, endDate.Equal(got.EndDate))
+	assert.Equal(t, dailySchedule, got.DailySchedule)
+	assert.Equal(t, mealRequirements, got.MealRequirement)
 	assert.Equal(t, budget, got.Budget)
 	assert.Equal(t, interests, got.Interests)
 	assert.Equal(t, "Europe/Moscow", got.TimeZone)
