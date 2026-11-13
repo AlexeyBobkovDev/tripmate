@@ -85,7 +85,7 @@ cleanup-logs:
 
 # ===========================Documentation===========================
 .PHONY: swagger-gen
-SWAGGER_CMD = $(COMPOSE) run --build --rm --volume .:/code swagger \
+SWAGGER_CMD = $(COMPOSE) run --build --rm --workdir /code/services/app swagger \
 		init \
 		-g ./cmd/$(APP_SERVICE_NAME)/main.go \
 		-o docs \
