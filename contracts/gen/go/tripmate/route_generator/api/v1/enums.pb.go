@@ -219,9 +219,9 @@ func file_tripmate_route_generator_api_v1_enums_proto_rawDescGZIP() []byte {
 var (
 	file_tripmate_route_generator_api_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 	file_tripmate_route_generator_api_v1_enums_proto_goTypes   = []any{
-		(RouteStatus)(0), // 0: tripmate.route_generator.api.v1.RouteStatus
-		(TravelMode)(0),  // 1: tripmate.route_generator.api.v1.TravelMode
-		(Interest)(0),    // 2: tripmate.route_generator.api.v1.Interest
+		RouteStatus(0), // 0: tripmate.route_generator.api.v1.RouteStatus
+		TravelMode(0),  // 1: tripmate.route_generator.api.v1.TravelMode
+		Interest(0),    // 2: tripmate.route_generator.api.v1.Interest
 	}
 )
 
