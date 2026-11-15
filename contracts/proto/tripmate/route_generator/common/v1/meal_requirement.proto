@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package tripmate.route_generator.common.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "tripmate/route_generator/common/v1/enums.proto";
+import "tripmate/route_generator/common/v1/money.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/common/v1;route_generator_common_v1";
+
+message MealRequirement {
+  MealType type = 1;
+  google.protobuf.Timestamp start_time = 2 [(buf.validate.field).timestamp.gt_now = true];
+  google.protobuf.Timestamp end_time = 3 [(buf.validate.field).timestamp.gt_now = true];
+  google.protobuf.Duration duration = 4 [(buf.validate.field).duration.gt.seconds = 0];
+  Money budget = 5;
+}

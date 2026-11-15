@@ -6,6 +6,8 @@ import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
 import "tripmate/route_generator/api/v1/enums.proto";
 import "tripmate/route_generator/common/v1/coordinates.proto";
+import "tripmate/route_generator/common/v1/daily_schedule.proto";
+import "tripmate/route_generator/common/v1/meal_requirement.proto";
 import "tripmate/route_generator/common/v1/money.proto";
 
 option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
@@ -18,7 +20,10 @@ message GenerateRouteRequest {
   google.protobuf.Timestamp start_date = 4;
   google.protobuf.Timestamp end_date = 5;
 
-  tripmate.route_generator.common.v1.Money budget = 6;
-  repeated Interest interests = 7 [(buf.validate.field).repeated.min_items = 1];
-  string time_zone = 8 [(buf.validate.field).string.pattern = "Europe/Moscow"];
+  tripmate.route_generator.common.v1.DailySchedule daily_schedule = 8;
+  repeated tripmate.route_generator.common.v1.MealRequirement meal_requirements = 9;
+
+  tripmate.route_generator.common.v1.Money budget = 10;
+  repeated Interest interests = 11 [(buf.validate.field).repeated.min_items = 1];
+  string time_zone = 12 [(buf.validate.field).string.pattern = "Europe/Moscow"];
 }

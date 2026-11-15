@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package tripmate.route_generator.common.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/common/v1;route_generator_common_v1";
+
+message DailySchedule {
+  google.protobuf.Timestamp start_time = 1 [(buf.validate.field).timestamp.gt_now = true];
+  google.protobuf.Timestamp end_time = 2 [(buf.validate.field).timestamp.gt_now = true];
+}
