@@ -43,29 +43,30 @@ func TestUsersTransportHTTP_DeleteUser_InvalidID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockUsersService := mocks.NewMockUsersService(ctrl)
-			usersTransport := NewUsersHTTPHandler(mockUsersService)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				mockUsersService := mocks.NewMockUsersService(ctrl)
+				usersTransport := NewUsersHTTPHandler(mockUsersService)
 
-			mockUsersService.EXPECT().
-				DeleteUser(
-					gomock.Any(),
-					gomock.Any(),
-				).
-				Times(0)
+				mockUsersService.EXPECT().
+					DeleteUser(
+						gomock.Any(),
+						gomock.Any(),
+					).
+					Times(0)
 
-			rec, req := testutils.SetupHTTP(t, http.MethodDelete, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
-			logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
-			ctx := core_logger.ToContext(req.Context(), logger)
+				rec, req := testutils.SetupHTTP(t, http.MethodDelete, fmt.Sprintf("/api/v1/users/%s", tt.id), nil)
+				logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+				ctx := core_logger.ToContext(req.Context(), logger)
 
-			req.SetPathValue("userID", tt.id)
-			req = req.WithContext(ctx)
+				req.SetPathValue("userID", tt.id)
+				req = req.WithContext(ctx)
 
-			usersTransport.DeleteUser(rec, req)
+				usersTransport.DeleteUser(rec, req)
 
-			assert.Equal(t, http.StatusBadRequest, rec.Code)
-		},
+				assert.Equal(t, http.StatusBadRequest, rec.Code)
+			},
 		)
 	}
 }

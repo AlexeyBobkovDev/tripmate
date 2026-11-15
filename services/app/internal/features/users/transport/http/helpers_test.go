@@ -45,7 +45,8 @@ func testExpectedUserResponse() UserResponse {
 }
 
 func testRequestBodyWithDefaults() *strings.Reader {
-	body := fmt.Sprintf(`
+	body := fmt.Sprintf(
+		`
 		{
 			"name": "%s",
 			"surname": "%s",
@@ -79,28 +80,4 @@ func testRequestInvalidJSON() *strings.Reader {
 			"phone_number": "+79998887766"
 			"password": "some-password"
 		}`)
-}
-
-func testPatchRequestBody() *strings.Reader {
-	body := fmt.Sprintf(`
-		{
-			"version": 1,
-			"name": "%s",
-			"surname": "%s",
-			"username": "%s",
-			"birth_date": "%s",
-			"description": "%s",
-			"email": "%s",
-			"phone_number": "%s"
-		}`,
-		testutils.TestName,
-		testutils.TestSurname,
-		testutils.TestUsername,
-		testutils.BirthDateTest().Format(core_consts.Layout),
-		testutils.TestDescription,
-		testutils.TestEmail,
-		testutils.TestPhoneNumber,
-	)
-
-	return strings.NewReader(body)
 }

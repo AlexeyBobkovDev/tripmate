@@ -32,29 +32,30 @@ func TestUsersService_PatchUser_InvalidID(t *testing.T) {
 	userPatch := testutils.UserPatchTest()
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
-			mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
-			usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
+				mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
+				usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
 
-			mockUsersRepository.EXPECT().
-				PatchUser(
-					gomock.Any(),
-					gomock.Any(),
-					gomock.Any(),
-				).
-				Times(0)
-			mockUsersRepository.
-				EXPECT().
-				GetUser(gomock.Any(), gomock.Any()).
-				Times(0)
+				mockUsersRepository.EXPECT().
+					PatchUser(
+						gomock.Any(),
+						gomock.Any(),
+						gomock.Any(),
+					).
+					Times(0)
+				mockUsersRepository.
+					EXPECT().
+					GetUser(gomock.Any(), gomock.Any()).
+					Times(0)
 
-			retrievedUser, err := usersService.PatchUser(context.Background(), tt.id, &userPatch)
-			assert.Nil(t, retrievedUser)
+				retrievedUser, err := usersService.PatchUser(context.Background(), tt.id, &userPatch)
+				assert.Nil(t, retrievedUser)
 
-			require.ErrorIs(t, err, core_errors.ErrBadRequest)
-		},
+				require.ErrorIs(t, err, core_errors.ErrBadRequest)
+			},
 		)
 	}
 }
