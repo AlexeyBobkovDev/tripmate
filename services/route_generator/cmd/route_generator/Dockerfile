@@ -1,4 +1,4 @@
-FROM golang:1.27.3-bookworm AS builder
+FROM golang:1.27.4-bookworm AS builder
 
 LABEL author="Alexey Bobkov"
 LABEL email="alexeybobkovdev@outlook.com"
@@ -22,7 +22,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     CGO_ENABLED=0 go build -o ./out/exe ./cmd/route_generator
 
-FROM golang:1.27.3-alpine
+FROM golang:1.27.4-alpine
 
 WORKDIR /workspace
 

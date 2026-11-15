@@ -13,7 +13,7 @@ A travel-planning platform built around structured trip constraints, intelligent
 <br/>
 
 [![CI](https://img.shields.io/github/actions/workflow/status/AlexeyBobkovDev/tripmate/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/AlexeyBobkovDev/tripmate/actions/workflows/ci.yml)
-![Go](https://img.shields.io/badge/Go-1.27.3-00ADD8?style=for-the-badge&logo=go&logoColor=white)
+![Go](https://img.shields.io/badge/Go-1.27.4-00ADD8?style=for-the-badge&logo=go&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18.4-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![API](https://img.shields.io/badge/API-REST%20%2B%20gRPC-6B7280?style=for-the-badge)
@@ -296,7 +296,7 @@ TripMate uses a modern Go-oriented backend stack.
 
 | Area | Technology |
 |---|---|
-| Primary language | Go 1.27.3 |
+| Primary language | Go 1.27.4 |
 | HTTP API | Go `net/http`, JSON |
 | Inter-service communication | gRPC |
 | API contracts | Protocol Buffers, Buf |
@@ -352,7 +352,7 @@ Make sure the following tools are available:
 - GNU Make
 - A terminal and a code editor
 
-For native Go development, install **Go 1.27.3**.
+For native Go development, install **Go 1.27.4**.
 
 Buf is required when modifying Protocol Buffer contracts.
 

@@ -1,6 +1,6 @@
 module github.com/AlexeyBobkovDev/tripmate/services/app
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261106193807-eb85f52cf564
