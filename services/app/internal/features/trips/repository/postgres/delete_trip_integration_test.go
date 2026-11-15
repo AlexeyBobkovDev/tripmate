@@ -10,9 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestTripsRepository_DeleteTrip_Integration_Success(t *testing.T) {
@@ -22,65 +20,46 @@ func TestTripsRepository_DeleteTrip_Integration_Success(t *testing.T) {
 	defer cancel()
 	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
 
-	createUserQuery := `
-		INSERT INTO app.users (name, surname, username, birth_date, description, email, phone_number, password_hash)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id;
-	`
-	userCreate := testutils.UserCreateTest()
-	var ownerID int
-	err := poolForIntegrationTesting.QueryRow(
+	ownerID := insertOwner(t, ctx)
+
+	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreateFixture(ownerID))
+	require.NoError(t, err)
+	require.NotNil(t, createdTrip)
+
+	require.NotEmpty(t, createdTrip.MealRequirements, "create fixture must contain a meal requirement")
+
+	require.NoError(t, tripsRepository.DeleteTrip(ctx, ownerID, createdTrip.ID))
+
+	var tripCounter int
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
 		ctx,
-		createUserQuery,
-		userCreate.Name,
-		userCreate.Surname,
-		userCreate.Username,
-		userCreate.BirthDate,
-		userCreate.Description,
-		userCreate.Email,
-		userCreate.PhoneNumber,
-		userCreate.PasswordHash,
-	).Scan(&ownerID)
+		`SELECT COUNT(*) FROM app.trips WHERE id=$1;`,
+		createdTrip.ID,
+	).Scan(&tripCounter))
+	assert.Zero(t, tripCounter, "DeleteTrip must remove the trip row")
+
+	var mealRequirementsCounter int
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM app.meal_requirements WHERE trip_id=$1;`,
+		createdTrip.ID,
+	).Scan(&mealRequirementsCounter))
+	assert.Zero(t, mealRequirementsCounter, "meal requirements must be removed when the trip is deleted")
+
+	retrievedTrip, err := tripsRepository.GetTrip(ctx, ownerID, createdTrip.ID)
+	require.ErrorIs(t, err, core_errors.ErrNotFound)
+	assert.Nil(t, retrievedTrip)
+
+	trips, err := tripsRepository.GetTrips(ctx, ownerID)
 	require.NoError(t, err)
+	require.NotNil(t, trips)
+	assert.Empty(t, *trips)
 
-	registerCleanup(t, func(ctx context.Context) error {
-		_, err := tripsRepository.pool.Exec(ctx, `DELETE FROM app.trips WHERE owner_id=$1;`, ownerID)
-		if err != nil {
-			return err
-		}
-
-		_, err = tripsRepository.pool.Exec(ctx, `DELETE FROM app.users WHERE id=$1;`, ownerID)
-		return err
-	})
-
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-
-	tripCreate := domain.TripCreate{
-		OwnerID:          ownerID,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
-
-	actualTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
-	require.NoError(t, err)
-	require.NotNil(t, actualTrip)
-
-	tripID := actualTrip.ID
-
-	err = tripsRepository.DeleteTrip(ctx, ownerID, tripID)
-	require.NoError(t, err)
-
-	var count int
-	err = tripsRepository.pool.QueryRow(ctx, `SELECT COUNT(*) FROM app.trips WHERE id=$1;`, tripID).Scan(&count)
-	require.NoError(t, err)
-	assert.Equal(t, 0, count)
+	require.ErrorIs(
+		t,
+		tripsRepository.DeleteTrip(ctx, ownerID, createdTrip.ID),
+		core_errors.ErrNotFound,
+	)
 }
 
 func TestTripsRepository_DeleteTrip_Integration_NotFound(t *testing.T) {
@@ -92,4 +71,27 @@ func TestTripsRepository_DeleteTrip_Integration_NotFound(t *testing.T) {
 
 	err := tripsRepository.DeleteTrip(ctx, 1, 999999)
 	require.ErrorIs(t, err, core_errors.ErrNotFound)
+}
+
+func TestTripsRepository_DeleteTrip_Integration_WrongOwner_NotFound(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
+
+	ownerID := insertOwner(t, ctx)
+	otherOwnerID := insertOwner(t, ctx)
+
+	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreateFixture(ownerID))
+	require.NoError(t, err)
+	require.NotNil(t, createdTrip)
+
+	err = tripsRepository.DeleteTrip(ctx, otherOwnerID, createdTrip.ID)
+	require.ErrorIs(t, err, core_errors.ErrNotFound)
+
+	retrievedTrip, err := tripsRepository.GetTrip(ctx, ownerID, createdTrip.ID)
+	require.NoError(t, err)
+	require.NotNil(t, retrievedTrip)
+	assert.Equal(t, createdTrip.ID, retrievedTrip.ID)
 }

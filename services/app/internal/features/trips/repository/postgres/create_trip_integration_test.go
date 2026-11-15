@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
 
 func TestTripsRepository_CreateTrip_Integration_Success(t *testing.T) {
@@ -22,69 +22,13 @@ func TestTripsRepository_CreateTrip_Integration_Success(t *testing.T) {
 	defer cancel()
 	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
 
-	// First create a user to satisfy foreign key constraint on owner_id
-	createUserQuery := `
-		INSERT INTO app.users (name, surname, username, birth_date, description, email, phone_number, password_hash)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id;
-	`
-	userCreate := testutils.UserCreateTest()
-	var ownerID int
-	err := poolForIntegrationTesting.QueryRow(
-		ctx,
-		createUserQuery,
-		userCreate.Name,
-		userCreate.Surname,
-		userCreate.Username,
-		userCreate.BirthDate,
-		userCreate.Description,
-		userCreate.Email,
-		userCreate.PhoneNumber,
-		userCreate.PasswordHash,
-	).Scan(&ownerID)
+	ownerID := insertOwner(t, ctx)
+	tripCreate := tripCreateFixture(ownerID)
+
+	actualTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreate)
 	require.NoError(t, err)
 
-	registerCleanup(t, func(ctx context.Context) error {
-		_, err := tripsRepository.pool.Exec(ctx, `DELETE FROM app.users WHERE id=$1;`, ownerID)
-		return err
-	})
-
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-
-	tripCreate := domain.TripCreate{
-		OwnerID:          ownerID,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
-
-	actualTrip, err := tripsRepository.CreateTrip(ctx, ownerID, &tripCreate)
-	require.NoError(t, err)
-	require.NotNil(t, actualTrip)
-
-	tripID := actualTrip.ID
-	registerCleanup(t, func(ctx context.Context) error {
-		_, err := tripsRepository.pool.Exec(ctx, `DELETE FROM app.trips WHERE id=$1;`, tripID)
-		return err
-	})
-
-	assert.NotZero(t, actualTrip.ID)
-	assert.Equal(t, ownerID, actualTrip.OwnerID)
-	assert.Equal(t, tripCreate.Name, actualTrip.Name)
-	assert.Equal(t, tripCreate.PlanningArea, actualTrip.PlanningArea)
-	assert.Equal(t, tripCreate.StartCoordinates, actualTrip.StartCoordinates)
-	assert.Equal(t, tripCreate.Budget, actualTrip.Budget)
-	assert.Equal(t, tripCreate.Interests, actualTrip.Interests)
-	assert.Equal(t, tripCreate.TimeZone, actualTrip.TimeZone)
-	assert.NotZero(t, actualTrip.CreatedAt)
-	assert.NotZero(t, actualTrip.UpdatedAt)
-	assert.Nil(t, actualTrip.DeletedAt)
+	assertTripMatchesCreate(t, tripCreate, actualTrip)
 }
 
 func TestTripsRepository_CreateTrip_Integration_ForeignKeyViolation(t *testing.T) {
@@ -94,23 +38,136 @@ func TestTripsRepository_CreateTrip_Integration_ForeignKeyViolation(t *testing.T
 	defer cancel()
 	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
 
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
+	const nonExistentOwnerID = 999999
+	tripCreate := tripCreateFixture(nonExistentOwnerID)
 
-	tripCreate := domain.TripCreate{
-		OwnerID:          999999, // Non-existent owner
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
-
-	actualTrip, err := tripsRepository.CreateTrip(ctx, tripCreate.OwnerID, &tripCreate)
+	actualTrip, err := tripsRepository.CreateTrip(ctx, nonExistentOwnerID, tripCreate)
 	require.Error(t, err)
 	require.ErrorIs(t, err, core_postgres_pool_errors.ErrViolatedForeignKey)
 	assert.Nil(t, actualTrip)
+}
+
+// TestTripsRepository_CreateTrip_Integration_MealRequirementsPersisted documents
+// that meal requirements accepted by TripCreate must survive a round trip.
+func TestTripsRepository_CreateTrip_Integration_MealRequirementsPersisted(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
+
+	ownerID := insertOwner(t, ctx)
+	tripCreate := tripCreateFixture(ownerID)
+	tripCreate.MealRequirements = []domain.MealRequirement{
+		mealRequirement(t, domain.MealBreakfast, "08:00", "09:00", time.Hour),
+		mealRequirement(t, domain.MealLunch, "13:00", "14:00", 45*time.Minute),
+	}
+	require.NotEmpty(t, tripCreate.MealRequirements, "fixture must contain meal requirements")
+
+	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreate)
+	require.NoError(t, err)
+	require.NotNil(t, createdTrip)
+
+	assert.ElementsMatch(t, tripCreate.MealRequirements, createdTrip.MealRequirements)
+
+	var mealRequirementsCounter int
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM app.meal_requirements WHERE trip_id=$1;`,
+		createdTrip.ID,
+	).Scan(&mealRequirementsCounter))
+	assert.Equal(t, len(tripCreate.MealRequirements), mealRequirementsCounter, "meal requirements must be persisted")
+
+	retrievedTrip, err := tripsRepository.GetTrip(ctx, ownerID, createdTrip.ID)
+	require.NoError(t, err)
+	require.NotNil(t, retrievedTrip)
+
+	assert.ElementsMatch(t, tripCreate.MealRequirements, retrievedTrip.MealRequirements)
+}
+
+// TestTripsRepository_CreateTrip_Integration_InvalidMealType_NoPartialTripCreation
+// checks that a meal insert failure surfaces as an error and does not leave a
+// trip row behind: create must be atomic.
+func TestTripsRepository_CreateTrip_Integration_InvalidMealType_NoPartialTripCreation(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
+
+	ownerID := insertOwner(t, ctx)
+	tripCreate := tripCreateFixture(ownerID)
+	tripCreate.MealRequirements = []domain.MealRequirement{
+		mealRequirement(t, domain.MealBreakfast, "08:00", "09:00", time.Hour),
+	}
+
+	// The meal type is unknown to the app.meal_type enum and therefore violates
+	// a database constraint.
+	tripCreate.MealRequirements[0].Type = domain.MealType("brunch")
+
+	createdTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreate)
+
+	assert.Error(t, err, "creating a trip with an invalid meal type must fail")
+	assert.Nil(t, createdTrip)
+
+	var tripCounter int
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM app.trips WHERE owner_id=$1;`,
+		ownerID,
+	).Scan(&tripCounter))
+	assert.Zero(t, tripCounter, "failed create trip must not leave a partially created trip behind")
+
+	var mealRequirementsCounter int
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
+		ctx,
+		`SELECT COUNT(*) FROM app.meal_requirements;`,
+	).Scan(&mealRequirementsCounter))
+	assert.Zero(t, mealRequirementsCounter, "failed create trip must not leave meal requirements behind")
+}
+
+func TestTripsRepository_CreateTrip_Integration_InvalidDailySchedule(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+	tripsRepository := NewTripsRepository(poolForIntegrationTesting)
+
+	tests := []struct {
+		name          string
+		dailySchedule domain.DailySchedule
+		expectedError error
+	}{
+		{
+			name: "invalid start time",
+			dailySchedule: domain.DailySchedule{
+				StartTime: "not-a-time",
+				EndTime:   "18:00",
+			},
+			expectedError: core_errors.ErrInvalidTripStartTime,
+		},
+		{
+			name: "invalid end time",
+			dailySchedule: domain.DailySchedule{
+				StartTime: "09:00",
+				EndTime:   "not-a-time",
+			},
+			expectedError: core_errors.ErrInvalidTripEndTime,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			checkIfDatabaseIsDirty(t)
+
+			ownerID := insertOwner(t, ctx)
+			tripCreate := tripCreateFixture(ownerID)
+			tripCreate.DailySchedule = test.dailySchedule
+
+			actualTrip, err := tripsRepository.CreateTrip(ctx, ownerID, tripCreate)
+
+			require.ErrorIs(t, err, test.expectedError)
+			assert.Nil(t, actualTrip)
+		})
+	}
 }

@@ -18,6 +18,9 @@ type TripResponse struct {
 	StartDate time.Time `json:"start_date" example:"2026-11-14T00:00:00Z"`
 	EndDate   time.Time `json:"end_date" example:"2026-11-14T23:00:00Z"`
 
+	DailySchedule    domain.DailySchedule     `json:"daily_schedule"`
+	MealRequirements []domain.MealRequirement `json:"meal_requirements"`
+
 	Budget    domain.Money      `json:"budget"`
 	Interests []domain.Interest `json:"interests"`
 	TimeZone  string            `json:"time_zone" example:"Europe/Moscow"`

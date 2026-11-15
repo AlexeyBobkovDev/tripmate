@@ -29,9 +29,18 @@ func TestTripsService_CreateTrip_Success(t *testing.T) {
 		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 		StartDate:        startDate,
 		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
+		DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+		MealRequirements: []domain.MealRequirement{
+			{
+				Type:     domain.MealBreakfast,
+				Window:   domain.TimeWindow{Start: "08:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   domain.Money{AmountMinorUnits: 50000, Currency: "RUB"},
+			},
+		},
+		Budget:    domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests: []domain.Interest{"history"},
+		TimeZone:  "Europe/Moscow",
 	}
 
 	expectedTrip := &domain.Trip{
@@ -43,6 +52,8 @@ func TestTripsService_CreateTrip_Success(t *testing.T) {
 		StartCoordinates: tripCreate.StartCoordinates,
 		StartDate:        tripCreate.StartDate,
 		EndDate:          tripCreate.EndDate,
+		DailySchedule:    tripCreate.DailySchedule,
+		MealRequirements: tripCreate.MealRequirements,
 		Budget:           tripCreate.Budget,
 		Interests:        tripCreate.Interests,
 		TimeZone:         tripCreate.TimeZone,
@@ -114,9 +125,18 @@ func TestTripsService_CreateTrip_RepositoryError(t *testing.T) {
 		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 		StartDate:        startDate,
 		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
+		DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+		MealRequirements: []domain.MealRequirement{
+			{
+				Type:     domain.MealBreakfast,
+				Window:   domain.TimeWindow{Start: "08:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   domain.Money{AmountMinorUnits: 50000, Currency: "RUB"},
+			},
+		},
+		Budget:    domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
+		Interests: []domain.Interest{"history"},
+		TimeZone:  "Europe/Moscow",
 	}
 
 	repoError := fmt.Errorf("database error")

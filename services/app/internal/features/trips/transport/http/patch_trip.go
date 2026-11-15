@@ -26,6 +26,9 @@ type PatchTripRequest struct {
 	StartDate core_http_types.Nullable[string] `json:"start_date"   swaggertype:"string"   example:"2026-11-14"`
 	EndDate   core_http_types.Nullable[string] `json:"end_date"     swaggertype:"string"   example:"2026-11-14"`
 
+	DailySchedule    core_http_types.Nullable[domain.DailySchedule]        `json:"daily_schedule"`
+	MealRequirements core_http_types.Nullable[[]MealRequirementRequestDTO] `json:"meal_requirements"`
+
 	Budget    core_http_types.Nullable[domain.Money]      `json:"budget"`
 	Interests core_http_types.Nullable[[]domain.Interest] `json:"interests"`
 	TimeZone  core_http_types.Nullable[string]            `json:"time_zone"        swaggertype:"string"        example:"Europe/Moscow"`
@@ -189,6 +192,24 @@ func patchTripDomainFromDTO(
 		}
 	}
 
+	var mealRequirements []domain.MealRequirement
+	if dto.MealRequirements.Set {
+		if dto.MealRequirements.Value == nil {
+			return nil, core_errors.ErrInvalidArgument
+		}
+		for _, mealRequirement := range *dto.MealRequirements.Value {
+			mealRequirements = append(mealRequirements, mealRequirement.ToDomain())
+		}
+	}
+
+	var dailySchedule domain.DailySchedule
+	if dto.DailySchedule.Set {
+		if dto.DailySchedule.Value == nil {
+			return nil, core_errors.ErrInvalidArgument
+		}
+		dailySchedule = *dto.DailySchedule.Value
+	}
+
 	return domain.NewTripPatch(
 		ownerID,
 		dto.Version,
@@ -197,6 +218,14 @@ func patchTripDomainFromDTO(
 		dto.StartCoordinates.ToDomain(),
 		startDate,
 		endDate,
+		domain.Nullable[domain.DailySchedule]{
+			Value: &dailySchedule,
+			Set:   dto.DailySchedule.Set,
+		},
+		domain.Nullable[[]domain.MealRequirement]{
+			Value: &mealRequirements,
+			Set:   dto.MealRequirements.Set,
+		},
 		dto.Budget.ToDomain(),
 		dto.Interests.ToDomain(),
 		dto.TimeZone.ToDomain(),

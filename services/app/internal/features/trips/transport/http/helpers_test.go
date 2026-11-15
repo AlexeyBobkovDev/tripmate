@@ -55,7 +55,9 @@ func testExpectedTripResponse() TripResponse {
 func testTripRequestBodyWithDefaults() *strings.Reader {
 	startDate := time.Now().Add(24 * time.Hour)
 	endDate := startDate
-	body := fmt.Sprintf(`
+	// MealRequirement.Duration is a time.Duration and therefore JSON-encoded as nanoseconds.
+	body := fmt.Sprintf(
+		`
 		{
 			"owner_id": 1,
 			"name": "Walk around Moscow",
@@ -63,6 +65,15 @@ func testTripRequestBodyWithDefaults() *strings.Reader {
 			"start_location": {"latitude": 55.7539, "longitude": 37.6208},
 			"start_date": "%s",
 			"end_date": "%s",
+			"daily_schedule": {"start_time": "09:00", "end_time": "18:00"},
+			"meal_requirements": [
+				{
+					"meal_type": "breakfast",
+					"window": {"start": "08:00", "end": "09:00"},
+					"duration_minutes": 60,
+					"budget": {"amount_minor_units": 50000, "currency": "RUB"}
+				}
+			],
 			"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
 			"interests": ["history", "nature"],
 			"time_zone": "Europe/Moscow"

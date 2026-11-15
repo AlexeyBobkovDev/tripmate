@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
@@ -23,84 +22,55 @@ func TestTripsRepository_GetTrips_Success(t *testing.T) {
 	tripsRepository := NewTripsRepository(mockPool)
 
 	ownerID := 1
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-	createdAt := time.Now()
-	updatedAt := time.Now()
+	expectedTrip := testTripFixture()
+	expectedTrip.OwnerID = ownerID
 
-	expectedTrip := domain.Trip{
-		ID:               1,
-		OwnerID:          ownerID,
-		Version:          1,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-		CreatedAt:        createdAt,
-		UpdatedAt:        updatedAt,
-		DeletedAt:        nil,
-	}
-
-	mockPool.EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
 	mockPool.EXPECT().
 		Query(gomock.Any(), getTripsQuery, ownerID).
 		Return(mockRows, nil)
 
 	gomock.InOrder(
 		mockRows.EXPECT().Next().Return(true),
-		mockRows.EXPECT().Scan(
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-			gomock.Any(),
-		).DoAndReturn(func(destinations ...any) error {
-			*destinations[0].(*int) = expectedTrip.ID
-			*destinations[1].(*int) = expectedTrip.OwnerID
-			*destinations[2].(*int) = expectedTrip.Version
-			*destinations[3].(*string) = expectedTrip.Name
-			*destinations[4].(*string) = expectedTrip.PlanningArea
-
-			*destinations[5].(*float64) = expectedTrip.StartCoordinates.Latitude
-			*destinations[6].(*float64) = expectedTrip.StartCoordinates.Longitude
-			*destinations[7].(*time.Time) = expectedTrip.StartDate
-			*destinations[8].(*time.Time) = expectedTrip.EndDate
-			*destinations[9].(*int64) = expectedTrip.Budget.AmountMinorUnits
-			*destinations[10].(*string) = expectedTrip.Budget.Currency
-			*destinations[11].(*[]domain.Interest) = expectedTrip.Interests
-			*destinations[12].(*string) = expectedTrip.TimeZone
-			*destinations[13].(*time.Time) = expectedTrip.CreatedAt
-			*destinations[14].(*time.Time) = expectedTrip.UpdatedAt
-			*destinations[15].(**time.Time) = expectedTrip.DeletedAt
-			return nil
-		}),
+		mockRows.EXPECT().Scan(anyArgs(tripScanDestinationsAmount)...).DoAndReturn(
+			func(dest ...any) error {
+				return fillTripScan(t, expectedTrip)(dest...)
+			},
+		),
 		mockRows.EXPECT().Next().Return(false),
 	)
+
+	mockMealRows := mocks.NewMockRows(ctrl)
+	mockPool.EXPECT().
+		Query(gomock.Any(), getTripMealRequirementsQuery, expectedTrip.ID).
+		Return(mockMealRows, nil)
+	mockMealRows.EXPECT().Next().Return(false).AnyTimes()
 
 	trips, err := tripsRepository.GetTrips(context.Background(), ownerID)
 
 	require.NoError(t, err)
 	require.NotNil(t, trips)
-	assert.Len(t, *trips, 1)
+	require.Len(t, *trips, 1)
 	assert.Equal(t, expectedTrip, (*trips)[0])
+}
+
+func TestTripsRepository_GetTrips_Empty(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockRows := mocks.NewMockRows(ctrl)
+	mockPool := mocks.NewMockPool(ctrl)
+	tripsRepository := NewTripsRepository(mockPool)
+
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().
+		Query(gomock.Any(), getTripsQuery, 1).
+		Return(mockRows, nil)
+	mockRows.EXPECT().Next().Return(false)
+
+	trips, err := tripsRepository.GetTrips(context.Background(), 1)
+
+	require.NoError(t, err)
+	require.NotNil(t, trips)
+	assert.Empty(t, *trips)
 }
 
 func TestTripsRepository_GetTrips_QueryError(t *testing.T) {
@@ -108,18 +78,14 @@ func TestTripsRepository_GetTrips_QueryError(t *testing.T) {
 	mockPool := mocks.NewMockPool(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	ownerID := 1
 	queryError := errors.New("query error")
 
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
 	mockPool.EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.EXPECT().
-		Query(gomock.Any(), getTripsQuery, ownerID).
+		Query(gomock.Any(), getTripsQuery, 1).
 		Return(nil, queryError)
 
-	trips, err := tripsRepository.GetTrips(context.Background(), ownerID)
+	trips, err := tripsRepository.GetTrips(context.Background(), 1)
 
 	require.ErrorIs(t, err, queryError)
 	assert.Nil(t, trips)
@@ -131,28 +97,21 @@ func TestTripsRepository_GetTrips_ScanError(t *testing.T) {
 	mockPool := mocks.NewMockPool(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	ownerID := 1
 	scanError := errors.New("scan error")
 
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
 	mockPool.EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.EXPECT().
-		Query(gomock.Any(), getTripsQuery, ownerID).
+		Query(gomock.Any(), getTripsQuery, 1).
 		Return(mockRows, nil)
 
 	gomock.InOrder(
 		mockRows.EXPECT().Next().Return(true),
-		mockRows.EXPECT().Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(scanError),
+		mockRows.EXPECT().
+			Scan(anyArgs(tripScanDestinationsAmount)...).
+			Return(scanError),
 	)
 
-	trips, err := tripsRepository.GetTrips(context.Background(), ownerID)
+	trips, err := tripsRepository.GetTrips(context.Background(), 1)
 
 	require.ErrorIs(t, err, scanError)
 	assert.Nil(t, trips)
@@ -164,27 +123,19 @@ func TestTripsRepository_GetTrips_NoRowsError(t *testing.T) {
 	mockPool := mocks.NewMockPool(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	ownerID := 1
-
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
 	mockPool.EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.EXPECT().
-		Query(gomock.Any(), getTripsQuery, ownerID).
+		Query(gomock.Any(), getTripsQuery, 1).
 		Return(mockRows, nil)
 
 	gomock.InOrder(
 		mockRows.EXPECT().Next().Return(true),
-		mockRows.EXPECT().Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(core_postgres_pool_errors.ErrNoRows),
+		mockRows.EXPECT().
+			Scan(anyArgs(tripScanDestinationsAmount)...).
+			Return(core_postgres_pool_errors.ErrNoRows),
 	)
 
-	trips, err := tripsRepository.GetTrips(context.Background(), ownerID)
+	trips, err := tripsRepository.GetTrips(context.Background(), 1)
 
 	require.ErrorIs(t, err, core_errors.ErrNotFound)
 	assert.Nil(t, trips)

@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgconn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
@@ -19,277 +19,338 @@ import (
 func TestTripsRepository_PatchTrip_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
 	ownerID := 1
 	tripID := 1
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-	createdAt := time.Now()
-	updatedAt := time.Now()
+	tripPatch := testTripFixture()
+	tripPatch.ID = tripID
+	tripPatch.OwnerID = ownerID
+	tripPatch.Version = 2
+	tripPatch.Name = "Updated trip"
 
-	patchTripRequest := domain.Trip{
-		ID:               tripID,
-		OwnerID:          ownerID,
-		Version:          1,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-		CreatedAt:        createdAt,
-		UpdatedAt:        updatedAt,
-		DeletedAt:        nil,
-	}
+	expectedTrip := tripPatch
+	expectedTrip.Version = 3
+	expectedTrip.DailySchedule = tripPatch.DailySchedule
 
-	mockRow.EXPECT().
-		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).DoAndReturn(func(scanDestination ...any) error {
-		*scanDestination[0].(*int) = patchTripRequest.ID
-		*scanDestination[1].(*int) = patchTripRequest.OwnerID
-		*scanDestination[2].(*int) = patchTripRequest.Version + 1
-		*scanDestination[3].(*string) = patchTripRequest.Name
-		*scanDestination[4].(*string) = patchTripRequest.PlanningArea
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
 
-		*scanDestination[5].(*float64) = patchTripRequest.StartCoordinates.Latitude
-		*scanDestination[6].(*float64) = patchTripRequest.StartCoordinates.Longitude
-		*scanDestination[7].(*time.Time) = patchTripRequest.StartDate
-		*scanDestination[8].(*time.Time) = patchTripRequest.EndDate
-		*scanDestination[9].(*int64) = patchTripRequest.Budget.AmountMinorUnits
-		*scanDestination[10].(*string) = patchTripRequest.Budget.Currency
-		*scanDestination[11].(*[]domain.Interest) = patchTripRequest.Interests
-		*scanDestination[12].(*string) = patchTripRequest.TimeZone
-		*scanDestination[13].(*time.Time) = patchTripRequest.CreatedAt
-		*scanDestination[14].(*time.Time) = patchTripRequest.UpdatedAt
-		*scanDestination[15].(**time.Time) = patchTripRequest.DeletedAt
-
-		return nil
-	})
-
-	mockPool.
-		EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.
-		EXPECT().
+	// Expect query on transaction
+	mockTx.EXPECT().
 		QueryRow(
 			gomock.Any(),
 			patchTripQuery,
 			ownerID,
 			tripID,
-			patchTripRequest.Version,
-			patchTripRequest.Name,
-			patchTripRequest.PlanningArea,
-
-			patchTripRequest.StartCoordinates.Latitude,
-			patchTripRequest.StartCoordinates.Longitude,
-			patchTripRequest.StartDate,
-			patchTripRequest.EndDate,
-			patchTripRequest.Budget.AmountMinorUnits,
-			patchTripRequest.Budget.Currency,
-			patchTripRequest.Interests,
-			patchTripRequest.TimeZone,
+			tripPatch.Version,
+			tripPatch.Name,
+			tripPatch.PlanningArea,
+			tripPatch.StartCoordinates.Latitude,
+			tripPatch.StartCoordinates.Longitude,
+			tripPatch.StartDate,
+			tripPatch.EndDate,
+			gomock.Any(), // startTime (will be parsed)
+			gomock.Any(), // endTime (will be parsed)
+			tripPatch.Budget.AmountMinorUnits,
+			tripPatch.Budget.Currency,
+			tripPatch.Interests,
+			tripPatch.TimeZone,
 		).
 		Return(mockRow)
 
-	actualTrip, err := tripsRepository.PatchTrip(context.Background(), ownerID, tripID, &patchTripRequest)
-	require.NoError(t, err)
+	// Expect scan
+	mockRow.EXPECT().
+		Scan(anyArgs(tripScanDestinationsAmount)...).
+		DoAndReturn(func(dest ...any) error {
+			return fillTripScan(t, expectedTrip)(dest...)
+		})
 
-	assert.Equal(t, tripID, actualTrip.ID)
-	assert.Equal(t, ownerID, actualTrip.OwnerID)
-	assert.Equal(t, patchTripRequest.Version+1, actualTrip.Version)
-	assert.Equal(t, patchTripRequest.Name, actualTrip.Name)
+	// Expect deletion of existing meal requirements
+	mockTx.EXPECT().Exec(gomock.Any(), deleteTripMealRequirementsQuery, tripID).Return(pgconn.CommandTag{}, nil)
+
+	// Expect insertion of new meal requirements (if any)
+	if len(tripPatch.MealRequirements) > 0 {
+		mockTx.EXPECT().
+			QueryRow(
+				gomock.Any(),
+				insertTripMealRequirementsQuery,
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+				gomock.Any(),
+			).
+			Return(mockRow)
+	}
+
+	// Expect transaction commit (success case)
+	mockTx.EXPECT().Commit(gomock.Any()).Return(nil)
+	// In the production code, there's a defer that calls Rollback,
+	// but it's a no-op if Commit succeeds
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.PatchTrip(
+		context.Background(),
+		ownerID,
+		tripID,
+		&tripPatch,
+	)
+
+	require.NoError(t, err)
+	require.NotNil(t, actualTrip)
+	assert.Equal(t, expectedTrip, *actualTrip)
 }
 
 func TestTripsRepository_PatchTrip_ScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	ownerID := 1
-	tripID := 1
-	scanError := errors.New("scan error")
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-	patchTripRequest := domain.Trip{
-		ID:               tripID,
-		OwnerID:          ownerID,
-		Version:          1,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
+	tripPatch := testTripFixture()
+	updateError := errors.New("update error")
 
-	mockRow.EXPECT().
-		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(scanError)
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
 
-	mockPool.
-		EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.
-		EXPECT().
-		QueryRow(gomock.Any(), patchTripQuery, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(mockRow)
-
-	actualTrip, err := tripsRepository.PatchTrip(context.Background(), ownerID, tripID, &patchTripRequest)
-	require.ErrorIs(t, err, scanError)
-	require.Nil(t, actualTrip)
-}
-
-func TestTripsRepository_PatchTrip_UserNotFound(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockPool := mocks.NewMockPool(ctrl)
-	mockRow := mocks.NewMockRow(ctrl)
-	mockTripExistsRow := mocks.NewMockRow(ctrl)
-	tripsRepository := NewTripsRepository(mockPool)
-
-	ownerID := 1
-	tripID := 1
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-	patchTripRequest := domain.Trip{
-		ID:               tripID,
-		OwnerID:          ownerID,
-		Version:          2,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
-
-	mockRow.EXPECT().
-		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(core_postgres_pool_errors.ErrNoRows)
-
-	mockTripExistsRow.EXPECT().
-		Scan(
-			gomock.Any(),
-		).
-		DoAndReturn(func(dest ...any) error {
-			*dest[0].(*bool) = false
-			return nil
-		})
-
-	mockPool.
-		EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
-
-	mockPool.
-		EXPECT().
-		QueryRow(gomock.Any(), patchTripQuery, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(mockRow)
-
-	mockPool.
-		EXPECT().
+	// Expect query on transaction
+	mockTx.EXPECT().
 		QueryRow(
 			gomock.Any(),
-			tripExistsQuery,
-			ownerID,
-			tripID,
-		).
-		Return(mockTripExistsRow)
-
-	actualTrip, err := tripsRepository.PatchTrip(context.Background(), ownerID, tripID, &patchTripRequest)
-	require.ErrorIs(t, err, core_errors.ErrNotFound)
-	require.False(t, errors.Is(err, core_errors.ErrConflict))
-	require.Nil(t, actualTrip)
-}
-
-func TestTripsRepository_PatchTrip_ErrConflict(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mockPool := mocks.NewMockPool(ctrl)
-	mockRow := mocks.NewMockRow(ctrl)
-	mockTripExistsRow := mocks.NewMockRow(ctrl)
-	tripsRepository := NewTripsRepository(mockPool)
-
-	ownerID := 1
-	tripID := 1
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
-	patchTripRequest := domain.Trip{
-		ID:               tripID,
-		OwnerID:          ownerID,
-		Version:          2,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
-
-	mockRow.EXPECT().
-		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).Return(core_postgres_pool_errors.ErrNoRows)
-
-	mockTripExistsRow.EXPECT().
-		Scan(
+			patchTripQuery,
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
 			gomock.Any(),
 		).
+		Return(mockRow)
+	mockRow.EXPECT().
+		Scan(anyArgs(tripScanDestinationsAmount)...).
+		Return(updateError)
+
+	// Expect transaction rollback (error case)
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.PatchTrip(
+		context.Background(),
+		1,
+		1,
+		&tripPatch,
+	)
+
+	require.ErrorIs(t, err, updateError)
+	assert.Nil(t, actualTrip)
+}
+
+func TestTripsRepository_PatchTrip_VersionConflict(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
+	mockRow := mocks.NewMockRow(ctrl)
+	mockExistsRow := mocks.NewMockRow(ctrl)
+	tripsRepository := NewTripsRepository(mockPool)
+
+	tripPatch := testTripFixture()
+
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
+
+	// Expect query on transaction - returns no rows
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			patchTripQuery,
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+		).
+		Return(mockRow)
+	mockRow.EXPECT().
+		Scan(anyArgs(tripScanDestinationsAmount)...).
+		Return(core_postgres_pool_errors.ErrNoRows)
+
+	// Expect query on pool (not transaction) for exists check
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), tripExistsQuery, 1, 1).
+		Return(mockExistsRow)
+	mockExistsRow.EXPECT().
+		Scan(gomock.Any()).
 		DoAndReturn(func(dest ...any) error {
 			*dest[0].(*bool) = true
 			return nil
 		})
 
-	mockPool.
-		EXPECT().
-		OpTimeout().
-		Return(5 * time.Second)
+	// Expect transaction rollback (error case)
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
 
-	mockPool.
-		EXPECT().
-		QueryRow(gomock.Any(), patchTripQuery, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(mockRow)
+	actualTrip, err := tripsRepository.PatchTrip(
+		context.Background(),
+		1,
+		1,
+		&tripPatch,
+	)
 
-	mockPool.
-		EXPECT().
-		QueryRow(
-			gomock.Any(),
-			tripExistsQuery,
-			ownerID,
-			tripID,
-		).
-		Return(mockTripExistsRow)
-
-	actualTrip, err := tripsRepository.PatchTrip(context.Background(), ownerID, tripID, &patchTripRequest)
 	require.ErrorIs(t, err, core_errors.ErrConflict)
 	require.ErrorIs(t, err, core_postgres_pool_errors.ErrNoRows)
-	require.Nil(t, actualTrip)
+	assert.Nil(t, actualTrip)
+}
+
+func TestTripsRepository_PatchTrip_NotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
+	mockRow := mocks.NewMockRow(ctrl)
+	mockExistsRow := mocks.NewMockRow(ctrl)
+	tripsRepository := NewTripsRepository(mockPool)
+
+	tripPatch := testTripFixture()
+
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
+
+	// Expect query on transaction - returns no rows
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			patchTripQuery,
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+		).
+		Return(mockRow)
+	mockRow.EXPECT().
+		Scan(anyArgs(tripScanDestinationsAmount)...).
+		Return(core_postgres_pool_errors.ErrNoRows)
+
+	// Expect query on pool (not transaction) for exists check
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), tripExistsQuery, 1, 1).
+		Return(mockExistsRow)
+	mockExistsRow.EXPECT().
+		Scan(gomock.Any()).
+		DoAndReturn(func(dest ...any) error {
+			*dest[0].(*bool) = false
+			return nil
+		})
+
+	// Expect transaction rollback (error case)
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.PatchTrip(
+		context.Background(),
+		1,
+		1,
+		&tripPatch,
+	)
+
+	require.ErrorIs(t, err, core_errors.ErrNotFound)
+	assert.Nil(t, actualTrip)
+}
+
+func TestTripsRepository_PatchTrip_ExistsCheckError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
+	mockRow := mocks.NewMockRow(ctrl)
+	mockExistsRow := mocks.NewMockRow(ctrl)
+	tripsRepository := NewTripsRepository(mockPool)
+
+	tripPatch := testTripFixture()
+	existsCheckError := errors.New("exists check error")
+
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
+
+	// Expect query on transaction - returns no rows
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			patchTripQuery,
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+			gomock.Any(),
+		).
+		Return(mockRow)
+	mockRow.EXPECT().
+		Scan(anyArgs(tripScanDestinationsAmount)...).
+		Return(core_postgres_pool_errors.ErrNoRows)
+
+	// Expect query on pool (not transaction) for exists check
+	mockPool.EXPECT().
+		QueryRow(gomock.Any(), tripExistsQuery, 1, 1).
+		Return(mockExistsRow)
+	mockExistsRow.EXPECT().
+		Scan(gomock.Any()).
+		Return(existsCheckError)
+
+	// Expect transaction rollback (error case)
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.PatchTrip(
+		context.Background(),
+		1,
+		1,
+		&tripPatch,
+	)
+
+	require.ErrorIs(t, err, existsCheckError)
+	assert.Nil(t, actualTrip)
 }

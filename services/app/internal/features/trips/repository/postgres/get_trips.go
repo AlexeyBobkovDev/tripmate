@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
@@ -21,6 +22,8 @@ SELECT
 	location_longitude,
 	start_date,
 	end_date,
+	start_time,
+	end_time,
 	amount_minor_units,
 	currency,
 	interests,
@@ -63,17 +66,20 @@ func (r *TripsRepository) GetTrips(
 
 	for rows.Next() {
 		var tripResponse domain.Trip
+		var startTime, endTime time.Time
+
 		err := rows.Scan(
 			&tripResponse.ID,
 			&tripResponse.OwnerID,
 			&tripResponse.Version,
 			&tripResponse.Name,
 			&tripResponse.PlanningArea,
-
 			&tripResponse.StartCoordinates.Latitude,
 			&tripResponse.StartCoordinates.Longitude,
 			&tripResponse.StartDate,
 			&tripResponse.EndDate,
+			&startTime,
+			&endTime,
 			&tripResponse.Budget.AmountMinorUnits,
 			&tripResponse.Budget.Currency,
 			&tripResponse.Interests,
@@ -95,6 +101,46 @@ func (r *TripsRepository) GetTrips(
 			}
 			return nil, fmt.Errorf("get trip: %w", err)
 		}
+		tripResponse.DailySchedule = domain.DailySchedule{
+			StartTime: domain.LocalTime(startTime.Format("15:04")),
+			EndTime:   domain.LocalTime(endTime.Format("15:04")),
+		}
+
+		rows, err := r.pool.Query(
+			ctx,
+			getTripMealRequirementsQuery,
+			tripResponse.ID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("get trip meal requirements: %w", err)
+		}
+		for rows.Next() {
+			var (
+				scannedMealRequirement           domain.MealRequirement
+				scannedStartTime, scannedEndTime time.Time
+			)
+
+			err = rows.Scan(
+				&scannedMealRequirement.Type,
+				&scannedStartTime,
+				&scannedEndTime,
+				&scannedMealRequirement.Duration,
+				&scannedMealRequirement.Budget.AmountMinorUnits,
+				&scannedMealRequirement.Budget.Currency,
+			)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create trip meal requirements: %w", err)
+			}
+
+			scannedMealRequirement.Window = domain.TimeWindow{
+				Start: domain.LocalTime(scannedStartTime.Format("15:04")),
+				End:   domain.LocalTime(scannedEndTime.Format("15:04")),
+			}
+			scannedMealRequirement.Duration *= time.Minute
+
+			tripResponse.MealRequirements = append(tripResponse.MealRequirements, scannedMealRequirement)
+		}
+
 		trips = append(trips, tripResponse)
 	}
 
