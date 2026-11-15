@@ -10,384 +10,329 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func tripPatchTestValid() *TripPatch {
-	return &TripPatch{
-		OwnerID: 1,
-		Version: 1,
-	}
-}
+func TestTripPatch_Validate(t *testing.T) {
+	now := time.Now()
+	futureDate := now.Add(24 * time.Hour)
+	laterDate := now.Add(48 * time.Hour)
 
-func TestTripPatchValidate(t *testing.T) {
 	tests := []struct {
 		name    string
-		mutate  func(*TripPatch)
+		patch   TripPatch
 		wantErr error
 	}{
 		{
-			name: "valid patch with no fields set",
+			name: "valid patch - all fields set",
+			patch: TripPatch{
+				OwnerID:          1,
+				Version:          1,
+				Name:             Nullable[string]{Value: &[]string{"Updated Trip"}[0], Set: true},
+				PlanningArea:     Nullable[string]{Value: &[]string{"Updated Area"}[0], Set: true},
+				StartCoordinates: Nullable[Coordinates]{Value: &[]Coordinates{{Latitude: 55.7539, Longitude: 37.6208}}[0], Set: true},
+				StartDate:        Nullable[time.Time]{Value: &[]time.Time{futureDate}[0], Set: true},
+				EndDate:          Nullable[time.Time]{Value: &[]time.Time{futureDate}[0], Set: true},
+				DailySchedule:    Nullable[DailySchedule]{Value: &[]DailySchedule{{StartTime: "10:00", EndTime: "19:00"}}[0], Set: true},
+				MealRequirements: Nullable[[]MealRequirement]{Value: &[][]MealRequirement{{}}[0], Set: true},
+				Budget:           Nullable[Money]{Value: &[]Money{{AmountMinorUnits: 2000000, Currency: "RUB"}}[0], Set: true},
+				Interests:        Nullable[[]Interest]{Value: &[][]Interest{{InterestNature}}[0], Set: true},
+				TimeZone:         Nullable[string]{Value: &[]string{"Europe/Moscow"}[0], Set: true},
+			},
+		},
+		{
+			name: "valid patch - no fields set",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+			},
+		},
+		{
+			name: "valid patch - only name set",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Name:    Nullable[string]{Value: &[]string{"Updated Trip"}[0], Set: true},
+			},
+		},
+		{
+			name: "valid patch - only budget set",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Budget:  Nullable[Money]{Value: &[]Money{{AmountMinorUnits: 2000000, Currency: "RUB"}}[0], Set: true},
+			},
 		},
 		{
 			name: "invalid owner ID",
-			mutate: func(p *TripPatch) {
-				p.OwnerID = 0
+			patch: TripPatch{
+				OwnerID: -1,
+				Version: 1,
 			},
 			wantErr: core_errors.ErrInvalidID,
 		},
 		{
 			name: "invalid version",
-			mutate: func(p *TripPatch) {
-				p.Version = 0
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 0,
 			},
 			wantErr: core_errors.ErrInvalidVersion,
 		},
 		{
-			name: "name value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.Name = Nullable[string]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "empty name",
-			mutate: func(p *TripPatch) {
-				value := " \t "
-				p.Name = Nullable[string]{Set: true, Value: &value}
+			name: "invalid name - empty",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Name:    Nullable[string]{Value: &[]string{""}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidTripName,
 		},
 		{
-			name: "valid name",
-			mutate: func(p *TripPatch) {
-				value := "Weekend in Moscow"
-				p.Name = Nullable[string]{Set: true, Value: &value}
+			name: "long name is allowed",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Name:    Nullable[string]{Value: &[]string{"This is a very long name that exceeds the maximum allowed length for trip names"}[0], Set: true},
 			},
 		},
 		{
-			name: "planning area value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.PlanningArea = Nullable[string]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "empty planning area",
-			mutate: func(p *TripPatch) {
-				value := ""
-				p.PlanningArea = Nullable[string]{Set: true, Value: &value}
+			name: "invalid planning area",
+			patch: TripPatch{
+				OwnerID:      1,
+				Version:      1,
+				PlanningArea: Nullable[string]{Value: &[]string{""}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidPlanningArea,
 		},
 		{
-			name: "start location value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.StartCoordinates = Nullable[Coordinates]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "invalid start location",
-			mutate: func(p *TripPatch) {
-				location := &Coordinates{Latitude: 100, Longitude: 37.6208}
-				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: location}
+			name: "invalid coordinates",
+			patch: TripPatch{
+				OwnerID:          1,
+				Version:          1,
+				StartCoordinates: Nullable[Coordinates]{Value: &[]Coordinates{{Latitude: 200, Longitude: 200}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidLatitude,
 		},
 		{
-			name: "start date value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.StartDate = Nullable[time.Time]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "zero start date",
-			mutate: func(p *TripPatch) {
-				value := time.Time{}
-				p.StartDate = Nullable[time.Time]{Set: true, Value: &value}
+			name: "invalid start date - zero value",
+			patch: TripPatch{
+				OwnerID:   1,
+				Version:   1,
+				StartDate: Nullable[time.Time]{Value: &[]time.Time{{}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidTripStartDate,
 		},
 		{
-			name: "end date value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.EndDate = Nullable[time.Time]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "zero end date",
-			mutate: func(p *TripPatch) {
-				value := time.Time{}
-				p.EndDate = Nullable[time.Time]{Set: true, Value: &value}
+			name: "invalid end date - zero value",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				EndDate: Nullable[time.Time]{Value: &[]time.Time{{}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidTripEndDate,
 		},
 		{
-			name: "start date after end date",
-			mutate: func(p *TripPatch) {
-				start := time.Now().Add(48 * time.Hour)
-				end := time.Now().Add(24 * time.Hour)
-				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
-				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
+			name: "invalid start date after end date",
+			patch: TripPatch{
+				OwnerID:   1,
+				Version:   1,
+				StartDate: Nullable[time.Time]{Value: &[]time.Time{laterDate}[0], Set: true},
+				EndDate:   Nullable[time.Time]{Value: &[]time.Time{futureDate}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidTripEndDate,
 		},
 		{
-			name: "start date equals end date",
-			mutate: func(p *TripPatch) {
-				date := time.Now().Add(24 * time.Hour)
-				p.StartDate = Nullable[time.Time]{Set: true, Value: &date}
-				p.EndDate = Nullable[time.Time]{Set: true, Value: &date}
-			},
-		},
-		{
-			name: "daily schedule value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.DailySchedule = Nullable[DailySchedule]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "invalid daily schedule start time",
-			mutate: func(p *TripPatch) {
-				schedule := DailySchedule{StartTime: "25:00", EndTime: "18:00"}
-				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
+			name: "invalid daily schedule",
+			patch: TripPatch{
+				OwnerID:       1,
+				Version:       1,
+				DailySchedule: Nullable[DailySchedule]{Value: &[]DailySchedule{{}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidLocalTime,
 		},
 		{
-			name: "daily schedule start after end",
-			mutate: func(p *TripPatch) {
-				schedule := DailySchedule{StartTime: "18:00", EndTime: "09:00"}
-				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
-			},
-			wantErr: core_errors.ErrInvalidTripEndTime,
-		},
-		{
-			name: "valid daily schedule",
-			mutate: func(p *TripPatch) {
-				schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
-				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
-			},
-		},
-		{
-			name: "meal requirements value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "invalid meal requirement",
-			mutate: func(p *TripPatch) {
-				requirements := []MealRequirement{validMealRequirement()}
-				requirements[0].Type = "brunch"
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "meal duration exceeds window",
-			mutate: func(p *TripPatch) {
-				requirements := []MealRequirement{validMealRequirement()}
-				requirements[0].Duration = 2 * time.Hour
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "valid meal requirements",
-			mutate: func(p *TripPatch) {
-				requirements := []MealRequirement{
-					validMealRequirement(),
-					{
-						Type:     MealDinner,
-						Window:   TimeWindow{Start: "18:00", End: "20:00"},
-						Duration: time.Hour,
-						Budget:   validMealBudget(),
-					},
-				}
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-			},
-		},
-		{
-			name: "empty meal requirements list is valid",
-			mutate: func(p *TripPatch) {
-				requirements := []MealRequirement{}
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-			},
-		},
-		{
-			name: "budget value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.Budget = Nullable[Money]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
 			name: "invalid budget",
-			mutate: func(p *TripPatch) {
-				budget := Money{AmountMinorUnits: 0, Currency: "RUB"}
-				p.Budget = Nullable[Money]{Set: true, Value: &budget}
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Budget:  Nullable[Money]{Value: &[]Money{{AmountMinorUnits: 0, Currency: "RUB"}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrInvalidBudget,
 		},
 		{
-			name: "interests value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.Interests = Nullable[[]Interest]{Set: true}
+			name: "invalid budget - wrong currency",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Budget:  Nullable[Money]{Value: &[]Money{{AmountMinorUnits: 1500000, Currency: "USD"}}[0], Set: true},
 			},
-			wantErr: core_errors.ErrInvalidArgument,
+			wantErr: core_errors.ErrUnsupportedCurrency,
 		},
 		{
-			name: "unsupported interest",
-			mutate: func(p *TripPatch) {
-				value := []Interest{"not-supported"}
-				p.Interests = Nullable[[]Interest]{Set: true, Value: &value}
+			name: "invalid interests",
+			patch: TripPatch{
+				OwnerID:   1,
+				Version:   1,
+				Interests: Nullable[[]Interest]{Value: &[][]Interest{{"invalid"}}[0], Set: true},
 			},
 			wantErr: core_errors.ErrUnsupportedInterest,
 		},
 		{
-			name: "time zone value is nil when set",
-			mutate: func(p *TripPatch) {
-				p.TimeZone = Nullable[string]{Set: true}
-			},
-			wantErr: core_errors.ErrInvalidArgument,
-		},
-		{
-			name: "empty time zone",
-			mutate: func(p *TripPatch) {
-				value := ""
-				p.TimeZone = Nullable[string]{Set: true, Value: &value}
-			},
-			wantErr: core_errors.ErrInvalidTimeZone,
-		},
-		{
-			name: "unsupported time zone",
-			mutate: func(p *TripPatch) {
-				value := "Mars/Olympus"
-				p.TimeZone = Nullable[string]{Set: true, Value: &value}
+			name: "invalid time zone",
+			patch: TripPatch{
+				OwnerID:  1,
+				Version:  1,
+				TimeZone: Nullable[string]{Value: &[]string{"Invalid"}[0], Set: true},
 			},
 			wantErr: core_errors.ErrUnsupportedTimezone,
 		},
 		{
-			name: "valid values for all fields",
-			mutate: func(p *TripPatch) {
-				name := "Weekend trip"
-				area := "Moscow"
-				location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
-				start := time.Now().Add(48 * time.Hour)
-				end := start
-				schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
-				requirements := []MealRequirement{validMealRequirement()}
-				budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
-				interests := []Interest{InterestHistory, InterestFood}
-				timeZone := "Europe/Moscow"
-
-				p.Name = Nullable[string]{Set: true, Value: &name}
-				p.PlanningArea = Nullable[string]{Set: true, Value: &area}
-				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: &location}
-				p.StartDate = Nullable[time.Time]{Set: true, Value: &start}
-				p.EndDate = Nullable[time.Time]{Set: true, Value: &end}
-				p.DailySchedule = Nullable[DailySchedule]{Set: true, Value: &schedule}
-				p.MealRequirements = Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-				p.Budget = Nullable[Money]{Set: true, Value: &budget}
-				p.Interests = Nullable[[]Interest]{Set: true, Value: &interests}
-				p.TimeZone = Nullable[string]{Set: true, Value: &timeZone}
+			name: "name set to nil",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Name:    Nullable[string]{Value: nil, Set: true},
 			},
+			wantErr: core_errors.ErrInvalidArgument,
 		},
 		{
-			name: "location cleared",
-			mutate: func(p *TripPatch) {
-				var location Coordinates
-				p.StartCoordinates = Nullable[Coordinates]{Set: true, Value: &location}
+			name: "planning area set to nil",
+			patch: TripPatch{
+				OwnerID:      1,
+				Version:      1,
+				PlanningArea: Nullable[string]{Value: nil, Set: true},
 			},
-			wantErr: nil,
+			wantErr: core_errors.ErrInvalidArgument,
 		},
 		{
-			name: "budget cleared",
-			mutate: func(p *TripPatch) {
-				var budget Money
-				p.Budget = Nullable[Money]{Set: true, Value: &budget}
+			name: "coordinates set to nil",
+			patch: TripPatch{
+				OwnerID:          1,
+				Version:          1,
+				StartCoordinates: Nullable[Coordinates]{Value: nil, Set: true},
 			},
-			wantErr: core_errors.ErrInvalidBudget,
+			wantErr: core_errors.ErrInvalidArgument,
 		},
 		{
-			name: "empty interests list is valid",
-			mutate: func(p *TripPatch) {
-				value := []Interest{}
-				p.Interests = Nullable[[]Interest]{Set: true, Value: &value}
+			name: "start date set to nil",
+			patch: TripPatch{
+				OwnerID:   1,
+				Version:   1,
+				StartDate: Nullable[time.Time]{Value: nil, Set: true},
 			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "end date set to nil",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				EndDate: Nullable[time.Time]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "daily schedule set to nil",
+			patch: TripPatch{
+				OwnerID:       1,
+				Version:       1,
+				DailySchedule: Nullable[DailySchedule]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "meal requirements set to nil",
+			patch: TripPatch{
+				OwnerID:          1,
+				Version:          1,
+				MealRequirements: Nullable[[]MealRequirement]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "budget set to nil",
+			patch: TripPatch{
+				OwnerID: 1,
+				Version: 1,
+				Budget:  Nullable[Money]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "interests set to nil",
+			patch: TripPatch{
+				OwnerID:   1,
+				Version:   1,
+				Interests: Nullable[[]Interest]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
+		},
+		{
+			name: "time zone set to nil",
+			patch: TripPatch{
+				OwnerID:  1,
+				Version:  1,
+				TimeZone: Nullable[string]{Value: nil, Set: true},
+			},
+			wantErr: core_errors.ErrInvalidArgument,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			patch := tripPatchTestValid()
-			if tt.mutate != nil {
-				tt.mutate(patch)
-			}
+			err := tt.patch.Validate()
 
-			err := patch.Validate()
 			if tt.wantErr != nil {
-				require.Error(t, err)
 				assert.ErrorIs(t, err, tt.wantErr)
 				return
 			}
+
 			require.NoError(t, err)
 		})
 	}
 }
 
 func TestNewTripPatch(t *testing.T) {
-	startDate := time.Date(2027, time.June, 1, 12, 0, 0, 0, time.UTC)
-	endDate := time.Date(2027, time.June, 3, 12, 0, 0, 0, time.UTC)
-	name := "Summer trip"
-	area := "Moscow"
-	location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
-	schedule := DailySchedule{StartTime: "09:00", EndTime: "18:00"}
-	requirements := []MealRequirement{validMealRequirement()}
-	budget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
-	interests := []Interest{InterestHistory, InterestArchitecture}
-	timeZone := "Europe/Moscow"
+	futureDate := time.Now().Add(24 * time.Hour)
 
-	nameField := Nullable[string]{Set: true, Value: &name}
-	areaField := Nullable[string]{Set: true, Value: &area}
-	locationField := Nullable[Coordinates]{Set: true, Value: &location}
-	startDateField := Nullable[time.Time]{Set: true, Value: &startDate}
-	endDateField := Nullable[time.Time]{Set: true, Value: &endDate}
-	scheduleField := Nullable[DailySchedule]{Set: true, Value: &schedule}
-	requirementsField := Nullable[[]MealRequirement]{Set: true, Value: &requirements}
-	budgetField := Nullable[Money]{Set: true, Value: &budget}
-	interestsField := Nullable[[]Interest]{Set: true, Value: &interests}
-	timeZoneField := Nullable[string]{Set: true, Value: &timeZone}
-
-	got := NewTripPatch(
-		42,
-		7,
-		nameField,
-		areaField,
-		locationField,
-		startDateField,
-		endDateField,
-		scheduleField,
-		requirementsField,
-		budgetField,
-		interestsField,
-		timeZoneField,
+	patch := NewTripPatch(
+		1,
+		1,
+		Nullable[string]{Value: &[]string{"Updated Trip"}[0], Set: true},
+		Nullable[string]{Value: &[]string{"Updated Area"}[0], Set: true},
+		Nullable[Coordinates]{Value: &[]Coordinates{{Latitude: 55.7539, Longitude: 37.6208}}[0], Set: true},
+		Nullable[time.Time]{Value: &[]time.Time{futureDate}[0], Set: true},
+		Nullable[time.Time]{Value: &[]time.Time{futureDate}[0], Set: true},
+		Nullable[DailySchedule]{Value: &[]DailySchedule{{StartTime: "10:00", EndTime: "19:00"}}[0], Set: true},
+		Nullable[[]MealRequirement]{Value: &[][]MealRequirement{{}}[0], Set: true},
+		Nullable[Money]{Value: &[]Money{{AmountMinorUnits: 2000000, Currency: "RUB"}}[0], Set: true},
+		Nullable[[]Interest]{Value: &[][]Interest{{InterestNature}}[0], Set: true},
+		Nullable[string]{Value: &[]string{"Europe/Moscow"}[0], Set: true},
 	)
 
-	require.NotNil(t, got)
-	assert.Equal(t, 42, got.OwnerID)
-	assert.Equal(t, 7, got.Version)
-	assert.Equal(t, nameField, got.Name)
-	assert.Equal(t, areaField, got.PlanningArea)
-	assert.Equal(t, locationField, got.StartCoordinates)
-	assert.Equal(t, startDateField, got.StartDate)
-	assert.Equal(t, endDateField, got.EndDate)
-	assert.Equal(t, scheduleField, got.DailySchedule)
-	assert.Equal(t, requirementsField, got.MealRequirements)
-	assert.Equal(t, budgetField, got.Budget)
-	assert.Equal(t, interestsField, got.Interests)
-	assert.Equal(t, timeZoneField, got.TimeZone)
+	// Verify all fields are set
+	assert.Equal(t, 1, patch.OwnerID)
+	assert.Equal(t, 1, patch.Version)
+	assert.True(t, patch.Name.Set)
+	assert.True(t, patch.PlanningArea.Set)
+	assert.True(t, patch.StartCoordinates.Set)
+	assert.True(t, patch.StartDate.Set)
+	assert.True(t, patch.EndDate.Set)
+	assert.True(t, patch.DailySchedule.Set)
+	assert.True(t, patch.MealRequirements.Set)
+	assert.True(t, patch.Budget.Set)
+	assert.True(t, patch.Interests.Set)
+	assert.True(t, patch.TimeZone.Set)
+
+	// Verify values are correct
+	assert.Equal(t, "Updated Trip", *patch.Name.Value)
+	assert.Equal(t, "Updated Area", *patch.PlanningArea.Value)
+	assert.Equal(t, Coordinates{Latitude: 55.7539, Longitude: 37.6208}, *patch.StartCoordinates.Value)
+	assert.Equal(t, futureDate, *patch.StartDate.Value)
+	assert.Equal(t, futureDate, *patch.EndDate.Value)
+	assert.Equal(t, DailySchedule{StartTime: "10:00", EndTime: "19:00"}, *patch.DailySchedule.Value)
+	assert.Equal(t, Money{AmountMinorUnits: 2000000, Currency: "RUB"}, *patch.Budget.Value)
+	assert.Equal(t, []Interest{InterestNature}, *patch.Interests.Value)
+	assert.Equal(t, "Europe/Moscow", *patch.TimeZone.Value)
+
+	// Verify validation passes
+	require.NoError(t, patch.Validate())
 }

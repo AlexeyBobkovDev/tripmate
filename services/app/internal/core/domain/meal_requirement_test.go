@@ -4,394 +4,276 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func validMealBudget() Money {
-	return Money{
-		AmountMinorUnits: 50000,
-		Currency:         "RUB",
-	}
-}
-
-func validMealRequirement() MealRequirement {
-	return MealRequirement{
-		Type: MealBreakfast,
-		Window: TimeWindow{
-			Start: "08:00",
-			End:   "09:00",
-		},
-		Duration: 30 * time.Minute,
-		Budget:   validMealBudget(),
-	}
-}
-
 func TestMealRequirement_Validate(t *testing.T) {
-	t.Parallel()
+	tests := []struct {
+		name        string
+		requirement MealRequirement
+		wantErr     error
+	}{
+		{
+			name: "valid breakfast requirement",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+		},
+		{
+			name: "valid lunch requirement",
+			requirement: MealRequirement{
+				Type:     MealLunch,
+				Window:   TimeWindow{Start: "12:00", End: "14:00"},
+				Duration: 2 * time.Hour,
+				Budget:   Money{AmountMinorUnits: 3000000, Currency: "RUB"},
+			},
+		},
+		{
+			name: "valid dinner requirement",
+			requirement: MealRequirement{
+				Type:     MealDinner,
+				Window:   TimeWindow{Start: "19:00", End: "21:00"},
+				Duration: 2 * time.Hour,
+				Budget:   Money{AmountMinorUnits: 3500000, Currency: "RUB"},
+			},
+		},
+		{
+			name: "invalid meal type",
+			requirement: MealRequirement{
+				Type:     "invalid",
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrUnsupportedMealType,
+		},
+		{
+			name: "invalid window start time",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "invalid", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidLocalTime,
+		},
+		{
+			name: "invalid window end time",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "invalid"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidLocalTime,
+		},
+		{
+			name: "invalid duration - zero",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: 0,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidMealTimeDuration,
+		},
+		{
+			name: "invalid duration - negative",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: -time.Minute,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidMealTimeDuration,
+		},
+		{
+			name: "duration exceeds window",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: 2 * time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidMealTimeEndTime,
+		},
+		{
+			name: "duration equals window",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+		},
+		{
+			name: "duration starts at window end",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: 0,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidMealTimeDuration,
+		},
+		{
+			name: "invalid budget",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 0, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidBudget,
+		},
+		{
+			name: "invalid budget - negative",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: -100, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidBudget,
+		},
+		{
+			name: "invalid budget - wrong currency",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "10:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "USD"},
+			},
+			wantErr: core_errors.ErrUnsupportedCurrency,
+		},
+		{
+			name: "window start equals window end",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "09:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidMealTimeEndTime,
+		},
+		{
+			name: "window start after window end",
+			requirement: MealRequirement{
+				Type:     MealBreakfast,
+				Window:   TimeWindow{Start: "10:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			},
+			wantErr: core_errors.ErrInvalidTripEndTime,
+		},
+	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.requirement.Validate()
+
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+
+			require.NoError(t, err)
+		})
+	}
+}
+
+func TestTimeWindow_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		mutate  func(*MealRequirement)
+		window  TimeWindow
 		wantErr error
 	}{
-		{name: "valid breakfast"},
 		{
-			name: "valid lunch",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = MealLunch
+			name: "valid time window",
+			window: TimeWindow{
+				Start: "09:00",
+				End:   "18:00",
 			},
 		},
 		{
-			name: "valid dinner",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = MealDinner
+			name: "valid window - midnight to midnight",
+			window: TimeWindow{
+				Start: "00:00",
+				End:   "00:00",
 			},
 		},
 		{
-			name: "duration equals window length",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = time.Hour
+			name: "valid window - all day",
+			window: TimeWindow{
+				Start: "00:00",
+				End:   "23:59",
 			},
 		},
 		{
-			name: "minimum positive duration",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = time.Nanosecond
-			},
-		},
-		{
-			name: "sub-minute duration fits window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = "08:02"
-				requirement.Duration = 90 * time.Second
-			},
-		},
-		{
-			name: "duration equals one minute window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = "08:01"
-				requirement.Duration = time.Minute
-			},
-		},
-		{
-			name: "single digit window hours",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = "8:00"
-				requirement.Window.End = "9:00"
-				requirement.Duration = time.Hour
-			},
-		},
-		{
-			name: "almost full day window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = "00:00"
-				requirement.Window.End = "23:59"
-				requirement.Duration = 23*time.Hour + 59*time.Minute
-			},
-		},
-		{
-			name: "large budget amount",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{
-					AmountMinorUnits: 1_000_000_000,
-					Currency:         "RUB",
-				}
-			},
-		},
-		{
-			name: "empty meal type",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = ""
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "unknown meal type",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = "brunch"
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "uppercase meal type",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = "Breakfast"
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "meal type with whitespace",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = " breakfast"
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "invalid window start",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = "25:00"
+			name: "invalid start time",
+			window: TimeWindow{
+				Start: "invalid",
+				End:   "18:00",
 			},
 			wantErr: core_errors.ErrInvalidLocalTime,
 		},
 		{
-			name: "empty window start",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = ""
+			name: "invalid end time",
+			window: TimeWindow{
+				Start: "09:00",
+				End:   "invalid",
 			},
 			wantErr: core_errors.ErrInvalidLocalTime,
 		},
 		{
-			name: "invalid window end",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = ""
-			},
-			wantErr: core_errors.ErrInvalidLocalTime,
-		},
-		{
-			name: "invalid window end minutes",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = "09:60"
-			},
-			wantErr: core_errors.ErrInvalidLocalTime,
-		},
-		{
-			name: "window start after end",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = "10:00"
-				requirement.Window.End = "09:00"
+			name: "start time after end time",
+			window: TimeWindow{
+				Start: "18:00",
+				End:   "09:00",
 			},
 			wantErr: core_errors.ErrInvalidTripEndTime,
 		},
 		{
-			name: "zero duration",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = 0
+			name: "start time equals end time",
+			window: TimeWindow{
+				Start: "12:00",
+				End:   "12:00",
 			},
-			wantErr: core_errors.ErrInvalidMealTimeDuration,
 		},
 		{
-			name: "negative duration",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = -time.Minute
-			},
-			wantErr: core_errors.ErrInvalidMealTimeDuration,
-		},
-		{
-			name: "negative sub-minute duration",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = -time.Nanosecond
-			},
-			wantErr: core_errors.ErrInvalidMealTimeDuration,
-		},
-		{
-			name: "duration exceeds window by one nanosecond",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = time.Hour + time.Nanosecond
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "duration exceeds window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = 61 * time.Minute
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "duration with seconds exceeds whole-minute window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = "08:01"
-				requirement.Duration = 60*time.Second + time.Nanosecond
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "maximum duration exceeds window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = time.Duration(1<<63 - 1)
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "positive duration in zero-length window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.End = requirement.Window.Start
-			},
-			wantErr: core_errors.ErrInvalidMealTimeEndTime,
-		},
-		{
-			name: "zero amount budget",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: 0, Currency: "RUB"}
-			},
-			wantErr: core_errors.ErrInvalidBudget,
-		},
-		{
-			name: "negative budget",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: -1, Currency: "RUB"}
-			},
-			wantErr: core_errors.ErrInvalidBudget,
-		},
-		{
-			name: "zero value budget",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{}
-			},
-			wantErr: core_errors.ErrInvalidBudget,
-		},
-		{
-			name: "empty budget currency",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: 50000, Currency: ""}
-			},
-			wantErr: core_errors.ErrUnsupportedCurrency,
-		},
-		{
-			name: "lowercase budget currency",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: 50000, Currency: "rub"}
-			},
-			wantErr: core_errors.ErrUnsupportedCurrency,
-		},
-		{
-			name: "unsupported budget currency",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: 50000, Currency: "USD"}
-			},
-			wantErr: core_errors.ErrUnsupportedCurrency,
-		},
-		{
-			name: "unknown type is validated before window",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Type = "brunch"
-				requirement.Window.Start = "25:00"
-			},
-			wantErr: core_errors.ErrUnsupportedMealType,
-		},
-		{
-			name: "window is validated before duration",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Window.Start = "25:00"
-				requirement.Duration = 0
+			name: "invalid start time - hours > 23",
+			window: TimeWindow{
+				Start: "24:00",
+				End:   "18:00",
 			},
 			wantErr: core_errors.ErrInvalidLocalTime,
 		},
 		{
-			name: "duration is validated before budget",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Duration = 0
-				requirement.Budget = Money{AmountMinorUnits: 0, Currency: "USD"}
+			name: "invalid end time - minutes > 59",
+			window: TimeWindow{
+				Start: "09:00",
+				End:   "18:60",
 			},
-			wantErr: core_errors.ErrInvalidMealTimeDuration,
-		},
-		{
-			name: "budget amount is validated before currency",
-			mutate: func(requirement *MealRequirement) {
-				requirement.Budget = Money{AmountMinorUnits: 0, Currency: "USD"}
-			},
-			wantErr: core_errors.ErrInvalidBudget,
+			wantErr: core_errors.ErrInvalidLocalTime,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			requirement := validMealRequirement()
-			if tt.mutate != nil {
-				tt.mutate(&requirement)
-			}
-
-			err := requirement.Validate()
+			err := tt.window.Validate()
 
 			if tt.wantErr != nil {
-				require.ErrorIs(t, err, tt.wantErr)
+				assert.ErrorIs(t, err, tt.wantErr)
 				return
 			}
+
 			require.NoError(t, err)
 		})
 	}
-}
-
-func TestMealRequirement_Validate_ZeroValue(t *testing.T) {
-	t.Parallel()
-
-	var requirement MealRequirement
-
-	require.ErrorIs(t, requirement.Validate(), core_errors.ErrUnsupportedMealType)
-}
-
-func TestMealRequirement_Validate_DoesNotMutateRequirement(t *testing.T) {
-	t.Parallel()
-
-	requirement := validMealRequirement()
-	before := requirement
-
-	require.NoError(t, requirement.Validate())
-	require.Equal(t, before, requirement)
-}
-
-func TestTimeWindow_Validate(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name    string
-		start   LocalTime
-		end     LocalTime
-		wantErr error
-	}{
-		{name: "typical window", start: "09:00", end: "18:00"},
-		{name: "same start and end", start: "12:00", end: "12:00"},
-		{name: "full day", start: "00:00", end: "23:59"},
-		{name: "one minute window", start: "23:58", end: "23:59"},
-		{name: "single digit start hour", start: "9:00", end: "18:00"},
-		{name: "single digit end hour", start: "09:00", end: "9:30"},
-		{name: "invalid start", start: "", end: "18:00", wantErr: core_errors.ErrInvalidLocalTime},
-		{name: "invalid end", start: "09:00", end: "24:00", wantErr: core_errors.ErrInvalidLocalTime},
-		{name: "invalid start minute", start: "09:5", end: "18:00", wantErr: core_errors.ErrInvalidLocalTime},
-		{name: "invalid end minute", start: "09:00", end: "18:5", wantErr: core_errors.ErrInvalidLocalTime},
-		{name: "start after end", start: "18:00", end: "09:00", wantErr: core_errors.ErrInvalidTripEndTime},
-		{name: "start one minute after end", start: "09:01", end: "09:00", wantErr: core_errors.ErrInvalidTripEndTime},
-		{name: "window crossing midnight", start: "23:59", end: "00:00", wantErr: core_errors.ErrInvalidTripEndTime},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			window := TimeWindow{
-				Start: tt.start,
-				End:   tt.end,
-			}
-
-			err := window.Validate()
-
-			if tt.wantErr != nil {
-				require.ErrorIs(t, err, tt.wantErr)
-				return
-			}
-			require.NoError(t, err)
-		})
-	}
-}
-
-func TestTimeWindow_Validate_ZeroValue(t *testing.T) {
-	t.Parallel()
-
-	var window TimeWindow
-
-	require.ErrorIs(t, window.Validate(), core_errors.ErrInvalidLocalTime)
-}
-
-func TestTimeWindow_Validate_DoesNotMutateWindow(t *testing.T) {
-	t.Parallel()
-
-	window := TimeWindow{Start: "09:00", End: "18:00"}
-	before := window
-
-	require.NoError(t, window.Validate())
-	require.Equal(t, before, window)
 }

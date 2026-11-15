@@ -1,210 +1,379 @@
 package domain
 
 import (
-	"errors"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func TestUserCreateValidate(t *testing.T) {
-	now := time.Now()
-
-	validUserCreate := UserCreate{
-		Name:         "Alexey",
-		Surname:      "Bobkov",
-		Username:     "alexey",
-		BirthDate:    now.AddDate(-20, 0, 0),
-		Description:  "Software engineer",
-		Email:        "alexey@example.com",
-		PhoneNumber:  "+14155552671",
-		PasswordHash: "some-password-hash",
-	}
-
+func TestUserCreate_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
-		mutate  func(*UserCreate)
+		create  UserCreate
 		wantErr error
 	}{
 		{
-			name:    "valid user create",
-			mutate:  func(u *UserCreate) {},
-			wantErr: nil,
+			name: "valid user create",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
 		},
 		{
-			name: "invalid name",
-			mutate: func(u *UserCreate) {
-				u.Name = ""
+			name: "invalid name - empty",
+			create: UserCreate{
+				Name:         "",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserName,
 		},
 		{
-			name: "invalid surname",
-			mutate: func(u *UserCreate) {
-				u.Surname = ""
+			name: "invalid name - too long",
+			create: UserCreate{
+				Name:         "This is a very long name that exceeds the maximum allowed length for user names",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserName,
+		},
+		{
+			name: "invalid name - contains non-letters",
+			create: UserCreate{
+				Name:         "John123",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserName,
+		},
+		{
+			name: "invalid surname - empty",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserSurname,
 		},
 		{
-			name: "invalid username",
-			mutate: func(u *UserCreate) {
-				u.Username = ""
+			name: "invalid surname - too long",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "This is a very long surname that exceeds the maximum allowed length",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserSurname,
+		},
+		{
+			name: "invalid username - empty",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserUsername,
 		},
 		{
-			name: "invalid birth date",
-			mutate: func(u *UserCreate) {
-				u.BirthDate = now.AddDate(-10, 0, 0)
+			name: "invalid username - too long",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "This is a very long username that exceeds the maximum allowed length for user usernames",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserUsername,
+		},
+		{
+			name: "invalid username - contains spaces",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "john doe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserUsername,
+		},
+		{
+			name: "invalid birth date - future",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Now().AddDate(1, 0, 0),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserBirthdate,
 		},
 		{
-			name: "invalid description",
-			mutate: func(u *UserCreate) {
-				u.Description = strings.Repeat("a", 1001)
+			name: "invalid birth date - too young",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Now().AddDate(-13, 0, 0),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserBirthdate,
+		},
+		{
+			name: "invalid birth date - too old",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Now().AddDate(-151, 0, 0),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
+			},
+			wantErr: core_errors.ErrInvalidUserBirthdate,
+		},
+		{
+			name: "invalid description - too long",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  strings.Repeat("This is a very long description that exceeds the maximum allowed length of 1000 characters. ", 100),
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserDescription,
 		},
 		{
 			name: "invalid email",
-			mutate: func(u *UserCreate) {
-				u.Email = "invalid-email"
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "invalid-email",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserEmail,
 		},
 		{
 			name: "invalid phone number",
-			mutate: func(u *UserCreate) {
-				u.PhoneNumber = "+123"
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "invalid",
+				PasswordHash: "hashedpassword",
 			},
 			wantErr: core_errors.ErrInvalidUserPhoneNumber,
+		},
+		{
+			// The password hash is not part of UserCreate.Validate; plaintext
+			// passwords are validated separately via ValidatePassword before
+			// hashing.
+			name: "empty password hash is not validated here",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "",
+			},
+		},
+		{
+			name: "short password hash is not validated here",
+			create: UserCreate{
+				Name:         "John",
+				Surname:      "Doe",
+				Username:     "johndoe",
+				BirthDate:    time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description:  "Test user",
+				Email:        "john@example.com",
+				PhoneNumber:  "+79001234567",
+				PasswordHash: "short",
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userCreate := validUserCreate
-			tt.mutate(&userCreate)
+			err := tt.create.Validate()
 
-			err := userCreate.Validate()
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf(
-					"UserCreate.Validate() = %v, want %v",
-					err,
-					tt.wantErr,
-				)
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
 			}
+
+			require.NoError(t, err)
 		})
 	}
 }
 
-func TestUserCreateValidatePassword(t *testing.T) {
-	t.Run("valid password", func(t *testing.T) {
-		t.Parallel()
-
-		require.NoError(t, ValidatePassword("Abcd123!"))
-	})
-
-	t.Run("weak password", func(t *testing.T) {
-		t.Parallel()
-
-		require.ErrorIs(t, ValidatePassword("weak"), core_errors.ErrInvalidUserPassword)
-	})
-}
-
-func TestUserCreateValidateAllowsNilDeletedAt(t *testing.T) {
-	now := time.Now()
-
-	userCreate := UserCreate{
-		Name:         "Alexey",
-		Surname:      "Bobkov",
-		Username:     "alexey",
-		BirthDate:    now.AddDate(-20, 0, 0),
-		Description:  "Software engineer",
-		Email:        "alexey@example.com",
-		PhoneNumber:  "+14155552671",
-		PasswordHash: "some-password-hash",
+func TestValidatePassword(t *testing.T) {
+	tests := []struct {
+		name     string
+		password string
+		wantErr  error
+	}{
+		{
+			name:     "valid password",
+			password: "Password1!",
+			wantErr:  nil,
+		},
+		{
+			name:     "valid password - longer",
+			password: "MySuperSecurePassword123!",
+			wantErr:  nil,
+		},
+		{
+			name:     "invalid password - too short",
+			password: "Pass1!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no digits",
+			password: "Password!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no letters",
+			password: "12345678!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no special characters",
+			password: "Password123",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no uppercase",
+			password: "password1!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no lowercase",
+			password: "PASSWORD1!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - no digits",
+			password: "Password!",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - only special characters",
+			password: "!@#$%^&*()",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - only letters",
+			password: "abcdefg",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
+		{
+			name:     "invalid password - only digits",
+			password: "12345678",
+			wantErr:  core_errors.ErrInvalidUserPassword,
+		},
 	}
 
-	if err := userCreate.Validate(); err != nil {
-		t.Fatalf("UserCreate.Validate() = %v, want nil", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidatePassword(tt.password)
+
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+
+			require.NoError(t, err)
+		})
 	}
 }
 
 func TestNewUserCreate(t *testing.T) {
-	birthDate := time.Date(
-		2005,
-		time.January,
-		15,
-		12,
-		30,
-		0,
-		0,
-		time.UTC,
+	create := NewUserCreate(
+		"John",
+		"Doe",
+		"johndoe",
+		time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+		"Test user",
+		"john@example.com",
+		"+79001234567",
 	)
 
-	got := NewUserCreate(
-		"Alexey",
-		"Bobkov",
-		"alexey",
-		birthDate,
-		"Software engineer",
-		"alexey@example.com",
-		"+14155552671",
-	)
+	// Verify all fields are set
+	assert.Equal(t, "John", create.Name)
+	assert.Equal(t, "Doe", create.Surname)
+	assert.Equal(t, "johndoe", create.Username)
+	assert.Equal(t, time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC), create.BirthDate)
+	assert.Equal(t, "Test user", create.Description)
+	assert.Equal(t, "john@example.com", create.Email)
+	assert.Equal(t, "+79001234567", create.PhoneNumber)
+	assert.Equal(t, "", create.PasswordHash)
 
-	want := &UserCreate{
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   birthDate,
-		Description: "Software engineer",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-	}
-
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf(
-			"NewUserCreate() = %#v, want %#v",
-			got,
-			want,
-		)
-	}
-}
-
-func TestNewUserCreateDoesNotSetPasswordHash(t *testing.T) {
-	birthDate := time.Date(
-		2005,
-		time.January,
-		15,
-		0,
-		0,
-		0,
-		0,
-		time.UTC,
-	)
-
-	got := NewUserCreate(
-		"Alexey",
-		"Bobkov",
-		"alexey",
-		birthDate,
-		"Software engineer",
-		"alexey@example.com",
-		"+14155552671",
-	)
-
-	if got.PasswordHash != "" {
-		t.Fatalf(
-			"NewUserCreate().PasswordHash = %q, want empty string",
-			got.PasswordHash,
-		)
-	}
+	// Verify validation passes
+	require.NoError(t, create.Validate())
 }

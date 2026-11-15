@@ -4,57 +4,315 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
 func TestRouteStop_Validate(t *testing.T) {
-	futureDate := time.Now().Add(24 * time.Hour)
-
-	validStop := RouteStop{
-		ID:            1,
-		PlaceID:       1,
-		Position:      1,
-		Name:          "Stop",
-		Description:   "Stop description",
-		Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		ArrivalTime:   futureDate.Add(time.Hour),
-		DepartureTime: futureDate.Add(2 * time.Hour),
-		VisitDuration: 30 * time.Minute,
-	}
-
 	tests := []struct {
 		name    string
-		mutate  func(*RouteStop)
+		stop    RouteStop
 		wantErr error
 	}{
-		{name: "valid stop"},
-		{name: "invalid stop ID", mutate: func(s *RouteStop) { s.ID = 0 }, wantErr: core_errors.ErrInvalidID},
-		{name: "invalid place ID", mutate: func(s *RouteStop) { s.PlaceID = 0 }, wantErr: core_errors.ErrInvalidID},
-		{name: "invalid position", mutate: func(s *RouteStop) { s.Position = 0 }, wantErr: core_errors.ErrInvalidRouteStopPosition},
-		{name: "invalid name", mutate: func(s *RouteStop) { s.Name = "" }, wantErr: core_errors.ErrInvalidRouteStopName},
-		{name: "invalid description", mutate: func(s *RouteStop) { s.Description = "" }, wantErr: core_errors.ErrInvalidRouteStopDescription},
-		{name: "invalid coordinates", mutate: func(s *RouteStop) { s.Coordinates = Coordinates{Latitude: 91, Longitude: 37.6208} }, wantErr: core_errors.ErrInvalidLatitude},
-		{name: "zero arrival time", mutate: func(s *RouteStop) { s.ArrivalTime = time.Time{} }, wantErr: core_errors.ErrInvalidRouteArrivalTime},
-		{name: "zero departure time", mutate: func(s *RouteStop) { s.DepartureTime = time.Time{} }, wantErr: core_errors.ErrInvalidRouteDepartureTime},
-		{name: "negative visit duration", mutate: func(s *RouteStop) { s.VisitDuration = -time.Minute }, wantErr: core_errors.ErrInvalidRouteStopDatesOrder},
-		{name: "arrival after departure", mutate: func(s *RouteStop) { s.DepartureTime = s.ArrivalTime.Add(-time.Hour) }, wantErr: core_errors.ErrInvalidRouteStopDatesOrder},
-		{name: "visit duration after departure", mutate: func(s *RouteStop) { s.VisitDuration = 3 * time.Hour }, wantErr: core_errors.ErrInvalidRouteStopDatesOrder},
+		{
+			name: "valid stop",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+		},
+		{
+			name: "invalid ID",
+			stop: RouteStop{
+				ID:            -1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidID,
+		},
+		{
+			name: "invalid place ID",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       -1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidID,
+		},
+		{
+			name: "invalid position",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      0,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopPosition,
+		},
+		{
+			name: "invalid name",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopName,
+		},
+		{
+			name: "invalid description",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopDescription,
+		},
+		{
+			name: "invalid coordinates",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 200, Longitude: 200},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidLatitude,
+		},
+		{
+			name: "invalid arrival time",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Time{},
+				DepartureTime: time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteArrivalTime,
+		},
+		{
+			name: "invalid departure time",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Time{},
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteDepartureTime,
+		},
+		{
+			name: "invalid times order - arrival after departure",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 14, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				VisitDuration: 2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopDatesOrder,
+		},
+		{
+			name: "invalid times order - duration exceeds departure",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 13, 0, 0, 0, time.UTC),
+				VisitDuration: 3 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopDatesOrder,
+		},
+		{
+			name: "invalid times order - negative duration",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 10, 0, 0, 0, time.UTC),
+				VisitDuration: -2 * time.Hour,
+			},
+			wantErr: core_errors.ErrInvalidRouteStopDatesOrder,
+		},
+		{
+			name: "valid stop with zero duration",
+			stop: RouteStop{
+				ID:            1,
+				PlaceID:       1,
+				Position:      1,
+				Name:          "Stop 1",
+				Description:   "Description",
+				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				ArrivalTime:   time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				DepartureTime: time.Date(2026, time.October, 28, 12, 0, 0, 0, time.UTC),
+				VisitDuration: 0,
+			},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stop := validStop
-			if tt.mutate != nil {
-				tt.mutate(&stop)
-			}
-			err := stop.Validate()
+			err := tt.stop.Validate()
+
 			if tt.wantErr != nil {
-				require.ErrorIs(t, err, tt.wantErr)
+				assert.ErrorIs(t, err, tt.wantErr)
 				return
 			}
+
 			require.NoError(t, err)
+		})
+	}
+}
+
+func TestRouteStop_Positions(t *testing.T) {
+	tests := []struct {
+		name        string
+		position    int
+		shouldError bool
+	}{
+		{
+			name:        "position 1 is valid",
+			position:    1,
+			shouldError: false,
+		},
+		{
+			name:        "position 100 is valid",
+			position:    100,
+			shouldError: false,
+		},
+		{
+			name:        "position 0 is invalid",
+			position:    0,
+			shouldError: true,
+		},
+		{
+			name:        "position negative is invalid",
+			position:    -1,
+			shouldError: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateRouteStopPosition(tt.position)
+
+			if tt.shouldError {
+				assert.ErrorIs(t, err, core_errors.ErrInvalidRouteStopPosition)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestRouteStop_NamesAndDescriptions(t *testing.T) {
+	tests := []struct {
+		name        string
+		stopName    string
+		description string
+		wantNameErr bool
+		wantDescErr bool
+	}{
+		{
+			name:        "valid name and description",
+			stopName:    "Stop 1",
+			description: "Description",
+		},
+		{
+			name:        "empty name is invalid",
+			stopName:    "",
+			description: "Description",
+			wantNameErr: true,
+		},
+		{
+			name:        "empty description is invalid",
+			stopName:    "Stop 1",
+			description: "",
+			wantDescErr: true,
+		},
+		{
+			name:        "name and description with spaces are valid",
+			stopName:    "Stop 1",
+			description: "Description with spaces",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			nameErr := validateRouteStopName(tt.stopName)
+			descErr := validateRouteStopDescription(tt.description)
+
+			if tt.wantNameErr {
+				assert.Error(t, nameErr)
+			} else {
+				require.NoError(t, nameErr)
+			}
+
+			if tt.wantDescErr {
+				assert.Error(t, descErr)
+			} else {
+				require.NoError(t, descErr)
+			}
 		})
 	}
 }
