@@ -31,18 +31,31 @@ func registerCleanup(t *testing.T, cleanup func(context.Context) error) {
 	})
 }
 
+// checkIfDatabaseIsDirty guards tests against leaked rows from a previous test.
+// Integration tests in this package run sequentially, so the database must be
+// empty before each test starts. Checking every table also verifies that
+// cascading deletes and cleanups worked.
 func checkIfDatabaseIsDirty(t *testing.T) {
-	var counter int
+	t.Helper()
 
-	require.NoError(t, poolForIntegrationTesting.QueryRow(
-		context.Background(),
-		`
-		SELECT COUNT(*)
-		FROM app.routes;
-		`,
-	).Scan(&counter))
-	if counter != 0 {
-		panic("dirty database state!!!")
+	tables := []string{
+		"app.users",
+		"app.trips",
+		"app.meal_requirements",
+		"app.routes",
+		"app.route_days",
+		"app.route_stops",
+		"app.route_legs",
+	}
+
+	for _, table := range tables {
+		var counter int
+
+		require.NoError(t, poolForIntegrationTesting.QueryRow(
+			context.Background(),
+			fmt.Sprintf(`SELECT COUNT(*) FROM %s;`, table),
+		).Scan(&counter))
+		require.Zero(t, counter, "dirty database state: %s is not empty", table)
 	}
 }
 
@@ -73,6 +86,16 @@ func newTripForRoutes(t *testing.T, ctx context.Context) *domain.Trip {
 	require.NotNil(t, trip)
 
 	registerCleanup(t, func(ctx context.Context) error {
+		if _, err := poolForIntegrationTesting.Exec(
+			ctx,
+			`DELETE FROM app.meal_requirements WHERE id IN (
+				SELECT id FROM app.trips WHERE owner_id=$1
+			);`,
+			user.ID,
+		); err != nil {
+			return err
+		}
+
 		if _, err := poolForIntegrationTesting.Exec(
 			ctx,
 			`DELETE FROM app.trips WHERE owner_id=$1;`,
@@ -257,6 +280,16 @@ func assertRouteMatchesCreate(
 func assertRouteRowsPersisted(t *testing.T, route *domain.Route) {
 	t.Helper()
 
+	var storedTripVersion int
+	var storedStatus domain.RouteStatus
+	require.NoError(t, poolForIntegrationTesting.QueryRow(
+		context.Background(),
+		`SELECT trip_version, status FROM app.routes WHERE id=$1;`,
+		route.ID,
+	).Scan(&storedTripVersion, &storedStatus))
+	assert.Equal(t, route.TripVersion, storedTripVersion)
+	assert.Equal(t, route.Status, storedStatus)
+
 	var dayCounter int
 	require.NoError(t, poolForIntegrationTesting.QueryRow(
 		context.Background(),
@@ -320,6 +353,80 @@ func assertRouteRowsPersisted(t *testing.T, route *domain.Route) {
 				leg.ID,
 			).Scan(&durationSeconds))
 			assert.Equal(t, int64(leg.Duration/time.Second), durationSeconds)
+		}
+	}
+}
+
+// assertNoRouteDataForTrip verifies that no route, day, stop or leg rows remain
+// for the given trip.
+func assertNoRouteDataForTrip(t *testing.T, tripID int) {
+	t.Helper()
+
+	queries := map[string]string{
+		"routes": `SELECT COUNT(*) FROM app.routes WHERE trip_id=$1;`,
+		"route days": `
+			SELECT COUNT(*)
+			FROM app.route_days AS days
+			JOIN app.routes AS routes ON routes.id = days.route_id
+			WHERE routes.trip_id=$1;
+		`,
+		"route stops": `
+			SELECT COUNT(*)
+			FROM app.route_stops AS stops
+			JOIN app.route_days AS days ON days.id = stops.route_day_id
+			JOIN app.routes AS routes ON routes.id = days.route_id
+			WHERE routes.trip_id=$1;
+		`,
+		"route legs": `
+			SELECT COUNT(*)
+			FROM app.route_legs AS legs
+			JOIN app.route_days AS days ON days.id = legs.route_day_id
+			JOIN app.routes AS routes ON routes.id = days.route_id
+			WHERE routes.trip_id=$1;
+		`,
+	}
+
+	for name, query := range queries {
+		var counter int
+
+		require.NoError(t, poolForIntegrationTesting.QueryRow(
+			context.Background(),
+			query,
+			tripID,
+		).Scan(&counter))
+		assert.Zerof(t, counter, "%s must not be persisted for trip %d", name, tripID)
+	}
+}
+
+// assertRouteDaysOrdered checks the read contract: days are ordered by
+// day_number and stops inside a day are ordered by position. The repository
+// does not define ordering explicitly in SQL, so this test documents the
+// expected behavior.
+func assertRouteDaysOrdered(t *testing.T, days []domain.RouteDay) {
+	t.Helper()
+
+	for ind := 1; ind < len(days); ind++ {
+		assert.Lessf(
+			t,
+			days[ind-1].DayNumber,
+			days[ind].DayNumber,
+			"route days must be ordered by day_number, got %d before %d",
+			days[ind-1].DayNumber,
+			days[ind].DayNumber,
+		)
+	}
+
+	for _, day := range days {
+		for ind := 1; ind < len(day.Stops); ind++ {
+			assert.Lessf(
+				t,
+				day.Stops[ind-1].Position,
+				day.Stops[ind].Position,
+				"stops in day %d must be ordered by position, got %d before %d",
+				day.DayNumber,
+				day.Stops[ind-1].Position,
+				day.Stops[ind].Position,
+			)
 		}
 	}
 }
