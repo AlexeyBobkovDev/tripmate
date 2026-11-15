@@ -140,7 +140,7 @@ var (
 	file_tripmate_route_generator_api_v1_route_leg_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 	file_tripmate_route_generator_api_v1_route_leg_proto_goTypes  = []any{
 		(*RouteLeg)(nil),            // 0: tripmate.route_generator.api.v1.RouteLeg
-		(TravelMode)(0),             // 1: tripmate.route_generator.api.v1.TravelMode
+		TravelMode(0),               // 1: tripmate.route_generator.api.v1.TravelMode
 		(*durationpb.Duration)(nil), // 2: google.protobuf.Duration
 	}
 )

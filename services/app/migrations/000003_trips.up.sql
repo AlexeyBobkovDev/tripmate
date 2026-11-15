@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS app.trips
     location_longitude DOUBLE PRECISION NOT NULL,
     start_date         DATE             NOT NULL,
     end_date           DATE             NOT NULL,
+    start_time         TIMESTAMPTZ      NOT NULL,
+    end_time           TIMESTAMPTZ      NOT NULL,
     amount_minor_units INT              NOT NULL,
     currency           VARCHAR(3)       NOT NULL,
     interests          TEXT[]           NOT NULL DEFAULT '{}',

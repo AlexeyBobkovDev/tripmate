@@ -33,9 +33,9 @@ services:
     image: postgres:18.4-bookworm
     container_name: app-postgres
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - app_pgdata:/var/lib/postgresql
     restart: always
@@ -85,9 +85,9 @@ services:
     image: postgres:18.4-bookworm
     container_name: route-generator-postgres
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - route_generator_pgdata:/var/lib/postgresql
     restart: always
@@ -129,20 +129,31 @@ services:
     build:
       context: ..
       dockerfile_inline: |
-        FROM golang:1.27.3-alpine
+        FROM golang:1.27.4-alpine
         RUN apk add --no-cache git
         RUN --mount=type=cache,target=go/pkg/mod \
             --mount=type=cache,target=/root/.cache/go-build \
-            go install github.com/swaggo/swag/v2/cmd/swag@v2.0.0-rc5
+            go install github.com/swaggo/swag/v2/cmd/swag@v2.0.0-rc6
+        RUN mkdir -p /cache && chmod 0777 /cache
         WORKDIR /code
         ENTRYPOINT ["swag"]
     container_name: swagger
+    user: "${UID:?UID is not set up}:${GID:?GID is not set up}"
+    volumes:
+      - ..:/code
+      - swagger_cache:/cache
+    environment:
+      GOCACHE: /cache/build
+      GOMODCACHE: /cache/mod
+      HOME: "/tmp"
 
 volumes:
   app_pgdata:
     name: app_pgdata
   route_generator_pgdata:
     name: route_generator_pgdata
+  swagger_cache:
+    name: swagger_cache
 
 networks:
   app-network:

@@ -160,6 +160,46 @@ func TestCoordinates_Validate(t *testing.T) {
 			},
 			wantErr: core_errors.ErrInvalidLatitude,
 		},
+		{
+			name: "latitude slightly above max",
+			location: Coordinates{
+				Latitude:  90.0000000001,
+				Longitude: 0,
+			},
+			wantErr: core_errors.ErrInvalidLatitude,
+		},
+		{
+			name: "latitude slightly below min",
+			location: Coordinates{
+				Latitude:  -90.0000000001,
+				Longitude: 0,
+			},
+			wantErr: core_errors.ErrInvalidLatitude,
+		},
+		{
+			name: "longitude slightly above max",
+			location: Coordinates{
+				Latitude:  0,
+				Longitude: 180.0000000001,
+			},
+			wantErr: core_errors.ErrInvalidLongitude,
+		},
+		{
+			name: "longitude slightly below min",
+			location: Coordinates{
+				Latitude:  0,
+				Longitude: -180.0000000001,
+			},
+			wantErr: core_errors.ErrInvalidLongitude,
+		},
+		{
+			name: "both coordinates invalid",
+			location: Coordinates{
+				Latitude:  100,
+				Longitude: 200,
+			},
+			wantErr: core_errors.ErrInvalidLatitude,
+		},
 	}
 
 	for _, tt := range tests {

@@ -77,7 +77,8 @@ func createTestUser(t *testing.T, ctx context.Context) *users_transport_http.Use
 	sequence := testUserSequence.Add(1)
 	suffix := fmt.Sprintf("%d_%d", time.Now().UnixNano(), sequence)
 
-	body := fmt.Sprintf(`{
+	body := fmt.Sprintf(
+		`{
 		"name": %q,
 		"surname": %q,
 		"username": %q,
@@ -135,16 +136,18 @@ type tripRequestBudget struct {
 }
 
 type tripRequestBody struct {
-	OwnerID          int                    `json:"owner_id"`
-	Version          int                    `json:"version,omitempty"`
-	Name             string                 `json:"name"`
-	PlanningArea     string                 `json:"planning_area"`
-	StartCoordinates tripRequestCoordinates `json:"start_location"`
-	StartDate        string                 `json:"start_date"`
-	EndDate          string                 `json:"end_date"`
-	Budget           tripRequestBudget      `json:"budget"`
-	Interests        []string               `json:"interests"`
-	TimeZone         string                 `json:"time_zone"`
+	OwnerID          int                                              `json:"owner_id"`
+	Version          int                                              `json:"version,omitempty"`
+	Name             string                                           `json:"name"`
+	PlanningArea     string                                           `json:"planning_area"`
+	StartCoordinates tripRequestCoordinates                           `json:"start_location"`
+	StartDate        string                                           `json:"start_date"`
+	EndDate          string                                           `json:"end_date"`
+	DailySchedule    domain.DailySchedule                             `json:"daily_schedule"`
+	MealRequirements []trips_transport_http.MealRequirementRequestDTO `json:"meal_requirements"`
+	Budget           tripRequestBudget                                `json:"budget"`
+	Interests        []string                                         `json:"interests"`
+	TimeZone         string                                           `json:"time_zone"`
 }
 
 func newTripRequestBody(ownerID int, name string) tripRequestBody {
@@ -161,6 +164,18 @@ func newTripRequestBody(ownerID int, name string) tripRequestBody {
 		},
 		StartDate: startDate.Format(core_consts.Layout),
 		EndDate:   endDate.Format(core_consts.Layout),
+		DailySchedule: domain.DailySchedule{
+			StartTime: "09:00",
+			EndTime:   "18:00",
+		},
+		MealRequirements: []trips_transport_http.MealRequirementRequestDTO{
+			{
+				Type:     domain.MealBreakfast,
+				Window:   domain.TimeWindow{Start: "08:00", End: "09:00"},
+				Duration: 60,
+				Budget:   domain.Money{AmountMinorUnits: 50000, Currency: "RUB"},
+			},
+		},
 		Budget: tripRequestBudget{
 			AmountMinorUnits: 1500000,
 			Currency:         "RUB",

@@ -85,3 +85,17 @@ func validateTimeZone(timeZone string) error {
 	}
 	return nil
 }
+
+func validateTripStartTime(startTime time.Time) error {
+	if startTime.IsZero() {
+		return core_errors.ErrInvalidTripStartTime
+	}
+	return nil
+}
+
+func validateTripEndTime(endTime time.Time) error {
+	if endTime.IsZero() {
+		return core_errors.ErrInvalidTripEndTime
+	}
+	return nil
+}

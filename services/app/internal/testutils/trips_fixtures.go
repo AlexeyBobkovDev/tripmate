@@ -23,6 +23,18 @@ func TripTest() domain.Trip {
 		},
 		StartDate: startDate,
 		EndDate:   endDate,
+		DailySchedule: domain.DailySchedule{
+			StartTime: "09:00",
+			EndTime:   "18:00",
+		},
+		MealRequirements: []domain.MealRequirement{
+			{
+				Type:     domain.MealBreakfast,
+				Window:   domain.TimeWindow{Start: "08:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   domain.Money{AmountMinorUnits: 50000, Currency: "RUB"},
+			},
+		},
 		Budget: domain.Money{
 			AmountMinorUnits: 1500000,
 			Currency:         "RUB",
@@ -45,6 +57,8 @@ func TripPatchTest() domain.TripPatch {
 		domain.Nullable[domain.Coordinates]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
 		domain.Nullable[time.Time]{Set: false},
+		domain.Nullable[domain.DailySchedule]{Set: false},
+		domain.Nullable[[]domain.MealRequirement]{Set: false},
 		domain.Nullable[domain.Money]{Set: false},
 		domain.Nullable[[]domain.Interest]{Set: false},
 		domain.Nullable[string]{Set: false},
@@ -65,6 +79,18 @@ func TripCreateTest(ownerID int, name string) *domain.TripCreate {
 		},
 		startDate,
 		endDate,
+		domain.DailySchedule{
+			StartTime: "09:00",
+			EndTime:   "18:00",
+		},
+		[]domain.MealRequirement{
+			{
+				Type:     domain.MealBreakfast,
+				Window:   domain.TimeWindow{Start: "08:00", End: "09:00"},
+				Duration: time.Hour,
+				Budget:   domain.Money{AmountMinorUnits: 50000, Currency: "RUB"},
+			},
+		},
 		domain.Money{
 			AmountMinorUnits: 1500000,
 			Currency:         "RUB",

@@ -1,3 +1,9 @@
-replace core_http_types.Nullable[domain.Money] domain.Money
-replace core_http_types.Nullable[domain.Coordinates] domain.Coordinates
-replace core_http_types.Nullable[[]domain.Interest] []domain.Interest
+replace core_http_types.Nullable[domain.Money]                  domain.Money
+
+replace core_http_types.Nullable[domain.Coordinates]            domain.Coordinates
+
+replace core_http_types.Nullable[[]domain.Interest]             []domain.Interest
+
+replace core_http_types.Nullable[domain.DailySchedule]          domain.DailySchedule
+
+replace core_http_types.Nullable[[]MealRequirementRequestDTO]   []MealRequirementRequestDTO

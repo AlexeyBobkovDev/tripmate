@@ -28,23 +28,24 @@ func TestUsersService_DeleteUser_InvalidID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
-			mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
-			usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
+				mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
+				mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
+				usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
 
-			mockUsersRepository.EXPECT().
-				DeleteUser(
-					gomock.Any(),
-					gomock.Any(),
-				).
-				Times(0)
+				mockUsersRepository.EXPECT().
+					DeleteUser(
+						gomock.Any(),
+						gomock.Any(),
+					).
+					Times(0)
 
-			err := usersService.DeleteUser(context.Background(), tt.id)
+				err := usersService.DeleteUser(context.Background(), tt.id)
 
-			require.ErrorIs(t, err, core_errors.ErrBadRequest)
-		},
+				require.ErrorIs(t, err, core_errors.ErrBadRequest)
+			},
 		)
 	}
 }

@@ -10,15 +10,123 @@ import (
 )
 
 func TestValidateTripStartDate(t *testing.T) {
-	require.ErrorIs(t, validateTripStartDate(time.Time{}), core_errors.ErrInvalidTripStartDate)
-	require.NoError(t, validateTripStartDate(time.Now()))
-	require.NoError(t, validateTripStartDate(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)))
+	// Use a fixed reference date to ensure consistent test results
+	refDate := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name    string
+		date    time.Time
+		wantErr error
+	}{
+		{name: "zero date", date: time.Time{}, wantErr: core_errors.ErrInvalidTripStartDate},
+		{name: "future date", date: refDate.Add(24 * time.Hour)},
+		{name: "past date", date: refDate.Add(-time.Hour), wantErr: core_errors.ErrInvalidTripStartDate},
+		{name: "past date", date: refDate.Add(-24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartDate},
+		{name: "past date", date: refDate.Add(-7 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartDate},
+		{name: "past date", date: refDate.Add(-365 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartDate},
+		{name: "past date", date: time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC), wantErr: core_errors.ErrInvalidTripStartDate},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTripStartDate(tt.date)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestValidateTripEndDate(t *testing.T) {
-	require.ErrorIs(t, validateTripEndDate(time.Time{}), core_errors.ErrInvalidTripEndDate)
-	require.NoError(t, validateTripEndDate(time.Now()))
-	require.NoError(t, validateTripEndDate(time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC)))
+	// Use a fixed reference date to ensure consistent test results
+	refDate := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name    string
+		date    time.Time
+		wantErr error
+	}{
+		{name: "zero date", date: time.Time{}, wantErr: core_errors.ErrInvalidTripEndDate},
+		{name: "future date", date: refDate.Add(24 * time.Hour)},
+		{name: "past date", date: refDate.Add(-time.Hour), wantErr: core_errors.ErrInvalidTripEndDate},
+		{name: "past date", date: refDate.Add(-24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndDate},
+		{name: "past date", date: refDate.Add(-7 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndDate},
+		{name: "past date", date: refDate.Add(-365 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndDate},
+		{name: "past date", date: time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC), wantErr: core_errors.ErrInvalidTripEndDate},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTripEndDate(tt.date)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateTripStartTime(t *testing.T) {
+	// Use a fixed reference time to ensure consistent test results
+	refTime := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name    string
+		time    time.Time
+		wantErr error
+	}{
+		{name: "zero time", time: time.Time{}, wantErr: core_errors.ErrInvalidTripStartTime},
+		{name: "future time", time: refTime.Add(24 * time.Hour)},
+		{name: "past time", time: refTime.Add(-time.Hour), wantErr: core_errors.ErrInvalidTripStartTime},
+		{name: "past time", time: refTime.Add(-24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartTime},
+		{name: "past time", time: refTime.Add(-7 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartTime},
+		{name: "past time", time: refTime.Add(-365 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripStartTime},
+		{name: "past time", time: time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC), wantErr: core_errors.ErrInvalidTripStartTime},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTripStartTime(tt.time)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateTripEndTime(t *testing.T) {
+	// Use a fixed reference time to ensure consistent test results
+	refTime := time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
+
+	tests := []struct {
+		name    string
+		time    time.Time
+		wantErr error
+	}{
+		{name: "zero time", time: time.Time{}, wantErr: core_errors.ErrInvalidTripEndTime},
+		{name: "future time", time: refTime.Add(24 * time.Hour)},
+		{name: "past time", time: refTime.Add(-time.Hour), wantErr: core_errors.ErrInvalidTripEndTime},
+		{name: "past time", time: refTime.Add(-24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndTime},
+		{name: "past time", time: refTime.Add(-7 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndTime},
+		{name: "past time", time: refTime.Add(-365 * 24 * time.Hour), wantErr: core_errors.ErrInvalidTripEndTime},
+		{name: "past time", time: time.Date(1900, 1, 1, 0, 0, 0, 0, time.UTC), wantErr: core_errors.ErrInvalidTripEndTime},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateTripEndTime(tt.time)
+			if tt.wantErr != nil {
+				require.ErrorIs(t, err, tt.wantErr)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestValidateTripDatesOrder(t *testing.T) {

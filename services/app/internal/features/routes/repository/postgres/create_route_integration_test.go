@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
@@ -51,13 +50,39 @@ func TestRoutesRepository_CreateRoute_Integration_RollsBackOnFailure(t *testing.
 	require.Error(t, err)
 	require.Nil(t, createdRoute)
 
-	var routeCounter int
-	require.NoError(t, poolForIntegrationTesting.QueryRow(
-		ctx,
-		`SELECT COUNT(*) FROM app.routes WHERE trip_id=$1;`,
-		trip.ID,
-	).Scan(&routeCounter))
-	assert.Zero(t, routeCounter, "route creation must be rolled back atomically")
+	assertNoRouteDataForTrip(t, trip.ID)
+}
+
+func TestRoutesRepository_CreateRoute_Integration_PersistsEveryTravelMode(t *testing.T) {
+	checkIfDatabaseIsDirty(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	routesRepository := NewRoutesRepository(poolForIntegrationTesting)
+	trip := newTripForRoutes(t, ctx)
+
+	travelModes := []domain.TravelMode{
+		domain.TravelModeWalking,
+		domain.TravelModeCycling,
+		domain.TravelModeDriving,
+		domain.TravelModeTransit,
+	}
+
+	routeCreate := routeCreateFixture(len(travelModes))
+	for ind := range routeCreate.Days {
+		routeCreate.Days[ind].Legs[0].TravelMode = travelModes[ind]
+	}
+
+	createdRoute, err := routesRepository.CreateRoute(ctx, trip.OwnerID, trip, routeCreate)
+	require.NoError(t, err)
+	require.NotNil(t, createdRoute)
+
+	retrievedRoute, err := routesRepository.GetRoute(ctx, trip.ID, createdRoute.ID)
+	require.NoError(t, err)
+	require.NotNil(t, retrievedRoute)
+
+	assertRouteMatchesCreate(t, routeCreate, retrievedRoute, trip)
 }
 
 func TestRoutesRepository_CreateRoute_Integration_InvalidTrip_ForeignKeyViolation(t *testing.T) {

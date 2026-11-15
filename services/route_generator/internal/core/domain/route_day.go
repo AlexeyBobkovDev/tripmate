@@ -41,5 +41,9 @@ func (d *RouteDay) Validate() error {
 		}
 	}
 
+	if err := validateStopsAndLegs(d.Stops, d.Legs); err != nil {
+		return err
+	}
+
 	return nil
 }

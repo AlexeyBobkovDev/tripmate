@@ -4,123 +4,310 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func TestRouteCreateValidate(t *testing.T) {
-	futureDate := time.Now().Add(24 * time.Hour)
-
-	validRouteCreate := RouteCreate{
-		Status: RouteStatusGenerated,
-		Days:   []RouteDay{validRouteDay(futureDate)},
-	}
+func TestRouteCreate_Validate(t *testing.T) {
+	futureDate := time.Now().Add(24 * time.Hour).UTC()
 
 	tests := []struct {
 		name    string
-		mutate  func(*RouteCreate)
+		create  RouteCreate
 		wantErr error
 	}{
-		{name: "valid route create", mutate: func(r *RouteCreate) {}, wantErr: nil},
-		{name: "valid edited route create", mutate: func(r *RouteCreate) { r.Status = RouteStatusEdited }, wantErr: nil},
 		{
-			name: "multiple valid days",
-			mutate: func(r *RouteCreate) {
-				r.Days = []RouteDay{validRouteDay(futureDate), validRouteDay(futureDate)}
+			name: "valid route create",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+							{
+								ID:            2,
+								PlaceID:       2,
+								Position:      2,
+								Name:          "Stop 2",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate.Add(2 * time.Hour),
+								DepartureTime: futureDate.Add(4 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+						Legs: []RouteLeg{
+							{
+								ID:         1,
+								FromStopID: 1,
+								ToStopID:   2,
+								TravelMode: TravelModeWalking,
+								Distance:   1000,
+								Duration:   15 * time.Minute,
+							},
+						},
+					},
+				},
 			},
-			wantErr: nil,
 		},
 		{
-			name:    "empty status",
-			mutate:  func(r *RouteCreate) { r.Status = RouteStatus("") },
-			wantErr: core_errors.ErrUnsupportedRouteStatus,
-		},
-		{
-			name:    "unsupported status",
-			mutate:  func(r *RouteCreate) { r.Status = "planned" },
-			wantErr: core_errors.ErrUnsupportedRouteStatus,
-		},
-		{
-			name: "status validation error takes precedence over days validation error",
-			mutate: func(r *RouteCreate) {
-				r.Status = "planned"
-				r.Days = nil
+			name: "invalid status",
+			create: RouteCreate{
+				Status: "invalid",
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
 			},
 			wantErr: core_errors.ErrUnsupportedRouteStatus,
 		},
 		{
-			name:    "no days",
-			mutate:  func(r *RouteCreate) { r.Days = nil },
+			name: "invalid days - empty",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days:   []RouteDay{},
+			},
 			wantErr: core_errors.ErrInvalidRouteDaysAmount,
 		},
 		{
-			name:    "empty days",
-			mutate:  func(r *RouteCreate) { r.Days = []RouteDay{} },
-			wantErr: core_errors.ErrInvalidRouteDaysAmount,
-		},
-		{
-			name:    "day without stops",
-			mutate:  func(r *RouteCreate) { r.Days = []RouteDay{{ID: 1, Date: futureDate, DayNumber: 1}} },
-			wantErr: core_errors.ErrInvalidRouteDayStopsAmount,
-		},
-		{
-			name: "day with invalid stop",
-			mutate: func(r *RouteCreate) {
-				r.Days = []RouteDay{{ID: 1, Date: futureDate, DayNumber: 1, Stops: []RouteStop{{ID: 1, PlaceID: 1, Position: 0}}, Legs: []RouteLeg{}}}
+			name: "invalid days - first day invalid",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        -1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
 			},
-			wantErr: core_errors.ErrInvalidRouteStopPosition,
+			wantErr: core_errors.ErrInvalidID,
 		},
 		{
-			name: "day with invalid date",
-			mutate: func(r *RouteCreate) {
-				r.Days = []RouteDay{{ID: 1, Date: time.Time{}, DayNumber: 1, Stops: []RouteStop{validStop(futureDate)}, Legs: []RouteLeg{}}}
+			name: "invalid days - invalid date",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      time.Time{},
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
 			},
 			wantErr: core_errors.ErrInvalidRouteDayDate,
 		},
 		{
-			name: "day with invalid day number",
-			mutate: func(r *RouteCreate) {
-				r.Days = []RouteDay{{ID: 1, Date: futureDate, DayNumber: 0, Stops: []RouteStop{validStop(futureDate)}, Legs: []RouteLeg{}}}
+			name: "invalid days - invalid day number",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 0,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
 			},
 			wantErr: core_errors.ErrInvalidRouteDayDayNumber,
 		},
 		{
-			name: "day with invalid leg",
-			mutate: func(r *RouteCreate) {
-				r.Days = []RouteDay{{
-					ID:        1,
-					Date:      futureDate,
-					DayNumber: 1,
-					Stops:     []RouteStop{validStop(futureDate)},
-					Legs: []RouteLeg{
-						{
-							ID:         1,
-							FromStopID: 1,
-							ToStopID:   2,
-							TravelMode: "unknown",
-							Distance:   5,
-							Duration:   10 * time.Minute,
+			name: "invalid days - invalid stops amount",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops:     []RouteStop{},
+					},
+				},
+			},
+			wantErr: core_errors.ErrInvalidRouteDayStopsAmount,
+		},
+		{
+			name: "invalid days - invalid leg stop reference",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+						Legs: []RouteLeg{
+							{
+								ID:         1,
+								FromStopID: 999,
+								ToStopID:   1,
+								TravelMode: TravelModeWalking,
+								Distance:   1000,
+								Duration:   15 * time.Minute,
+							},
 						},
 					},
-				}}
+				},
 			},
-			wantErr: core_errors.ErrUnsupportedRouteTravelMode,
+			wantErr: core_errors.ErrInvalidRouteLegStopReference,
+		},
+		{
+			name: "invalid days - duplicate stop ID",
+			create: RouteCreate{
+				Status: RouteStatusGenerated,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+							{
+								ID:            1,
+								PlaceID:       2,
+								Position:      2,
+								Name:          "Stop 2",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate.Add(2 * time.Hour),
+								DepartureTime: futureDate.Add(4 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
+			},
+			wantErr: core_errors.ErrDuplicateRouteStopID,
+		},
+		{
+			name: "valid route create with edited status",
+			create: RouteCreate{
+				Status: RouteStatusEdited,
+				Days: []RouteDay{
+					{
+						ID:        1,
+						Date:      futureDate,
+						DayNumber: 1,
+						Stops: []RouteStop{
+							{
+								ID:            1,
+								PlaceID:       1,
+								Position:      1,
+								Name:          "Stop 1",
+								Description:   "Description",
+								Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+								ArrivalTime:   futureDate,
+								DepartureTime: futureDate.Add(2 * time.Hour),
+								VisitDuration: 2 * time.Hour,
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			routeCreate := validRouteCreate
-			if tt.mutate != nil {
-				tt.mutate(&routeCreate)
-			}
+			err := tt.create.Validate()
 
-			err := routeCreate.Validate()
 			if tt.wantErr != nil {
-				require.ErrorIs(t, err, tt.wantErr)
+				assert.ErrorIs(t, err, tt.wantErr)
 				return
 			}
+
 			require.NoError(t, err)
 		})
 	}

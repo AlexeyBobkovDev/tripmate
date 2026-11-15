@@ -7,8 +7,8 @@ CREATE TYPE app.travel_mode AS ENUM (
 
 CREATE TABLE IF NOT EXISTS app.route_legs
 (
-    id             BIGSERIAL PRIMARY KEY,
-    route_day_id   BIGINT    REFERENCES app.route_days (id) ON DELETE CASCADE,
+    id           BIGSERIAL PRIMARY KEY,
+    route_day_id BIGINT REFERENCES app.route_days (id) ON DELETE CASCADE,
 
     from_stop_id BIGINT          NOT NULL REFERENCES app.route_stops (id),
     to_stop_id   BIGINT          NOT NULL REFERENCES app.route_stops (id),

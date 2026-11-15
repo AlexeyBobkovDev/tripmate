@@ -24,6 +24,9 @@ type CreateTripRequest struct {
 	StartDate string `json:"start_date"     validate:"required,datetime=2006-01-02" example:"2026-11-14"`
 	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2026-11-14"`
 
+	DailySchedule    domain.DailySchedule        `json:"daily_schedule"       validate:"required"`
+	MealRequirements []MealRequirementRequestDTO `json:"meal_requirements"    validate:"required,dive"`
+
 	Budget    domain.Money      `json:"budget"         validate:"required"`
 	Interests []domain.Interest `json:"interests"      validate:"required,min=1"`
 	TimeZone  string            `json:"time_zone"      validate:"required"                     example:"Europe/Moscow"`
@@ -119,12 +122,19 @@ func createTripDomainFromDTO(dto CreateTripRequest) (*domain.TripCreate, error) 
 	if err != nil {
 		return nil, core_errors.ErrInvalidTripEndDate
 	}
+	var mealRequirements []domain.MealRequirement
+	for _, mealRequirement := range dto.MealRequirements {
+		mealRequirements = append(mealRequirements, mealRequirement.ToDomain())
+	}
+
 	return domain.NewTripCreate(
 		dto.Name,
 		dto.PlanningArea,
 		dto.StartCoordinates,
 		startDate,
 		endDate,
+		dto.DailySchedule,
+		mealRequirements,
 		dto.Budget,
 		dto.Interests,
 		dto.TimeZone,

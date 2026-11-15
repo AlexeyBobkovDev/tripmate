@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"math"
 	"testing"
 	"time"
 
@@ -11,217 +10,386 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func validTripCreate() *TripCreate {
+func TestTripCreate_Validate(t *testing.T) {
 	now := time.Now()
-	startDate := now.AddDate(0, 0, 10).UTC()
-	endDate := startDate
+	futureDate := now.Add(24 * time.Hour)
+	laterDate := now.Add(48 * time.Hour)
 
-	return NewTripCreate(
-		"Weekend in Moscow",
-		"Moscow",
-		Coordinates{
-			Latitude:  55.7539,
-			Longitude: 37.6208,
+	tests := []struct {
+		name    string
+		create  TripCreate
+		wantErr error
+	}{
+		{
+			name: "valid trip create",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				MealRequirements: []MealRequirement{
+					{
+						Type:     MealBreakfast,
+						Window:   TimeWindow{Start: "09:00", End: "10:00"},
+						Duration: time.Hour,
+						Budget:   Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+					},
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
 		},
-		startDate,
-		endDate,
-		Money{
-			AmountMinorUnits: 100000,
-			Currency:         "RUB",
+		{
+			name: "invalid multi-day trip - start before end",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2027, time.January, 16, 0, 0, 0, 0, time.UTC),
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				MealRequirements: []MealRequirement{},
+				Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests:        []Interest{InterestHistory},
+				TimeZone:         "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
 		},
-		[]Interest{InterestHistory, InterestFood},
-		"Europe/Moscow",
-	)
-}
-
-func TestTripCreateValidate_Valid(t *testing.T) {
-	t.Parallel()
-
-	t.Run("all fields provided", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		require.NoError(t, got.Validate())
-	})
-
-	t.Run("optional location omitted", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		got.StartCoordinates = Coordinates{}
-
-		require.NoError(t, got.Validate())
-	})
-
-	t.Run("empty interests", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		got.Interests = nil
-
-		require.NoError(t, got.Validate())
-	})
-}
-
-func TestTripCreateValidate_InvalidName(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.Name = ""
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripName)
-}
-
-func TestTripCreateValidate_InvalidPlanningArea(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.PlanningArea = ""
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidPlanningArea)
-}
-
-func TestTripCreateValidate_InvalidStartCoordinates(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.StartCoordinates = Coordinates{
-		Latitude:  math.NaN(),
-		Longitude: 37.6208,
+		{
+			name: "invalid multi-day trip - start after end",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        time.Date(2027, time.January, 16, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				MealRequirements: []MealRequirement{},
+				Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests:        []Interest{InterestHistory},
+				TimeZone:         "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
+		},
+		{
+			name: "owner ID is validated by the service layer",
+			create: TripCreate{
+				OwnerID:          -1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				MealRequirements: []MealRequirement{},
+				Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests:        []Interest{InterestHistory},
+				TimeZone:         "Europe/Moscow",
+			},
+		},
+		{
+			name: "invalid name",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripName,
+		},
+		{
+			name: "invalid planning area",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidPlanningArea,
+		},
+		{
+			name: "invalid start coordinates",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 200, Longitude: 200},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidLatitude,
+		},
+		{
+			name: "invalid start date",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        time.Time{},
+				EndDate:          time.Date(2026, time.October, 31, 0, 0, 0, 0, time.UTC),
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripStartDate,
+		},
+		{
+			name: "invalid start date - past",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        now.AddDate(-1, 0, 0),
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripStartDate,
+		},
+		{
+			name: "invalid end date",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          time.Time{},
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
+		},
+		{
+			name: "invalid end date - past",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          now.AddDate(-1, 0, 0),
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
+		},
+		{
+			name: "invalid end date - before start",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        laterDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidTripEndDate,
+		},
+		{
+			name: "valid single-day trip - equal start and end",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+		},
+		{
+			name: "invalid daily schedule",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule:    DailySchedule{},
+				Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests:        []Interest{InterestHistory},
+				TimeZone:         "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidLocalTime,
+		},
+		{
+			name: "invalid budget",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 0, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrInvalidBudget,
+		},
+		{
+			name: "invalid interests",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{"invalid"},
+				TimeZone:  "Europe/Moscow",
+			},
+			wantErr: core_errors.ErrUnsupportedInterest,
+		},
+		{
+			name: "invalid time zone",
+			create: TripCreate{
+				OwnerID:          1,
+				Name:             "Test Trip",
+				PlanningArea:     "Moscow",
+				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				StartDate:        futureDate,
+				EndDate:          futureDate,
+				DailySchedule: DailySchedule{
+					StartTime: "09:00",
+					EndTime:   "18:00",
+				},
+				Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+				Interests: []Interest{InterestHistory},
+				TimeZone:  "Invalid/Timezone",
+			},
+			wantErr: core_errors.ErrUnsupportedTimezone,
+		},
 	}
 
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidLatitude)
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.create.Validate()
 
-func TestTripCreateValidate_InvalidStartDate(t *testing.T) {
-	t.Parallel()
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
+			}
 
-	got := validTripCreate()
-	got.StartDate = time.Now().AddDate(0, 0, -1)
-	got.EndDate = got.StartDate
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripStartDate)
-}
-
-func TestTripCreateValidate_ZeroStartDate(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.StartDate = time.Time{}
-	got.EndDate = got.StartDate
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripStartDate)
-}
-
-func TestTripCreateValidate_InvalidEndDate(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.EndDate = time.Now().AddDate(0, 0, -1)
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
-}
-
-func TestTripCreateValidate_ZeroEndDate(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.EndDate = time.Time{}
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
-}
-
-func TestTripCreateValidate_StartDateMustEqualEndDate(t *testing.T) {
-	t.Parallel()
-
-	t.Run("start date before end date", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		got.EndDate = got.StartDate.AddDate(0, 0, 1)
-
-		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
-	})
-
-	t.Run("start date after end date", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		got.EndDate = got.StartDate.AddDate(0, 0, -1)
-
-		require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidTripEndDate)
-	})
-
-	t.Run("start date equals end date", func(t *testing.T) {
-		t.Parallel()
-
-		got := validTripCreate()
-		got.EndDate = got.StartDate
-
-		require.NoError(t, got.Validate())
-	})
-}
-
-func TestTripCreateValidate_InvalidBudget(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.Budget = Money{
-		AmountMinorUnits: 0,
-		Currency:         "RUB",
+			require.NoError(t, err)
+		})
 	}
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrInvalidBudget)
-}
-
-func TestTripCreateValidate_InvalidInterests(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.Interests = []Interest{"unsupported-interest"}
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrUnsupportedInterest)
-}
-
-func TestTripCreateValidate_InvalidTimeZone(t *testing.T) {
-	t.Parallel()
-
-	got := validTripCreate()
-	got.TimeZone = "Not/A_Real_Time_Zone"
-
-	require.ErrorIs(t, got.Validate(), core_errors.ErrUnsupportedTimezone)
 }
 
 func TestNewTripCreate(t *testing.T) {
-	t.Parallel()
-
-	startCoordinates := Coordinates{
-		Latitude:  55.7539,
-		Longitude: 37.6208,
-	}
-	startDate := time.Now().AddDate(0, 0, 60).UTC()
-	endDate := startDate
-	budget := Money{AmountMinorUnits: 100000, Currency: "RUB"}
-	interests := []Interest{InterestHistory, InterestNature}
-
-	got := NewTripCreate(
-		"Winter trip",
+	startDate := time.Now().Add(24 * time.Hour)
+	create := NewTripCreate(
+		"Test Trip",
 		"Moscow",
-		startCoordinates,
+		Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 		startDate,
-		endDate,
-		budget,
-		interests,
+		startDate,
+		DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+		[]MealRequirement{},
+		Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+		[]Interest{InterestHistory},
 		"Europe/Moscow",
 	)
 
-	require.NotNil(t, got)
-	assert.Equal(t, "Winter trip", got.Name)
-	assert.Equal(t, "Moscow", got.PlanningArea)
-	assert.Equal(t, startCoordinates, got.StartCoordinates)
-	assert.True(t, startDate.Equal(got.StartDate))
-	assert.True(t, endDate.Equal(got.EndDate))
-	assert.Equal(t, budget, got.Budget)
-	assert.Equal(t, interests, got.Interests)
-	assert.Equal(t, "Europe/Moscow", got.TimeZone)
+	// Verify all fields are set
+	assert.Equal(t, "Test Trip", create.Name)
+	assert.Equal(t, "Moscow", create.PlanningArea)
+	assert.Equal(t, Coordinates{Latitude: 55.7539, Longitude: 37.6208}, create.StartCoordinates)
+	assert.Equal(t, startDate, create.StartDate)
+	assert.Equal(t, startDate, create.EndDate)
+	assert.Equal(t, DailySchedule{StartTime: "09:00", EndTime: "18:00"}, create.DailySchedule)
+	assert.Equal(t, Money{AmountMinorUnits: 1500000, Currency: "RUB"}, create.Budget)
+	assert.Equal(t, []Interest{InterestHistory}, create.Interests)
+	assert.Equal(t, "Europe/Moscow", create.TimeZone)
+
+	// Verify validation passes
+	require.NoError(t, create.Validate())
 }

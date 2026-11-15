@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package tripmate.route_generator.common.v1;
+
+option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/common/v1;route_generator_common_v1";
+
+enum MealType {
+  MEAL_TYPE_UNSPECIFIED = 0;
+  MEAL_TYPE_BREAKFAST = 1;
+  MEAL_TYPE_LUNCH = 2;
+  MEAL_TYPE_DINNER = 3;
+}

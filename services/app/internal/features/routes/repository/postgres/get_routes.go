@@ -16,7 +16,8 @@ SELECT id,
 	created_at,
 	updated_at
 FROM app.routes
-WHERE trip_id=$1;
+WHERE trip_id=$1
+ORDER BY id;
 `
 
 const getRouteDaysQuery = `
@@ -24,7 +25,8 @@ SELECT id,
 	date,
 	day_number
 FROM app.route_days
-WHERE route_id=$1;
+WHERE route_id=$1
+ORDER BY day_number;
 `
 
 const getRouteStopsQuery = `
@@ -39,7 +41,8 @@ SELECT id,
 	departure_time,
 	visit_duration
 FROM app.route_stops
-WHERE route_day_id=$1;
+WHERE route_day_id=$1
+ORDER BY position;
 `
 
 const getRouteLegsQuery = `
@@ -50,7 +53,8 @@ SELECT id,
 	distance,
 	duration
 FROM app.route_legs
-WHERE route_day_id=$1;
+WHERE route_day_id=$1
+ORDER BY from_stop_id;
 `
 
 func (r *RoutesRepository) GetRoutes(

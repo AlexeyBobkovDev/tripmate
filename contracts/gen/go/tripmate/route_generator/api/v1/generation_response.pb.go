@@ -100,7 +100,7 @@ var (
 	file_tripmate_route_generator_api_v1_generation_response_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 	file_tripmate_route_generator_api_v1_generation_response_proto_goTypes  = []any{
 		(*GenerateRouteResponse)(nil), // 0: tripmate.route_generator.api.v1.GenerateRouteResponse
-		(RouteStatus)(0),              // 1: tripmate.route_generator.api.v1.RouteStatus
+		RouteStatus(0),                // 1: tripmate.route_generator.api.v1.RouteStatus
 		(*RouteDay)(nil),              // 2: tripmate.route_generator.api.v1.RouteDay
 	}
 )

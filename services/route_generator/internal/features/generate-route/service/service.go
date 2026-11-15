@@ -7,10 +7,10 @@ import (
 )
 
 type GenerateRouteRepository interface {
-	GenerateRoute(
+	FindCandidates(
 		ctx context.Context,
-		trip *domain.Trip,
-	) (*domain.Route, error)
+		criterial FindCandidatesCriteria,
+	) ([]domain.Route, error)
 }
 type GenerateRouteService struct {
 	generateRouteRepository GenerateRouteRepository

@@ -2,6 +2,7 @@ package trips_postgres_repository
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -10,109 +11,185 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
-	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
 )
 
 func TestTripsRepository_CreateTrip_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
+	tripCreate := testTripCreateFixture(42)
 
-	tripCreate := domain.TripCreate{
-		OwnerID:          1,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
-	}
+	expectedTrip := testTripFixture()
+	expectedTrip.ID = 10
+	expectedTrip.OwnerID = tripCreate.OwnerID
+	expectedTrip.Name = tripCreate.Name
+	expectedTrip.PlanningArea = tripCreate.PlanningArea
+	expectedTrip.StartCoordinates = tripCreate.StartCoordinates
+	expectedTrip.StartDate = tripCreate.StartDate
+	expectedTrip.EndDate = tripCreate.EndDate
+	expectedTrip.Budget = tripCreate.Budget
+	expectedTrip.Interests = tripCreate.Interests
+	expectedTrip.TimeZone = tripCreate.TimeZone
+	expectedTrip.DailySchedule = tripCreate.DailySchedule
 
-	expectedTrip := domain.Trip{
-		ID:               1,
-		OwnerID:          tripCreate.OwnerID,
-		Version:          1,
-		Name:             tripCreate.Name,
-		PlanningArea:     tripCreate.PlanningArea,
-		StartCoordinates: tripCreate.StartCoordinates,
-		StartDate:        tripCreate.StartDate,
-		EndDate:          tripCreate.EndDate,
-		Budget:           tripCreate.Budget,
-		Interests:        tripCreate.Interests,
-		TimeZone:         tripCreate.TimeZone,
-		CreatedAt:        time.Now(),
-		UpdatedAt:        time.Now(),
-		DeletedAt:        nil,
-	}
-
-	mockRow.EXPECT().
-		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-		).DoAndReturn(func(destinations ...any) error {
-		*destinations[0].(*int) = expectedTrip.ID
-		*destinations[1].(*int) = expectedTrip.OwnerID
-		*destinations[2].(*int) = expectedTrip.Version
-		*destinations[3].(*string) = expectedTrip.Name
-		*destinations[4].(*string) = expectedTrip.PlanningArea
-
-		*destinations[5].(*float64) = expectedTrip.StartCoordinates.Latitude
-		*destinations[6].(*float64) = expectedTrip.StartCoordinates.Longitude
-		*destinations[7].(*time.Time) = expectedTrip.StartDate
-		*destinations[8].(*time.Time) = expectedTrip.EndDate
-		*destinations[9].(*int64) = expectedTrip.Budget.AmountMinorUnits
-		*destinations[10].(*string) = expectedTrip.Budget.Currency
-		*destinations[11].(*[]domain.Interest) = expectedTrip.Interests
-		*destinations[12].(*string) = expectedTrip.TimeZone
-		*destinations[13].(*time.Time) = expectedTrip.CreatedAt
-		*destinations[14].(*time.Time) = expectedTrip.UpdatedAt
-		*destinations[15].(**time.Time) = expectedTrip.DeletedAt
-		return nil
-	})
-
+	// Expect transaction creation
 	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
-	mockPool.EXPECT().QueryRow(gomock.Any(), createTripQuery, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockRow)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
 
-	trip, err := tripsRepository.CreateTrip(context.Background(), tripCreate.OwnerID, &tripCreate)
+	// Expect query on transaction
+	mockTx.EXPECT().QueryRow(
+		gomock.Any(),
+		createTripQuery,
+		tripCreate.OwnerID,
+		tripCreate.Name,
+		tripCreate.PlanningArea,
+		tripCreate.StartCoordinates.Latitude,
+		tripCreate.StartCoordinates.Longitude,
+		tripCreate.StartDate,
+		tripCreate.EndDate,
+		gomock.Any(), // startTime (will be parsed)
+		gomock.Any(), // endTime (will be parsed)
+		tripCreate.Budget.AmountMinorUnits,
+		tripCreate.Budget.Currency,
+		tripCreate.Interests,
+		tripCreate.TimeZone,
+	).Return(mockRow)
+
+	// Expect scan
+	mockRow.EXPECT().Scan(anyArgs(tripScanDestinationsAmount)...).DoAndReturn(
+		func(dest ...any) error {
+			return fillTripScan(t, expectedTrip)(dest...)
+		},
+	)
+
+	// Expect transaction commit (success case)
+	mockTx.EXPECT().Commit(gomock.Any()).Return(nil)
+	// The defer statement will also call Rollback, but it's a no-op if Commit succeeds
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.CreateTrip(
+		context.Background(),
+		tripCreate.OwnerID,
+		tripCreate,
+	)
+
 	require.NoError(t, err)
-	assert.Equal(t, &expectedTrip, trip)
+	require.NotNil(t, actualTrip)
+	assert.Equal(t, expectedTrip, *actualTrip)
 }
 
-func TestTripsRepository_CreateTrip_Error(t *testing.T) {
+func TestTripsRepository_CreateTrip_ScanError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
 	mockRow := mocks.NewMockRow(ctrl)
 	tripsRepository := NewTripsRepository(mockPool)
 
-	startDate := time.Now().Add(24 * time.Hour)
-	endDate := startDate
+	tripCreate := testTripCreateFixture(1)
+	scanError := errors.New("scan error")
 
-	tripCreate := domain.TripCreate{
-		OwnerID:          1,
-		Name:             "Trip to Moscow",
-		PlanningArea:     "Moscow",
-		StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		StartDate:        startDate,
-		EndDate:          endDate,
-		Budget:           domain.Money{AmountMinorUnits: 100000, Currency: "RUB"},
-		Interests:        []domain.Interest{"history"},
-		TimeZone:         "Europe/Moscow",
+	// Expect transaction creation
+	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
+
+	// Expect query on transaction
+	mockTx.EXPECT().QueryRow(
+		gomock.Any(),
+		createTripQuery,
+		tripCreate.OwnerID,
+		tripCreate.Name,
+		tripCreate.PlanningArea,
+		tripCreate.StartCoordinates.Latitude,
+		tripCreate.StartCoordinates.Longitude,
+		tripCreate.StartDate,
+		tripCreate.EndDate,
+		gomock.Any(), // startTime (will be parsed)
+		gomock.Any(), // endTime (will be parsed)
+		tripCreate.Budget.AmountMinorUnits,
+		tripCreate.Budget.Currency,
+		tripCreate.Interests,
+		tripCreate.TimeZone,
+	).Return(mockRow)
+
+	// Expect scan error
+	mockRow.EXPECT().Scan(anyArgs(tripScanDestinationsAmount)...).Return(scanError)
+
+	// Expect transaction rollback (error case)
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.CreateTrip(
+		context.Background(),
+		tripCreate.OwnerID,
+		tripCreate,
+	)
+
+	require.ErrorIs(t, err, scanError)
+	assert.Nil(t, actualTrip)
+}
+
+func TestTripsRepository_CreateTrip_ScheduleRoundTrip(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockPool := mocks.NewMockPool(ctrl)
+	mockTx := mocks.NewMockTx(ctrl)
+	mockRow := mocks.NewMockRow(ctrl)
+	tripsRepository := NewTripsRepository(mockPool)
+
+	tripCreate := testTripCreateFixture(1)
+
+	// The database returns different time-of-day values than the request on
+	// purpose: the repository must trust the stored values.
+	expectedTrip := testTripFixture()
+	expectedTrip.DailySchedule = domain.DailySchedule{
+		StartTime: "07:30",
+		EndTime:   "21:45",
 	}
 
-	mockRow.EXPECT().Scan(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(core_postgres_pool_errors.ErrNoRows)
+	// Expect transaction creation
 	mockPool.EXPECT().OpTimeout().Return(5 * time.Second)
-	mockPool.EXPECT().QueryRow(gomock.Any(), createTripQuery, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockRow)
+	mockPool.EXPECT().Begin(gomock.Any()).Return(mockTx, nil)
 
-	trip, err := tripsRepository.CreateTrip(context.Background(), tripCreate.OwnerID, &tripCreate)
-	require.Error(t, err)
-	assert.Nil(t, trip)
+	// Expect query on transaction
+	mockTx.EXPECT().QueryRow(
+		gomock.Any(),
+		createTripQuery,
+		tripCreate.OwnerID,
+		tripCreate.Name,
+		tripCreate.PlanningArea,
+		tripCreate.StartCoordinates.Latitude,
+		tripCreate.StartCoordinates.Longitude,
+		tripCreate.StartDate,
+		tripCreate.EndDate,
+		gomock.Any(), // startTime (will be parsed)
+		gomock.Any(), // endTime (will be parsed)
+		tripCreate.Budget.AmountMinorUnits,
+		tripCreate.Budget.Currency,
+		tripCreate.Interests,
+		tripCreate.TimeZone,
+	).Return(mockRow)
+
+	// Expect scan
+	mockRow.EXPECT().Scan(anyArgs(tripScanDestinationsAmount)...).DoAndReturn(
+		func(dest ...any) error {
+			return fillTripScan(t, expectedTrip)(dest...)
+		},
+	)
+
+	// Expect transaction commit (success case)
+	mockTx.EXPECT().Commit(gomock.Any()).Return(nil)
+	// The defer statement will also call Rollback, but it's a no-op if Commit succeeds
+	mockTx.EXPECT().Rollback(gomock.Any()).Return(nil)
+
+	actualTrip, err := tripsRepository.CreateTrip(
+		context.Background(),
+		tripCreate.OwnerID,
+		tripCreate,
+	)
+
+	require.NoError(t, err)
+	require.NotNil(t, actualTrip)
+	assert.Equal(t, expectedTrip.DailySchedule, actualTrip.DailySchedule)
 }

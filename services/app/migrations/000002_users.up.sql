@@ -39,14 +39,14 @@ CREATE TABLE IF NOT EXISTS app.users
         )
 );
 
-CREATE UNIQUE INDEX idx_unique_user_username ON app.users (username)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_username ON app.users (username)
     WHERE
         deleted_at IS NULL;
 
-CREATE UNIQUE INDEX idx_unique_user_email ON app.users (email)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_email ON app.users (email)
     WHERE
         deleted_at IS NULL;
 
-CREATE UNIQUE INDEX idx_unique_user_phone_number ON app.users (phone_number)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_user_phone_number ON app.users (phone_number)
     WHERE
         deleted_at IS NULL;

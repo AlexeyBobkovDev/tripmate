@@ -13,6 +13,7 @@ export UID := $(shell id -u)
 export GID := $(shell id -g)
 
 export ROUTE_GENERATOR_SERVICE_NAME := route-generator
+export ROUTE_GENERATOR_VOLUME_NAME := route_generator
 
 # ===========================App===========================
 .PHONY: app-run
@@ -62,8 +63,8 @@ route-generator-postgres-down:
 route-generator-postgres-cleanup: route-generator-postgres-down
 	@read -p "Would you like to cleanup env? DANGER ACTION! [y/n]: " answer; \
 	if [ "$$answer" = "y" ]; then \
-		docker compose -f ./deploy/docker-compose.dev.yml down postgres-port-forwarder && \
-		docker volume rm $(ROUTE_GENERATOR_SERVICE_NAME)_pgdata; \
+		docker compose -f ./deploy/docker-compose.dev.yml down route-generator-postgres-port-forwarder && \
+		docker volume rm $(ROUTE_GENERATOR_VOLUME_NAME)_pgdata; \
 	fi;
 
 

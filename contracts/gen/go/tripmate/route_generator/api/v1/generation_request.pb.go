@@ -33,9 +33,11 @@ type GenerateRouteRequest struct {
 	StartCoordinates *v1.Coordinates        `protobuf:"bytes,3,opt,name=start_coordinates,json=startCoordinates,proto3" json:"start_coordinates,omitempty"`
 	StartDate        *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
 	EndDate          *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
-	Budget           *v1.Money              `protobuf:"bytes,6,opt,name=budget,proto3" json:"budget,omitempty"`
-	Interests        []Interest             `protobuf:"varint,7,rep,packed,name=interests,proto3,enum=tripmate.route_generator.api.v1.Interest" json:"interests,omitempty"`
-	TimeZone         string                 `protobuf:"bytes,8,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
+	DailySchedule    *v1.DailySchedule      `protobuf:"bytes,8,opt,name=daily_schedule,json=dailySchedule,proto3" json:"daily_schedule,omitempty"`
+	MealRequirements []*v1.MealRequirement  `protobuf:"bytes,9,rep,name=meal_requirements,json=mealRequirements,proto3" json:"meal_requirements,omitempty"`
+	Budget           *v1.Money              `protobuf:"bytes,10,opt,name=budget,proto3" json:"budget,omitempty"`
+	Interests        []Interest             `protobuf:"varint,11,rep,packed,name=interests,proto3,enum=tripmate.route_generator.api.v1.Interest" json:"interests,omitempty"`
+	TimeZone         string                 `protobuf:"bytes,12,opt,name=time_zone,json=timeZone,proto3" json:"time_zone,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -105,6 +107,20 @@ func (x *GenerateRouteRequest) GetEndDate() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *GenerateRouteRequest) GetDailySchedule() *v1.DailySchedule {
+	if x != nil {
+		return x.DailySchedule
+	}
+	return nil
+}
+
+func (x *GenerateRouteRequest) GetMealRequirements() []*v1.MealRequirement {
+	if x != nil {
+		return x.MealRequirements
+	}
+	return nil
+}
+
 func (x *GenerateRouteRequest) GetBudget() *v1.Money {
 	if x != nil {
 		return x.Budget
@@ -130,17 +146,20 @@ var File_tripmate_route_generator_api_v1_generation_request_proto protoreflect.F
 
 const file_tripmate_route_generator_api_v1_generation_request_proto_rawDesc = "" +
 	"\n" +
-	"8tripmate/route_generator/api/v1/generation_request.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\x1a.tripmate/route_generator/common/v1/money.proto\"\xfa\x03\n" +
+	"8tripmate/route_generator/api/v1/generation_request.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\x1a7tripmate/route_generator/common/v1/daily_schedule.proto\x1a9tripmate/route_generator/common/v1/meal_requirement.proto\x1a.tripmate/route_generator/common/v1/money.proto\"\xb6\x05\n" +
 	"\x14GenerateRouteRequest\x12\x1b\n" +
 	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12,\n" +
 	"\rplanning_area\x18\x02 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\fplanningArea\x12\\\n" +
 	"\x11start_coordinates\x18\x03 \x01(\v2/.tripmate.route_generator.common.v1.CoordinatesR\x10startCoordinates\x129\n" +
 	"\n" +
 	"start_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tstartDate\x125\n" +
-	"\bend_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12A\n" +
-	"\x06budget\x18\x06 \x01(\v2).tripmate.route_generator.common.v1.MoneyR\x06budget\x12Q\n" +
-	"\tinterests\x18\a \x03(\x0e2).tripmate.route_generator.api.v1.InterestB\b\xbaH\x05\x92\x01\x02\b\x01R\tinterests\x121\n" +
-	"\ttime_zone\x18\b \x01(\tB\x14\xbaH\x11r\x0f2\rEurope/MoscowR\btimeZoneBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
+	"\bend_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\aendDate\x12X\n" +
+	"\x0edaily_schedule\x18\b \x01(\v21.tripmate.route_generator.common.v1.DailyScheduleR\rdailySchedule\x12`\n" +
+	"\x11meal_requirements\x18\t \x03(\v23.tripmate.route_generator.common.v1.MealRequirementR\x10mealRequirements\x12A\n" +
+	"\x06budget\x18\n" +
+	" \x01(\v2).tripmate.route_generator.common.v1.MoneyR\x06budget\x12Q\n" +
+	"\tinterests\x18\v \x03(\x0e2).tripmate.route_generator.api.v1.InterestB\b\xbaH\x05\x92\x01\x02\b\x01R\tinterests\x121\n" +
+	"\ttime_zone\x18\f \x01(\tB\x14\xbaH\x11r\x0f2\rEurope/MoscowR\btimeZoneBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
 
 var (
 	file_tripmate_route_generator_api_v1_generation_request_proto_rawDescOnce sync.Once
@@ -160,8 +179,10 @@ var (
 		(*GenerateRouteRequest)(nil),  // 0: tripmate.route_generator.api.v1.GenerateRouteRequest
 		(*v1.Coordinates)(nil),        // 1: tripmate.route_generator.common.v1.Coordinates
 		(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-		(*v1.Money)(nil),              // 3: tripmate.route_generator.common.v1.Money
-		(Interest)(0),                 // 4: tripmate.route_generator.api.v1.Interest
+		(*v1.DailySchedule)(nil),      // 3: tripmate.route_generator.common.v1.DailySchedule
+		(*v1.MealRequirement)(nil),    // 4: tripmate.route_generator.common.v1.MealRequirement
+		(*v1.Money)(nil),              // 5: tripmate.route_generator.common.v1.Money
+		Interest(0),                   // 6: tripmate.route_generator.api.v1.Interest
 	}
 )
 
@@ -169,13 +190,15 @@ var file_tripmate_route_generator_api_v1_generation_request_proto_depIdxs = []in
 	1, // 0: tripmate.route_generator.api.v1.GenerateRouteRequest.start_coordinates:type_name -> tripmate.route_generator.common.v1.Coordinates
 	2, // 1: tripmate.route_generator.api.v1.GenerateRouteRequest.start_date:type_name -> google.protobuf.Timestamp
 	2, // 2: tripmate.route_generator.api.v1.GenerateRouteRequest.end_date:type_name -> google.protobuf.Timestamp
-	3, // 3: tripmate.route_generator.api.v1.GenerateRouteRequest.budget:type_name -> tripmate.route_generator.common.v1.Money
-	4, // 4: tripmate.route_generator.api.v1.GenerateRouteRequest.interests:type_name -> tripmate.route_generator.api.v1.Interest
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	3, // 3: tripmate.route_generator.api.v1.GenerateRouteRequest.daily_schedule:type_name -> tripmate.route_generator.common.v1.DailySchedule
+	4, // 4: tripmate.route_generator.api.v1.GenerateRouteRequest.meal_requirements:type_name -> tripmate.route_generator.common.v1.MealRequirement
+	5, // 5: tripmate.route_generator.api.v1.GenerateRouteRequest.budget:type_name -> tripmate.route_generator.common.v1.Money
+	6, // 6: tripmate.route_generator.api.v1.GenerateRouteRequest.interests:type_name -> tripmate.route_generator.api.v1.Interest
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_tripmate_route_generator_api_v1_generation_request_proto_init() }

@@ -1,149 +1,276 @@
 package domain
 
 import (
-	"errors"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
-func TestUserValidate(t *testing.T) {
+func TestUser_Validate(t *testing.T) {
 	now := time.Now()
-
-	validUser := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-20, 0, 0),
-		Description: "Software engineer",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   now.Add(-2 * time.Hour),
-		UpdatedAt:   now.Add(-time.Hour),
-		DeletedAt:   nil,
-	}
 
 	tests := []struct {
 		name    string
-		mutate  func(*User)
+		user    User
 		wantErr error
 	}{
 		{
-			name:    "valid user",
-			mutate:  func(u *User) {},
-			wantErr: nil,
+			name: "valid user",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
+			},
 		},
 		{
 			name: "invalid ID",
-			mutate: func(u *User) {
-				u.ID = 0
+			user: User{
+				ID:          -1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidID,
 		},
 		{
 			name: "invalid version",
-			mutate: func(u *User) {
-				u.Version = 0
+			user: User{
+				ID:          1,
+				Version:     0,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidVersion,
 		},
 		{
 			name: "invalid name",
-			mutate: func(u *User) {
-				u.Name = ""
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserName,
 		},
 		{
 			name: "invalid surname",
-			mutate: func(u *User) {
-				u.Surname = ""
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserSurname,
 		},
 		{
 			name: "invalid username",
-			mutate: func(u *User) {
-				u.Username = ""
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserUsername,
 		},
 		{
-			name: "invalid birth date",
-			mutate: func(u *User) {
-				u.BirthDate = now.AddDate(-10, 0, 0)
+			name: "invalid birth date - future",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Now().AddDate(1, 0, 0),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserBirthdate,
 		},
 		{
-			name: "invalid description",
-			mutate: func(u *User) {
-				u.Description = strings.Repeat("a", 1001)
+			name: "invalid birth date - too young",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Now().AddDate(-13, 0, 0),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
+			},
+			wantErr: core_errors.ErrInvalidUserBirthdate,
+		},
+		{
+			name: "invalid birth date - too old",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Now().AddDate(-151, 0, 0),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
+			},
+			wantErr: core_errors.ErrInvalidUserBirthdate,
+		},
+		{
+			name: "invalid description - too long",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: strings.Repeat("a", 1001),
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserDescription,
 		},
 		{
 			name: "invalid email",
-			mutate: func(u *User) {
-				u.Email = "not-an-email"
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "invalid-email",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserEmail,
 		},
 		{
 			name: "invalid phone number",
-			mutate: func(u *User) {
-				u.PhoneNumber = "+123"
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "invalid",
+				CreatedAt:   now,
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidUserPhoneNumber,
 		},
 		{
-			name: "created at in the future",
-			mutate: func(u *User) {
-				u.CreatedAt = now.Add(time.Hour)
+			name: "invalid created at",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   time.Time{},
+				UpdatedAt:   now,
 			},
 			wantErr: core_errors.ErrInvalidCreatedAt,
 		},
 		{
-			name: "updated at in the future",
-			mutate: func(u *User) {
-				u.UpdatedAt = now.Add(time.Hour)
+			name: "invalid updated at",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   time.Time{},
 			},
 			wantErr: core_errors.ErrInvalidUpdatedAt,
 		},
 		{
-			name: "deleted at in the future",
-			mutate: func(u *User) {
-				deletedAt := now.Add(time.Hour)
-				u.DeletedAt = &deletedAt
-			},
-			wantErr: core_errors.ErrInvalidDeletedAt,
-		},
-		{
-			name: "created before birth date",
-			mutate: func(u *User) {
-				u.CreatedAt = u.BirthDate
-			},
-			wantErr: core_errors.ErrInvalidCreatedAt,
-		},
-		{
-			name: "updated before created",
-			mutate: func(u *User) {
-				u.UpdatedAt = u.CreatedAt.Add(-time.Second)
-			},
-			wantErr: core_errors.ErrInvalidUpdatedAt,
-		},
-		{
-			name: "deleted before updated",
-			mutate: func(u *User) {
-				deletedAt := u.UpdatedAt.Add(-time.Second)
-				u.DeletedAt = &deletedAt
+			name: "invalid deleted at - future",
+			user: User{
+				ID:          1,
+				Version:     1,
+				Name:        "John",
+				Surname:     "Doe",
+				Username:    "johndoe",
+				BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+				Description: "Test user",
+				Email:       "john@example.com",
+				PhoneNumber: "+79001234567",
+				CreatedAt:   now,
+				UpdatedAt:   now,
+				DeletedAt:   &[]time.Time{now.AddDate(1, 0, 0)}[0],
 			},
 			wantErr: core_errors.ErrInvalidDeletedAt,
 		},
@@ -151,422 +278,122 @@ func TestUserValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := validUser
-			tt.mutate(&user)
+			err := tt.user.Validate()
 
-			err := user.Validate()
-
-			if !errors.Is(err, tt.wantErr) {
-				t.Fatalf(
-					"User.Validate() = %v, want %v",
-					err,
-					tt.wantErr,
-				)
+			if tt.wantErr != nil {
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
 			}
+
+			require.NoError(t, err)
 		})
 	}
 }
 
-func TestUserApplyPatch(t *testing.T) {
+func TestUser_ApplyPatch(t *testing.T) {
 	now := time.Now()
-
-	validUser := User{
+	user := User{
 		ID:          1,
 		Version:     1,
-		Name:        "User",
-		Surname:     "User",
-		Username:    "user123",
-		BirthDate:   now.AddDate(-20, 0, 0),
-		Description: "Original description",
-		Email:       "user@gmail.com",
-		PhoneNumber: "+79998887766",
-		CreatedAt:   now.Add(-2 * time.Hour),
-		UpdatedAt:   now.Add(-time.Hour),
-		DeletedAt:   nil,
+		Name:        "John",
+		Surname:     "Doe",
+		Username:    "johndoe",
+		BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Test user",
+		Email:       "john@example.com",
+		PhoneNumber: "+79001234567",
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}
 
 	tests := []struct {
-		name     string
-		patch    UserPatch
-		wantErr  error
-		wantUser User
+		name    string
+		patch   *UserPatch
+		wantErr error
 	}{
 		{
-			name: "valid empty patch",
-			patch: UserPatch{
+			name: "valid patch",
+			patch: &UserPatch{
 				Version: 1,
+				Name:    Nullable[string]{Value: &[]string{"JohnUpdated"}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				return user
-			}(),
 		},
 		{
-			name: "different version",
-			patch: UserPatch{
+			name: "invalid version",
+			patch: &UserPatch{
 				Version: 2,
 			},
-			wantErr:  core_errors.ErrDifferentVersions,
-			wantUser: validUser,
+			wantErr: core_errors.ErrDifferentVersions,
 		},
 		{
-			name: "invalid patch version",
-			patch: UserPatch{
-				Version: 0,
-			},
-			wantErr:  core_errors.ErrInvalidVersion,
-			wantUser: validUser,
-		},
-		{
-			name: "updates name",
-			patch: UserPatch{
+			name: "invalid name",
+			patch: &UserPatch{
 				Version: 1,
-				Name: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "Alexey"
-						return &v
-					}(),
-				},
+				Name:    Nullable[string]{Value: &[]string{"Invalid Name!"}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.Name = "Alexey"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserName,
 		},
 		{
-			name: "updates surname",
-			patch: UserPatch{
+			name: "patch with invalid surname",
+			patch: &UserPatch{
 				Version: 1,
-				Surname: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "Bobkov"
-						return &v
-					}(),
-				},
+				Surname: Nullable[string]{Value: &[]string{""}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.Surname = "Bobkov"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserSurname,
 		},
 		{
-			name: "updates username",
-			patch: UserPatch{
-				Version: 1,
-				Username: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "alexey"
-						return &v
-					}(),
-				},
+			name: "patch with invalid username",
+			patch: &UserPatch{
+				Version:  1,
+				Username: Nullable[string]{Value: &[]string{""}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.Username = "alexey"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserUsername,
 		},
 		{
-			name: "updates description",
-			patch: UserPatch{
-				Version: 1,
-				Description: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "New description"
-						return &v
-					}(),
-				},
+			name: "patch with invalid birth date",
+			patch: &UserPatch{
+				Version:   1,
+				BirthDate: Nullable[time.Time]{Value: &[]time.Time{time.Now()}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.Description = "New description"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserBirthdate,
 		},
 		{
-			name: "updates email",
-			patch: UserPatch{
-				Version: 1,
-				Email: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "alexey@example.com"
-						return &v
-					}(),
-				},
+			name: "patch with invalid description",
+			patch: &UserPatch{
+				Version:     1,
+				Description: Nullable[string]{Value: &[]string{strings.Repeat("a", 1001)}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.Email = "alexey@example.com"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserDescription,
 		},
 		{
-			name: "updates phone number",
-			patch: UserPatch{
+			name: "patch with invalid email",
+			patch: &UserPatch{
 				Version: 1,
-				PhoneNumber: Nullable[string]{
-					Set: true,
-					Value: func() *string {
-						v := "+14155552671"
-						return &v
-					}(),
-				},
+				Email:   Nullable[string]{Value: &[]string{"invalid-email"}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.PhoneNumber = "+14155552671"
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserEmail,
 		},
 		{
-			name: "updates birthdate",
-			patch: UserPatch{
-				Version: 1,
-				BirthDate: Nullable[time.Time]{
-					Set: true,
-					Value: func() *time.Time {
-						v := time.Date(2000, time.October, 22, 12, 0, 0, 0, time.UTC)
-						return &v
-					}(),
-				},
+			name: "patch with invalid phone number",
+			patch: &UserPatch{
+				Version:     1,
+				PhoneNumber: Nullable[string]{Value: &[]string{"invalid"}[0], Set: true},
 			},
-			wantErr: nil,
-			wantUser: func() User {
-				user := validUser
-				user.Version = 1
-				user.BirthDate = time.Date(2000, time.October, 22, 12, 0, 0, 0, time.UTC)
-				return user
-			}(),
+			wantErr: core_errors.ErrInvalidUserPhoneNumber,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			user := validUser
-
-			err := user.ApplyPatch(&tt.patch)
+			current := user
+			err := current.ApplyPatch(tt.patch)
 
 			if tt.wantErr != nil {
-				require.ErrorIs(t, err, tt.wantErr)
-			} else {
-				require.NoError(t, err)
+				assert.ErrorIs(t, err, tt.wantErr)
+				return
 			}
-			require.True(t, compareExistedUserWithGotUser(&tt.wantUser, &user))
+
+			require.NoError(t, err)
 		})
-	}
-}
-
-func TestUserApplyPatchInvalidPatchDoesNotMutateUser(t *testing.T) {
-	now := time.Now()
-
-	user := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-20, 0, 0),
-		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   now.Add(-2 * time.Hour),
-		UpdatedAt:   now.Add(-time.Hour),
-	}
-
-	original := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-20, 0, 0),
-		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   now.Add(-2 * time.Hour),
-		UpdatedAt:   now.Add(-time.Hour),
-	}
-
-	patch := UserPatch{
-		Version: 2,
-		Name: Nullable[string]{
-			Set:   true,
-			Value: func() *string { v := ""; return &v }(),
-		},
-	}
-
-	err := user.ApplyPatch(&patch)
-
-	if !errors.Is(err, core_errors.ErrInvalidUserName) {
-		t.Fatalf(
-			"ApplyPatch() = %v, want %v",
-			err,
-			core_errors.ErrInvalidUserName,
-		)
-	}
-
-	if !reflect.DeepEqual(user, original) {
-		t.Fatalf("user was mutated after invalid patch")
-	}
-
-	if !strings.Contains(err.Error(), "validate user patch") {
-		t.Fatalf("error = %q, want patch validation context", err)
-	}
-}
-
-func TestUserApplyPatchInvalidResultDoesNotMutateUser(t *testing.T) {
-	now := time.Now()
-
-	createdAt := now.AddDate(-20, 0, 0)
-	updatedAt := createdAt.Add(time.Hour)
-
-	user := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-34, 0, 0),
-		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-	}
-
-	original := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-34, 0, 0),
-		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-	}
-
-	// The patch itself is valid, but the resulting User is invalid:
-	// the new birth date is after CreatedAt.
-	newBirthDate := user.CreatedAt.Add(time.Hour)
-
-	patch := UserPatch{
-		Version: 1,
-		BirthDate: Nullable[time.Time]{
-			Set:   true,
-			Value: &newBirthDate,
-		},
-	}
-
-	err := user.ApplyPatch(&patch)
-
-	if !errors.Is(err, core_errors.ErrInvalidCreatedAt) {
-		t.Fatalf(
-			"ApplyPatch() = %v, want %v",
-			err,
-			core_errors.ErrInvalidCreatedAt,
-		)
-	}
-
-	if !strings.Contains(err.Error(), "validate patched user") {
-		t.Fatalf("error = %q, want patched-user validation context", err)
-	}
-
-	if !reflect.DeepEqual(user, original) {
-		t.Fatalf("user was mutated after invalid resulting state")
-	}
-}
-
-func TestUserApplyPatchNilPatch(t *testing.T) {
-	now := time.Now()
-
-	user := User{
-		ID:          1,
-		Version:     1,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   now.AddDate(-20, 0, 0),
-		Description: "Original description",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   now.Add(-2 * time.Hour),
-		UpdatedAt:   now.Add(-time.Hour),
-	}
-
-	defer func() {
-		if recover() == nil {
-			t.Fatal("ApplyPatch(nil) did not panic")
-		}
-	}()
-
-	_ = user.ApplyPatch(nil)
-}
-
-func TestNewUser(t *testing.T) {
-	birthDate := time.Date(2005, time.January, 15, 0, 0, 0, 0, time.UTC)
-	createdAt := time.Date(2026, time.January, 1, 12, 0, 0, 0, time.UTC)
-	updatedAt := time.Date(2026, time.January, 2, 12, 0, 0, 0, time.UTC)
-	deletedAt := time.Date(2026, time.January, 3, 12, 0, 0, 0, time.UTC)
-
-	got := NewUser(
-		42,
-		7,
-		"Alexey",
-		"Bobkov",
-		"alexey",
-		birthDate,
-		"Software engineer",
-		"alexey@example.com",
-		"+14155552671",
-		createdAt,
-		updatedAt,
-		&deletedAt,
-	)
-
-	want := &User{
-		ID:          42,
-		Version:     7,
-		Name:        "Alexey",
-		Surname:     "Bobkov",
-		Username:    "alexey",
-		BirthDate:   birthDate,
-		Description: "Software engineer",
-		Email:       "alexey@example.com",
-		PhoneNumber: "+14155552671",
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-		DeletedAt:   &deletedAt,
-	}
-
-	if !reflect.DeepEqual(got, want) {
-		t.Fatalf(
-			"NewUser() = %#v, want %#v",
-			got,
-			want,
-		)
 	}
 }

@@ -148,3 +148,47 @@ func TestRoutesRepository_CreateRoute_Error(t *testing.T) {
 	require.ErrorIs(t, err, scanError)
 	assert.Nil(t, createdRoute)
 }
+
+func TestDurationToSeconds(t *testing.T) {
+	tests := []struct {
+		name     string
+		duration time.Duration
+		expected int64
+	}{
+		{"zero duration", 0, 0},
+		{"1 second", time.Second, 1},
+		{"1 minute", time.Minute, 60},
+		{"1 hour", time.Hour, 3600},
+		{"1 day", 24 * time.Hour, 86400},
+		{"1 minute 30 seconds", time.Minute + 30*time.Second, 90},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := durationToSeconds(tt.duration)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestDurationFromSeconds(t *testing.T) {
+	tests := []struct {
+		name     string
+		seconds  int64
+		expected time.Duration
+	}{
+		{"zero seconds", 0, 0},
+		{"1 second", 1, time.Second},
+		{"60 seconds", 60, time.Minute},
+		{"3600 seconds", 3600, time.Hour},
+		{"86400 seconds", 86400, 24 * time.Hour},
+		{"90 seconds", 90, time.Minute + 30*time.Second},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := durationFromSeconds(tt.seconds)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}

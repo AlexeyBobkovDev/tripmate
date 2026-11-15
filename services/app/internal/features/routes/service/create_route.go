@@ -3,7 +3,9 @@ package routes_service
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	route_generator_api_v1 "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1"
@@ -48,6 +50,8 @@ func tripDomainToDTO(trip *domain.Trip) *route_generator_api_v1.GenerateRouteReq
 		StartCoordinates: coordinatesDomainToDTO(trip.StartCoordinates),
 		StartDate:        timestamppb.New(trip.StartDate),
 		EndDate:          timestamppb.New(trip.EndDate),
+		DailySchedule:    dailyScheduleDomainToDTO(trip.DailySchedule),
+		MealRequirements: mealRequirementsDomainToDTO(trip.MealRequirements),
 		Budget:           budgetDomainToDTO(trip.Budget),
 		Interests:        interestsDomainToDTO(trip.Interests),
 		TimeZone:         trip.TimeZone,
@@ -161,4 +165,43 @@ func stopsDomainFromDTO(stops []*route_generator_api_v1.RouteStop) []domain.Rout
 		}
 	}
 	return convertedDays
+}
+
+func dailyScheduleDomainToDTO(dailySchedule domain.DailySchedule) *route_generator_common_v1.DailySchedule {
+	return &route_generator_common_v1.DailySchedule{
+		StartTime: timestamppb.New(parseTimeString(string(dailySchedule.StartTime))),
+		EndTime:   timestamppb.New(parseTimeString(string(dailySchedule.EndTime))),
+	}
+}
+
+func mealRequirementsDomainToDTO(mealRequirements []domain.MealRequirement) []*route_generator_common_v1.MealRequirement {
+	converted := make([]*route_generator_common_v1.MealRequirement, len(mealRequirements))
+	for ind, mealReq := range mealRequirements {
+		converted[ind] = &route_generator_common_v1.MealRequirement{
+			Type:      mealTypeDomainToDTO(mealReq.Type),
+			StartTime: timestamppb.New(parseTimeString(string(mealReq.Window.Start))),
+			EndTime:   timestamppb.New(parseTimeString(string(mealReq.Window.End))),
+			Duration:  durationpb.New(mealReq.Duration),
+			Budget:    budgetDomainToDTO(mealReq.Budget),
+		}
+	}
+	return converted
+}
+
+func parseTimeString(timeStr string) time.Time {
+	parsedTime, _ := time.Parse("15:04", timeStr)
+	return parsedTime
+}
+
+func mealTypeDomainToDTO(mealType domain.MealType) route_generator_common_v1.MealType {
+	switch mealType {
+	case domain.MealBreakfast:
+		return route_generator_common_v1.MealType_MEAL_TYPE_BREAKFAST
+	case domain.MealLunch:
+		return route_generator_common_v1.MealType_MEAL_TYPE_LUNCH
+	case domain.MealDinner:
+		return route_generator_common_v1.MealType_MEAL_TYPE_DINNER
+	default:
+		return route_generator_common_v1.MealType_MEAL_TYPE_BREAKFAST
+	}
 }

@@ -66,8 +66,10 @@ type UnimplementedRouteGeneratorServiceServer struct{}
 func (UnimplementedRouteGeneratorServiceServer) GenerateRoute(context.Context, *GenerateRouteRequest) (*GenerateRouteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GenerateRoute not implemented")
 }
+
 func (UnimplementedRouteGeneratorServiceServer) mustEmbedUnimplementedRouteGeneratorServiceServer() {}
-func (UnimplementedRouteGeneratorServiceServer) testEmbeddedByValue()                               {}
+
+func (UnimplementedRouteGeneratorServiceServer) testEmbeddedByValue() {}
 
 // UnsafeRouteGeneratorServiceServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to RouteGeneratorServiceServer will

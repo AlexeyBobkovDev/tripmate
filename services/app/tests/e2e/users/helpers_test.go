@@ -48,7 +48,8 @@ func testExpectedUserResponse() users_transport_http.UserResponse {
 }
 
 func testRequestBodyWithDefaults() *strings.Reader {
-	body := fmt.Sprintf(`
+	body := fmt.Sprintf(
+		`
 		{
 			"name": "%s",
 			"surname": "%s",
@@ -85,7 +86,8 @@ func testRequestInvalidJSON() *strings.Reader {
 }
 
 func testPatchRequestBody() *strings.Reader {
-	body := fmt.Sprintf(`
+	body := fmt.Sprintf(
+		`
 		{
 			"version": 1,
 			"name": "%s",
@@ -109,7 +111,8 @@ func testPatchRequestBody() *strings.Reader {
 }
 
 func testPatchRequestBodyWithIncreasedByOneVersion(version int) *strings.Reader {
-	body := fmt.Sprintf(`
+	body := fmt.Sprintf(
+		`
 		{
 			"version": %d,
 			"name": "%s",

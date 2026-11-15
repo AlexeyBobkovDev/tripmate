@@ -25,6 +25,8 @@ var (
 var (
 	ErrInvalidTripStartDate = NewError(errors.New("invalid trip start date"), CategoryBadRequest)
 	ErrInvalidTripEndDate   = NewError(errors.New("invalid trip end date"), CategoryBadRequest)
+	ErrInvalidTripStartTime = NewError(errors.New("invalid trip start time"), CategoryBadRequest)
+	ErrInvalidTripEndTime   = NewError(errors.New("invalid trip end time"), CategoryBadRequest)
 	ErrInvalidBudget        = NewError(errors.New("invalid trip budget"), CategoryBadRequest)
 	ErrUnsupportedCurrency  = NewError(errors.New("unsupported trip currency"), CategoryBadRequest)
 	ErrInvalidLatitude      = NewError(errors.New("invalid trip latitude"), CategoryBadRequest)
@@ -55,4 +57,19 @@ var (
 	ErrInvalidRouteDayDayNumber     = NewError(errors.New("invalid route day day number"), CategoryBadRequest)
 	ErrInvalidRouteLegStopReference = NewError(errors.New("invalid route day leg stop reference"), CategoryBadRequest)
 	ErrDuplicateRouteStopID         = NewError(errors.New("duplicate route stop id"), CategoryBadRequest)
+)
+
+var (
+	ErrInvalidLocalTimeHours   = NewError(errors.New("invalid local time hours"), CategoryBadRequest)
+	ErrInvalidLocalTimeMinutes = NewError(errors.New("invalid local time minutes"), CategoryBadRequest)
+)
+
+var (
+	ErrUnsupportedMealType           = NewError(errors.New("invalid meal type"), CategoryBadRequest)
+	ErrInvalidMealTimeDuration       = NewError(errors.New("invalid meal time duration"), CategoryBadRequest)
+	ErrInvalidMealTimeWindow         = NewError(errors.New("invalid meal time window"), CategoryBadRequest)
+	ErrInvalidMealTimeEndTime        = NewError(errors.New("invalid meal time end time"), CategoryBadRequest)
+	ErrInvalidLocalTime              = NewError(errors.New("invalid local time"), CategoryBadRequest)
+	ErrInvalidDailyScheduleStartTime = NewError(errors.New("invalid daily schedule start time"), CategoryBadRequest)
+	ErrInvalidDailyScheduleEndTime   = NewError(errors.New("invalid daily schedule end time"), CategoryBadRequest)
 )

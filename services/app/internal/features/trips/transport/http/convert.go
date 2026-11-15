@@ -14,6 +14,8 @@ func tripDTOFromDomain(trip *domain.Trip) TripResponse {
 		StartCoordinates: trip.StartCoordinates,
 		StartDate:        trip.StartDate,
 		EndDate:          trip.EndDate,
+		DailySchedule:    trip.DailySchedule,
+		MealRequirements: trip.MealRequirements,
 		Budget:           trip.Budget,
 		Interests:        trip.Interests,
 		TimeZone:         trip.TimeZone,

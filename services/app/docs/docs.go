@@ -737,6 +737,19 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.DailySchedule": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string",
+                    "example": "18:00"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "09:00"
+                }
+            }
+        },
         "domain.Interest": {
             "type": "string",
             "enum": [
@@ -750,6 +763,42 @@ const docTemplate = `{
                 "InterestNature",
                 "InterestFood",
                 "InterestArchitecture"
+            ]
+        },
+        "domain.MealRequirement": {
+            "type": "object",
+            "properties": {
+                "budget": {
+                    "$ref": "#/definitions/domain.Money"
+                },
+                "duration_minutes": {
+                    "type": "integer",
+                    "example": 60
+                },
+                "meal_type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.MealType"
+                        }
+                    ],
+                    "example": "breakfast"
+                },
+                "window": {
+                    "$ref": "#/definitions/domain.TimeWindow"
+                }
+            }
+        },
+        "domain.MealType": {
+            "type": "string",
+            "enum": [
+                "breakfast",
+                "lunch",
+                "dinner"
+            ],
+            "x-enum-varnames": [
+                "MealBreakfast",
+                "MealLunch",
+                "MealDinner"
             ]
         },
         "domain.Money": {
@@ -872,6 +921,19 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.TimeWindow": {
+            "type": "object",
+            "properties": {
+                "end": {
+                    "type": "string",
+                    "example": "18:00"
+                },
+                "start": {
+                    "type": "string",
+                    "example": "09:00"
+                }
+            }
+        },
         "domain.TravelMode": {
             "type": "string",
             "enum": [
@@ -930,8 +992,10 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "budget",
+                "daily_schedule",
                 "end_date",
                 "interests",
+                "meal_requirements",
                 "name",
                 "planning_area",
                 "start_date",
@@ -942,6 +1006,9 @@ const docTemplate = `{
                 "budget": {
                     "$ref": "#/definitions/domain.Money"
                 },
+                "daily_schedule": {
+                    "$ref": "#/definitions/domain.DailySchedule"
+                },
                 "end_date": {
                     "type": "string",
                     "example": "2026-11-14"
@@ -951,6 +1018,12 @@ const docTemplate = `{
                     "minItems": 1,
                     "items": {
                         "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "meal_requirements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/trips_transport_http.MealRequirementRequestDTO"
                     }
                 },
                 "name": {
@@ -978,11 +1051,48 @@ const docTemplate = `{
                 }
             }
         },
+        "trips_transport_http.MealRequirementRequestDTO": {
+            "type": "object",
+            "required": [
+                "duration_minutes",
+                "meal_type"
+            ],
+            "properties": {
+                "budget": {
+                    "$ref": "#/definitions/domain.Money"
+                },
+                "duration_minutes": {
+                    "type": "integer",
+                    "maximum": 1440,
+                    "minimum": 1,
+                    "example": 60
+                },
+                "meal_type": {
+                    "enum": [
+                        "breakfast",
+                        "lunch",
+                        "dinner"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/domain.MealType"
+                        }
+                    ],
+                    "example": "breakfast"
+                },
+                "window": {
+                    "$ref": "#/definitions/domain.TimeWindow"
+                }
+            }
+        },
         "trips_transport_http.PatchTripRequest": {
             "type": "object",
             "properties": {
                 "budget": {
                     "$ref": "#/definitions/domain.Money"
+                },
+                "daily_schedule": {
+                    "$ref": "#/definitions/domain.DailySchedule"
                 },
                 "end_date": {
                     "type": "string",
@@ -992,6 +1102,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "meal_requirements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/trips_transport_http.MealRequirementRequestDTO"
                     }
                 },
                 "name": {
@@ -1030,6 +1146,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-10-28T12:00:00Z"
                 },
+                "daily_schedule": {
+                    "$ref": "#/definitions/domain.DailySchedule"
+                },
                 "deleted_at": {
                     "type": "string",
                     "example": ""
@@ -1046,6 +1165,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/domain.Interest"
+                    }
+                },
+                "meal_requirements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.MealRequirement"
                     }
                 },
                 "name": {

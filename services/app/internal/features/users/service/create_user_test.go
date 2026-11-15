@@ -235,30 +235,31 @@ func TestUsersService_CreateUser_UserValidationError(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
 
-			mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
-			mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
-			usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
-			user := tt.fn(testUserCreate)
+				mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
+				mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
+				usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
+				user := tt.fn(testUserCreate)
 
-			mockPasswordManager.
-				EXPECT().
-				Hash(gomock.Any()).
-				Times(0)
+				mockPasswordManager.
+					EXPECT().
+					Hash(gomock.Any()).
+					Times(0)
 
-			mockUsersRepository.
-				EXPECT().
-				CreateUser(gomock.Any(), gomock.Any()).
-				Times(0)
+				mockUsersRepository.
+					EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
 
-			returnedUser, err := usersService.CreateUser(context.Background(), &user, password)
-			require.Nil(t, returnedUser)
+				returnedUser, err := usersService.CreateUser(context.Background(), &user, password)
+				require.Nil(t, returnedUser)
 
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, tt.err)
-		},
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, tt.err)
+			},
 		)
 	}
 }
@@ -312,27 +313,28 @@ func TestUsersService_CreateUser_PasswordValidationError(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
+		t.Run(
+			tt.name, func(t *testing.T) {
+				ctrl := gomock.NewController(t)
 
-			mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
-			mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
-			usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
-			mockPasswordManager.
-				EXPECT().
-				Hash(gomock.Any()).
-				Times(0)
+				mockPasswordManager := mocks.NewMockPasswordManager(ctrl)
+				mockUsersRepository := mocks.NewMockUsersRepository(ctrl)
+				usersService := NewUsersService(mockUsersRepository, mockPasswordManager)
+				mockPasswordManager.
+					EXPECT().
+					Hash(gomock.Any()).
+					Times(0)
 
-			mockUsersRepository.
-				EXPECT().
-				CreateUser(gomock.Any(), gomock.Any()).
-				Times(0)
+				mockUsersRepository.
+					EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
 
-			returnedUser, err := usersService.CreateUser(context.Background(), &testUserCreate, tt.password)
-			require.Nil(t, returnedUser)
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, tt.err)
-		},
+				returnedUser, err := usersService.CreateUser(context.Background(), &testUserCreate, tt.password)
+				require.Nil(t, returnedUser)
+				assert.Error(t, err)
+				assert.ErrorIs(t, err, tt.err)
+			},
 		)
 	}
 }
