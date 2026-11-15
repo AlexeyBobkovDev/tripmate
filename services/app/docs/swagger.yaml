@@ -23,6 +23,15 @@ definitions:
     - latitude
     - longitude
     type: object
+  domain.DailySchedule:
+    properties:
+      end_time:
+        example: "18:00"
+        type: string
+      start_time:
+        example: "09:00"
+        type: string
+    type: object
   domain.Interest:
     enum:
     - history
@@ -35,6 +44,30 @@ definitions:
     - InterestNature
     - InterestFood
     - InterestArchitecture
+  domain.MealRequirement:
+    properties:
+      budget:
+        $ref: '#/definitions/domain.Money'
+      duration_minutes:
+        example: 60
+        type: integer
+      meal_type:
+        allOf:
+        - $ref: '#/definitions/domain.MealType'
+        example: breakfast
+      window:
+        $ref: '#/definitions/domain.TimeWindow'
+    type: object
+  domain.MealType:
+    enum:
+    - breakfast
+    - lunch
+    - dinner
+    type: string
+    x-enum-varnames:
+    - MealBreakfast
+    - MealLunch
+    - MealDinner
   domain.Money:
     properties:
       amount_minor_units:
@@ -119,6 +152,15 @@ definitions:
         example: 7200
         type: integer
     type: object
+  domain.TimeWindow:
+    properties:
+      end:
+        example: "18:00"
+        type: string
+      start:
+        example: "09:00"
+        type: string
+    type: object
   domain.TravelMode:
     enum:
     - walking
@@ -163,6 +205,8 @@ definitions:
     properties:
       budget:
         $ref: '#/definitions/domain.Money'
+      daily_schedule:
+        $ref: '#/definitions/domain.DailySchedule'
       end_date:
         example: "2026-11-14"
         type: string
@@ -170,6 +214,10 @@ definitions:
         items:
           $ref: '#/definitions/domain.Interest'
         minItems: 1
+        type: array
+      meal_requirements:
+        items:
+          $ref: '#/definitions/trips_transport_http.MealRequirementRequestDTO'
         type: array
       name:
         example: Walk around Moscow
@@ -191,24 +239,55 @@ definitions:
         type: string
     required:
     - budget
+    - daily_schedule
     - end_date
     - interests
+    - meal_requirements
     - name
     - planning_area
     - start_date
     - start_location
     - time_zone
     type: object
+  trips_transport_http.MealRequirementRequestDTO:
+    properties:
+      budget:
+        $ref: '#/definitions/domain.Money'
+      duration_minutes:
+        example: 60
+        maximum: 1440
+        minimum: 1
+        type: integer
+      meal_type:
+        allOf:
+        - $ref: '#/definitions/domain.MealType'
+        enum:
+        - breakfast
+        - lunch
+        - dinner
+        example: breakfast
+      window:
+        $ref: '#/definitions/domain.TimeWindow'
+    required:
+    - duration_minutes
+    - meal_type
+    type: object
   trips_transport_http.PatchTripRequest:
     properties:
       budget:
         $ref: '#/definitions/domain.Money'
+      daily_schedule:
+        $ref: '#/definitions/domain.DailySchedule'
       end_date:
         example: "2026-11-14"
         type: string
       interests:
         items:
           $ref: '#/definitions/domain.Interest'
+        type: array
+      meal_requirements:
+        items:
+          $ref: '#/definitions/trips_transport_http.MealRequirementRequestDTO'
         type: array
       name:
         example: Walk around NYC
@@ -236,6 +315,8 @@ definitions:
       created_at:
         example: "2026-10-28T12:00:00Z"
         type: string
+      daily_schedule:
+        $ref: '#/definitions/domain.DailySchedule'
       deleted_at:
         example: ""
         type: string
@@ -248,6 +329,10 @@ definitions:
       interests:
         items:
           $ref: '#/definitions/domain.Interest'
+        type: array
+      meal_requirements:
+        items:
+          $ref: '#/definitions/domain.MealRequirement'
         type: array
       name:
         example: Walk around Moscow
