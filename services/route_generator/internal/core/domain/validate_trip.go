@@ -11,11 +11,17 @@ func validateTripStartDate(startDate time.Time) error {
 	if startDate.IsZero() {
 		return core_errors.ErrInvalidTripStartDate
 	}
+	if startDate.Before(time.Now().UTC()) {
+		return core_errors.ErrInvalidTripStartDate
+	}
 	return nil
 }
 
 func validateTripEndDate(endDate time.Time) error {
 	if endDate.IsZero() {
+		return core_errors.ErrInvalidTripEndDate
+	}
+	if endDate.Before(time.Now().UTC()) {
 		return core_errors.ErrInvalidTripEndDate
 	}
 	return nil
@@ -74,6 +80,26 @@ func validateTimeZone(timeZone string) error {
 	}
 	if timeZone != "Europe/Moscow" {
 		return core_errors.ErrUnsupportedTimezone
+	}
+	return nil
+}
+
+func validateTripStartTime(startTime time.Time) error {
+	if startTime.IsZero() {
+		return core_errors.ErrInvalidTripStartTime
+	}
+	if startTime.Before(time.Now().UTC()) {
+		return core_errors.ErrInvalidTripStartTime
+	}
+	return nil
+}
+
+func validateTripEndTime(endTime time.Time) error {
+	if endTime.IsZero() {
+		return core_errors.ErrInvalidTripEndTime
+	}
+	if endTime.Before(time.Now().UTC()) {
+		return core_errors.ErrInvalidTripEndTime
 	}
 	return nil
 }

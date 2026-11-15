@@ -123,6 +123,11 @@ func TestValidateRouteDays(t *testing.T) {
 	}
 	validStop.DepartureTime = futureDate.Add(2 * time.Hour)
 
+	secondValidStop := validStop
+	secondValidStop.ID = 2
+	secondValidStop.PlaceID = 2
+	secondValidStop.Position = 2
+
 	validLeg := RouteLeg{
 		ID:         1,
 		FromStopID: 1,
@@ -136,7 +141,7 @@ func TestValidateRouteDays(t *testing.T) {
 		ID:        1,
 		Date:      futureDate,
 		DayNumber: 1,
-		Stops:     []RouteStop{validStop},
+		Stops:     []RouteStop{validStop, secondValidStop},
 		Legs:      []RouteLeg{validLeg},
 	}
 
@@ -151,7 +156,7 @@ func TestValidateRouteDays(t *testing.T) {
 		{name: "multiple valid days", days: []RouteDay{validDay, validDay}},
 		{name: "first day has no stops", days: []RouteDay{{ID: 1, Date: futureDate, DayNumber: 1}}, want: core_errors.ErrInvalidRouteDayStopsAmount},
 		{name: "first day has invalid stop", days: []RouteDay{{ID: 1, Date: futureDate, DayNumber: 1, Stops: []RouteStop{{ID: 1, PlaceID: 1, Position: 0}}, Legs: []RouteLeg{}}}, want: core_errors.ErrInvalidRouteStopPosition},
-		{name: "second day has invalid leg", days: []RouteDay{validDay, {ID: 2, Date: futureDate, DayNumber: 2, Stops: []RouteStop{validStop}, Legs: []RouteLeg{{ID: 1, FromStopID: 1, ToStopID: 2, TravelMode: "unknown", Distance: 5, Duration: time.Minute}}}}, want: core_errors.ErrUnsupportedRouteTravelMode},
+		{name: "second day has invalid leg", days: []RouteDay{validDay, {ID: 2, Date: futureDate, DayNumber: 2, Stops: []RouteStop{validStop, secondValidStop}, Legs: []RouteLeg{{ID: 1, FromStopID: 1, ToStopID: 2, TravelMode: "unknown", Distance: 5, Duration: time.Minute}}}}, want: core_errors.ErrUnsupportedRouteTravelMode},
 	}
 
 	for _, tt := range tests {
@@ -347,6 +352,63 @@ func TestValidateRouteDayDayNumber(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := validateRouteDayDayNumber(tt.dayNumber)
+			if tt.want != nil {
+				require.ErrorIs(t, err, tt.want)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateStopsAndLegs(t *testing.T) {
+	futureDate := time.Now().Add(24 * time.Hour)
+
+	newStop := func(id int) RouteStop {
+		return RouteStop{
+			ID:            id,
+			PlaceID:       1,
+			Position:      1,
+			Name:          "Stop",
+			Description:   "Stop description",
+			Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			ArrivalTime:   futureDate.Add(time.Hour),
+			DepartureTime: futureDate.Add(2 * time.Hour),
+			VisitDuration: 30 * time.Minute,
+		}
+	}
+
+	newLeg := func(id, fromStopID, toStopID int) RouteLeg {
+		return RouteLeg{
+			ID:         id,
+			FromStopID: fromStopID,
+			ToStopID:   toStopID,
+			TravelMode: TravelModeWalking,
+			Distance:   5,
+			Duration:   10 * time.Minute,
+		}
+	}
+
+	tests := []struct {
+		name  string
+		stops []RouteStop
+		legs  []RouteLeg
+		want  error
+	}{
+		{name: "no stops and no legs", stops: nil, legs: nil},
+		{name: "single stop without legs", stops: []RouteStop{newStop(1)}},
+		{name: "two stops with valid leg", stops: []RouteStop{newStop(1), newStop(2)}, legs: []RouteLeg{newLeg(1, 1, 2)}},
+		{name: "multiple stops with chained legs", stops: []RouteStop{newStop(1), newStop(2), newStop(3)}, legs: []RouteLeg{newLeg(1, 1, 2), newLeg(2, 2, 3)}},
+		{name: "duplicate stop ids", stops: []RouteStop{newStop(1), newStop(1)}, want: core_errors.ErrDuplicateRouteStopID},
+		{name: "leg with same from and to stop", stops: []RouteStop{newStop(1)}, legs: []RouteLeg{newLeg(1, 1, 1)}, want: core_errors.ErrInvalidRouteLegStopReference},
+		{name: "leg with unknown from stop", stops: []RouteStop{newStop(1)}, legs: []RouteLeg{newLeg(1, 2, 1)}, want: core_errors.ErrInvalidRouteLegStopReference},
+		{name: "leg with unknown to stop", stops: []RouteStop{newStop(1)}, legs: []RouteLeg{newLeg(1, 1, 2)}, want: core_errors.ErrInvalidRouteLegStopReference},
+		{name: "duplicate stop ids take precedence over invalid leg", stops: []RouteStop{newStop(1), newStop(1)}, legs: []RouteLeg{newLeg(1, 1, 2)}, want: core_errors.ErrDuplicateRouteStopID},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateStopsAndLegs(tt.stops, tt.legs)
 			if tt.want != nil {
 				require.ErrorIs(t, err, tt.want)
 			} else {

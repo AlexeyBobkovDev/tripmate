@@ -12,6 +12,9 @@ type Trip struct {
 	StartDate time.Time
 	EndDate   time.Time
 
+	DailySchedule    DailySchedule
+	MealRequirements []MealRequirement
+
 	Budget    Money
 	Interests []Interest
 	TimeZone  string
@@ -33,6 +36,17 @@ func (t *Trip) Validate() error {
 	if err := validateTripEndDate(t.EndDate); err != nil {
 		return err
 	}
+	if err := validateTripDatesOrder(t.StartDate, t.EndDate); err != nil {
+		return err
+	}
+	if err := t.DailySchedule.Validate(); err != nil {
+		return err
+	}
+	for _, mealRequirement := range t.MealRequirements {
+		if err := mealRequirement.Validate(); err != nil {
+			return err
+		}
+	}
 	if err := validateBudget(t.Budget); err != nil {
 		return err
 	}
@@ -40,9 +54,6 @@ func (t *Trip) Validate() error {
 		return err
 	}
 	if err := validateTimeZone(t.TimeZone); err != nil {
-		return err
-	}
-	if err := validateTripDatesOrder(t.StartDate, t.EndDate); err != nil {
 		return err
 	}
 
@@ -55,6 +66,8 @@ func NewTrip(
 	startCoordinates Coordinates,
 	startDate time.Time,
 	endDate time.Time,
+	dailySchedule DailySchedule,
+	mealRequirements []MealRequirement,
 	budget Money,
 	interests []Interest,
 	timeZone string,
@@ -65,6 +78,8 @@ func NewTrip(
 		StartCoordinates: startCoordinates,
 		StartDate:        startDate,
 		EndDate:          endDate,
+		DailySchedule:    dailySchedule,
+		MealRequirements: mealRequirements,
 		Budget:           budget,
 		Interests:        interests,
 		TimeZone:         timeZone,
