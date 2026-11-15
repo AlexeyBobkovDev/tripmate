@@ -80,7 +80,8 @@ func UserPatchTest() domain.UserPatch {
 }
 
 func PatchRequestBodyTest() *strings.Reader {
-	body := fmt.Sprintf(`
+	body := fmt.Sprintf(
+		`
 		{
 			"version": 1,
 			"name": "%s",
