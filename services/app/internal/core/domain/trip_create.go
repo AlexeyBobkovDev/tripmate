@@ -16,8 +16,8 @@ type TripCreate struct {
 	StartDate time.Time
 	EndDate   time.Time
 
-	DailySchedule   DailySchedule
-	MealRequirement []MealRequirement
+	DailySchedule    DailySchedule
+	MealRequirements []MealRequirement
 
 	Budget    Money
 	Interests []Interest
@@ -54,7 +54,7 @@ func (t *TripCreate) Validate() error {
 	if err := t.DailySchedule.Validate(); err != nil {
 		return err
 	}
-	for _, mealRequirement := range t.MealRequirement {
+	for _, mealRequirement := range t.MealRequirements {
 		if err := mealRequirement.Validate(); err != nil {
 			return err
 		}
@@ -92,7 +92,7 @@ func NewTripCreate(
 		StartDate:        startDate,
 		EndDate:          endDate,
 		DailySchedule:    dailySchedule,
-		MealRequirement:  mealRequirements,
+		MealRequirements: mealRequirements,
 		Budget:           budget,
 		Interests:        interests,
 		TimeZone:         timeZone,
