@@ -33,7 +33,7 @@ help:
 	@printf '  \033[1;32mmigrate-create name=NAME\033[0m      Create a sequential up/down migration pair.\n'
 	@printf '  \033[1;32mmigrate-action action=ACTION\033[0m  Run an internal migration action (up/down/create/force).\n'
 	@printf '\n\033[1;33mLOGS\033[0m\n'
-	@printf '  \033[1;32mcleanup-logs\033[0m                   Remove all service log files after confirmation.\\n'
+	@printf '  \033[1;32mcleanup-logs\033[0m                   Remove all service log files after confirmation.\n'
 	@printf '\n\033[1;33mGO DEVELOPMENT\033[0m\n'
 	@printf '  \033[1;32mtidy\033[0m                          Reconcile Go module dependencies.\n'
 	@printf '  \033[1;32mdownload\033[0m                       Download dependencies declared by the module.\n'
