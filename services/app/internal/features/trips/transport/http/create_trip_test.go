@@ -5,10 +5,14 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
+	domain "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
+	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 	core_http_response "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/transport/http/response"
@@ -126,9 +130,10 @@ func TestTripsTransportHTTP_CreateTrip_InvalidJSON(t *testing.T) {
 	rec, req := testutils.SetupHTTP(
 		t,
 		http.MethodPost,
-		"/trips",
+		"/trips/1",
 		strings.NewReader(`invalid json`),
 	)
+	req.SetPathValue("ownerID", "1")
 
 	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
 	ctx := core_logger.ToContext(req.Context(), logger)
@@ -206,6 +211,216 @@ func TestTripsTransportHTTP_CreateTrip_ValidationError(t *testing.T) {
 
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
 			assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+		})
+	}
+}
+
+func TestTripsTransportHTTP_CreateTrip_OwnerIDNotPositive(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockTripsService := mocks.NewMockTripsService(ctrl)
+	tripsTransport := NewTripsHTTPHandler(mockTripsService)
+
+	mockTripsService.
+		EXPECT().
+		CreateTrip(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPost, "/trips/0", testTripRequestBodyWithDefaults())
+	req.SetPathValue("ownerID", "0")
+
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	tripsTransport.CreateTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestTripsTransportHTTP_CreateTrip_OwnerIDInvalid(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockTripsService := mocks.NewMockTripsService(ctrl)
+	tripsTransport := NewTripsHTTPHandler(mockTripsService)
+
+	mockTripsService.
+		EXPECT().
+		CreateTrip(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPost, "/trips/abc", testTripRequestBodyWithDefaults())
+	req.SetPathValue("ownerID", "abc")
+
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	tripsTransport.CreateTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestCreateTripRequest_Validate(t *testing.T) {
+	t.Run("returns nil for valid dates", func(t *testing.T) {
+		request := CreateTripRequest{
+			Name:             "Walk around Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "2035-03-10",
+			EndDate:          "2035-03-11",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		}
+
+		require.NoError(t, request.Validate())
+	})
+
+	t.Run("returns invalid start date error when start date is invalid", func(t *testing.T) {
+		request := CreateTripRequest{
+			Name:             "Walk around Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "not-a-date",
+			EndDate:          "2035-03-11",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		}
+
+		err := request.Validate()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripStartDate)
+	})
+
+	t.Run("returns invalid end date error when end date is invalid", func(t *testing.T) {
+		request := CreateTripRequest{
+			Name:             "Walk around Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "2035-03-10",
+			EndDate:          "not-a-date",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		}
+
+		err := request.Validate()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
+	})
+}
+
+func TestCreateTripDomainFromDTO(t *testing.T) {
+	t.Run("returns nil error and valid trip when dates are valid", func(t *testing.T) {
+		trip, err := createTripDomainFromDTO(CreateTripRequest{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "2035-03-10",
+			EndDate:          "2035-03-11",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		})
+
+		require.NoError(t, err)
+		require.NotNil(t, trip)
+		require.True(t, trip.StartDate.Equal(time.Date(2035, 3, 10, 0, 0, 0, 0, time.UTC)))
+		require.True(t, trip.EndDate.Equal(time.Date(2035, 3, 11, 0, 0, 0, 0, time.UTC)))
+	})
+
+	t.Run("returns invalid start date error when start date is invalid", func(t *testing.T) {
+		trip, err := createTripDomainFromDTO(CreateTripRequest{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "not-a-date",
+			EndDate:          "2035-03-11",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		})
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripStartDate)
+		assert.Nil(t, trip)
+	})
+
+	t.Run("returns invalid end date error when end date is invalid", func(t *testing.T) {
+		trip, err := createTripDomainFromDTO(CreateTripRequest{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        "2035-03-10",
+			EndDate:          "not-a-date",
+			DailySchedule:    domain.DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirementRequestDTO{},
+			Budget:           domain.Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []domain.Interest{"history"},
+			TimeZone:         "Europe/Moscow",
+		})
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
+		assert.Nil(t, trip)
+	})
+}
+
+func TestTripsTransportHTTP_CreateTrip_InvalidTripDates(t *testing.T) {
+	tests := []struct {
+		name      string
+		startDate string
+		endDate   string
+	}{
+		{name: "invalid start date", startDate: "not-a-date", endDate: "2035-03-10"},
+		{name: "invalid end date", startDate: "2035-03-10", endDate: "not-a-date"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockTripsService := mocks.NewMockTripsService(ctrl)
+			tripsTransport := NewTripsHTTPHandler(mockTripsService)
+
+			mockTripsService.
+				EXPECT().
+				CreateTrip(gomock.Any(), gomock.Any(), gomock.Any()).
+				Times(0)
+
+			body := `{
+				"owner_id": 1,
+				"name": "Trip to Moscow",
+				"planning_area": "Moscow",
+				"start_location": {"latitude": 55.7539, "longitude": 37.6208},
+				"start_date": "` + tt.startDate + `",
+				"end_date": "` + tt.endDate + `",
+				"daily_schedule": {"start_time": "09:00", "end_time": "18:00"},
+				"meal_requirements": [],
+				"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
+				"interests": ["history"],
+				"time_zone": "Europe/Moscow"
+			}`
+
+			rec, req := testutils.SetupHTTP(t, http.MethodPost, "/trips/1", strings.NewReader(body))
+			logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+			ctx := core_logger.ToContext(req.Context(), logger)
+			req = req.WithContext(ctx)
+
+			tripsTransport.CreateTrip(rec, req)
+
+			assert.Equal(t, http.StatusBadRequest, rec.Code)
 		})
 	}
 }

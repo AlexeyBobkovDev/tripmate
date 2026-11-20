@@ -235,3 +235,52 @@ func TestTripsTransportHTTP_PatchTrip_NotFound(t *testing.T) {
 	require.NoError(t, json.NewDecoder(rec.Body).Decode(&errResp))
 	assert.Equal(t, notFoundErr.Error(), errResp.Error)
 }
+
+func TestTripsTransportHTTP_PatchTrip_InvalidJSON(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockService := mocks.NewMockTripsService(ctrl)
+	handler := NewTripsHTTPHandler(mockService)
+
+	mockService.EXPECT().
+		PatchTrip(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/trips/1/1", strings.NewReader(`invalid json`))
+	req.SetPathValue("ownerID", "1")
+	req.SetPathValue("tripID", "1")
+
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	handler.PatchTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestTripsTransportHTTP_PatchTrip_MealRequirementsSetToNull(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockService := mocks.NewMockTripsService(ctrl)
+	handler := NewTripsHTTPHandler(mockService)
+
+	mockService.EXPECT().
+		PatchTrip(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	body := `{
+		"version": 1,
+		"meal_requirements": null
+	}`
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPatch, "/trips/1/1", strings.NewReader(body))
+	req.SetPathValue("ownerID", "1")
+	req.SetPathValue("tripID", "1")
+
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	handler.PatchTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}

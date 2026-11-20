@@ -27,7 +27,7 @@ func anyArgs(amount int) []any {
 // requirements. Meal requirements are loaded by dedicated queries, so they are
 // not part of the trip row scan.
 func testTripFixture() domain.Trip {
-	startDate := time.Date(2027, time.March, 10, 0, 0, 0, 0, time.UTC)
+	startDate := time.Date(2035, time.March, 10, 0, 0, 0, 0, time.UTC)
 	createdAt := time.Date(2026, time.September, 9, 17, 0, 45, 0, time.UTC)
 	updatedAt := time.Date(2026, time.September, 9, 17, 10, 45, 0, time.UTC)
 
@@ -53,7 +53,7 @@ func testTripFixture() domain.Trip {
 }
 
 func testTripCreateFixture(ownerID int) *domain.TripCreate {
-	startDate := time.Date(2027, time.March, 10, 0, 0, 0, 0, time.UTC)
+	startDate := time.Date(2035, time.March, 10, 0, 0, 0, 0, time.UTC)
 
 	return &domain.TripCreate{
 		OwnerID:          ownerID,

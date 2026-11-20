@@ -20,13 +20,54 @@ func BenchmarkVerify(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	for b.Loop() {
-		verified, err := hasher.Verify(benchmarkPassword, passwordHash)
-		if err != nil {
-			b.Fatal(err)
+	b.Run("correct password", func(b *testing.B) {
+		for b.Loop() {
+			verified, err := hasher.Verify(benchmarkPassword, passwordHash)
+			if err != nil {
+				b.Fatal(err)
+			}
+			if !verified {
+				b.Fatal("expected password verification to succeed")
+			}
 		}
-		if !verified {
-			b.Fatal("expected password verification to succeed")
+	})
+
+	b.Run("incorrect password", func(b *testing.B) {
+		for b.Loop() {
+			verified, err := hasher.Verify("WrongPassword", passwordHash)
+			if err != nil {
+				b.Fatal(err)
+			}
+			if verified {
+				b.Fatal("expected password verification to fail")
+			}
 		}
-	}
+	})
+
+	b.Run("malformed hash", func(b *testing.B) {
+		for b.Loop() {
+			_, err := hasher.Verify(benchmarkPassword, "not-a-valid-argon2id-hash")
+			if err == nil {
+				b.Fatal("expected an error for a malformed hash")
+			}
+		}
+	})
+
+	b.Run("empty password", func(b *testing.B) {
+		for b.Loop() {
+			_, err := hasher.Verify("", passwordHash)
+			if err == nil {
+				b.Fatal("expected an error for empty password")
+			}
+		}
+	})
+
+	b.Run("empty hash", func(b *testing.B) {
+		for b.Loop() {
+			_, err := hasher.Verify(benchmarkPassword, "")
+			if err == nil {
+				b.Fatal("expected an error for empty hash")
+			}
+		}
+	})
 }

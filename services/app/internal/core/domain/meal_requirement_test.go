@@ -277,3 +277,47 @@ func TestTimeWindow_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestMealRequirement_Validate_EdgeCases(t *testing.T) {
+	validMeal := MealRequirement{
+		Type:     MealBreakfast,
+		Window:   TimeWindow{Start: "08:00", End: "09:00"},
+		Duration: 30 * time.Minute,
+		Budget:   Money{AmountMinorUnits: 1000, Currency: "RUB"},
+	}
+
+	t.Run("zero duration", func(t *testing.T) {
+		meal := validMeal
+		meal.Duration = 0
+		err := meal.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidMealTimeDuration)
+	})
+
+	t.Run("duration longer than window", func(t *testing.T) {
+		meal := validMeal
+		meal.Duration = 120 * time.Minute
+		err := meal.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidMealTimeEndTime)
+	})
+
+	t.Run("invalid budget", func(t *testing.T) {
+		meal := validMeal
+		meal.Budget = Money{AmountMinorUnits: 0, Currency: "RUB"}
+		err := meal.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidBudget)
+	})
+
+	t.Run("unsupported meal type", func(t *testing.T) {
+		meal := validMeal
+		meal.Type = MealType("unknown")
+		err := meal.Validate()
+		require.ErrorIs(t, err, core_errors.ErrUnsupportedMealType)
+	})
+
+	t.Run("start after end window", func(t *testing.T) {
+		meal := validMeal
+		meal.Window = TimeWindow{Start: "12:00", End: "11:00"}
+		err := meal.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndTime)
+	})
+}

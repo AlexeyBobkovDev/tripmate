@@ -21,8 +21,8 @@ func TestPatchTripRequest_Validate(t *testing.T) {
 
 	t.Run("returns nil when start and end dates are valid", func(t *testing.T) {
 		request := PatchTripRequest{
-			StartDate: core_http_types.Nullable[string]{Value: &[]string{"2027-03-10"}[0], Set: true},
-			EndDate:   core_http_types.Nullable[string]{Value: &[]string{"2027-03-11"}[0], Set: true},
+			StartDate: core_http_types.Nullable[string]{Value: &[]string{"2035-03-10"}[0], Set: true},
+			EndDate:   core_http_types.Nullable[string]{Value: &[]string{"2035-03-11"}[0], Set: true},
 		}
 
 		require.NoError(t, request.Validate())
@@ -49,6 +49,28 @@ func TestPatchTripRequest_Validate(t *testing.T) {
 		require.Error(t, err)
 		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
 	})
+
+	t.Run("returns invalid start date error when start date is set to null", func(t *testing.T) {
+		request := PatchTripRequest{
+			StartDate: core_http_types.Nullable[string]{Value: nil, Set: true},
+		}
+
+		err := request.Validate()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripStartDate)
+	})
+
+	t.Run("returns invalid end date error when end date is set to null", func(t *testing.T) {
+		request := PatchTripRequest{
+			EndDate: core_http_types.Nullable[string]{Value: nil, Set: true},
+		}
+
+		err := request.Validate()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
+	})
 }
 
 func TestPatchTripDomainFromDTO(t *testing.T) {
@@ -66,8 +88,8 @@ func TestPatchTripDomainFromDTO(t *testing.T) {
 	})
 
 	t.Run("parses set start and end dates", func(t *testing.T) {
-		startDate := "2027-03-10"
-		endDate := "2027-03-11"
+		startDate := "2035-03-10"
+		endDate := "2035-03-11"
 		tripPatch, err := patchTripDomainFromDTO(1, PatchTripRequest{
 			StartDate: core_http_types.Nullable[string]{Value: &startDate, Set: true},
 			EndDate:   core_http_types.Nullable[string]{Value: &endDate, Set: true},
@@ -76,9 +98,9 @@ func TestPatchTripDomainFromDTO(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, tripPatch)
 		require.NotNil(t, tripPatch.StartDate.Value)
-		assert.True(t, tripPatch.StartDate.Value.Equal(time.Date(2027, 3, 10, 0, 0, 0, 0, time.UTC)))
+		assert.True(t, tripPatch.StartDate.Value.Equal(time.Date(2035, 3, 10, 0, 0, 0, 0, time.UTC)))
 		require.NotNil(t, tripPatch.EndDate.Value)
-		assert.True(t, tripPatch.EndDate.Value.Equal(time.Date(2027, 3, 11, 0, 0, 0, 0, time.UTC)))
+		assert.True(t, tripPatch.EndDate.Value.Equal(time.Date(2035, 3, 11, 0, 0, 0, 0, time.UTC)))
 		assert.True(t, tripPatch.StartDate.Set)
 		assert.True(t, tripPatch.EndDate.Set)
 	})
@@ -149,5 +171,44 @@ func TestPatchTripDomainFromDTO(t *testing.T) {
 		assert.Equal(t, domain.MealBreakfast, converted.Type)
 		assert.Equal(t, 60*time.Minute, converted.Duration)
 		assert.Equal(t, budget, converted.Budget)
+	})
+
+	t.Run("returns invalid end date error when end date cannot be parsed", func(t *testing.T) {
+		endDate := "not-a-date"
+		tripPatch, err := patchTripDomainFromDTO(1, PatchTripRequest{
+			EndDate: core_http_types.Nullable[string]{Value: &endDate, Set: true},
+		})
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
+		assert.Nil(t, tripPatch)
+	})
+
+	t.Run("returns invalid argument error when daily schedule is set to null", func(t *testing.T) {
+		tripPatch, err := patchTripDomainFromDTO(1, PatchTripRequest{
+			DailySchedule: core_http_types.Nullable[domain.DailySchedule]{Value: nil, Set: true},
+		})
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, core_errors.ErrInvalidArgument)
+		assert.Nil(t, tripPatch)
+	})
+
+	t.Run("maps daily schedule when it is set", func(t *testing.T) {
+		startTime := domain.LocalTime("09:00")
+		endTime := domain.LocalTime("18:00")
+		tripPatch, err := patchTripDomainFromDTO(1, PatchTripRequest{
+			DailySchedule: core_http_types.Nullable[domain.DailySchedule]{
+				Value: &domain.DailySchedule{StartTime: startTime, EndTime: endTime},
+				Set:   true,
+			},
+		})
+
+		require.NoError(t, err)
+		require.NotNil(t, tripPatch)
+		require.NotNil(t, tripPatch.DailySchedule.Value)
+		assert.Equal(t, startTime, tripPatch.DailySchedule.Value.StartTime)
+		assert.Equal(t, endTime, tripPatch.DailySchedule.Value.EndTime)
+		assert.True(t, tripPatch.DailySchedule.Set)
 	})
 }

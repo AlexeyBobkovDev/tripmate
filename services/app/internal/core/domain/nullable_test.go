@@ -144,3 +144,30 @@ func TestNullable_Hashability(t *testing.T) {
 	differentNullable := Nullable[string]{Value: nil, Set: false}
 	assert.True(t, nullableMap[differentNullable], "Same nullable should be in map")
 }
+
+func TestNullable_PointerComparison(t *testing.T) {
+	// Test that two Nullable with the same value but different pointers are different
+	value1 := "test1"
+	value2 := "test2"
+
+	nullable1 := Nullable[string]{Value: &value1, Set: true}
+	nullable2 := Nullable[string]{Value: &value2, Set: true}
+
+	// They should have different values and different pointers
+	assert.Equal(t, "test1", *nullable1.Value)
+	assert.Equal(t, "test2", *nullable2.Value)
+	assert.NotEqual(t, &value1, &value2)
+
+	// In Go, structs are compared by pointer by default when used as map keys
+	// So these two Nullable instances with different pointers will be treated as different keys
+	map1 := make(map[Nullable[string]]bool)
+	map2 := make(map[Nullable[string]]bool)
+
+	map1[nullable1] = true
+	map2[nullable2] = true
+
+	assert.True(t, map1[nullable1], "First nullable should be in first map")
+	assert.True(t, map2[nullable2], "Second nullable should be in second map")
+	assert.False(t, map1[nullable2], "Second nullable should not be in first map due to pointer difference")
+	assert.False(t, map2[nullable1], "First nullable should not be in second map due to pointer difference")
+}

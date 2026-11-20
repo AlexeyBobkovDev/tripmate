@@ -15,8 +15,8 @@ import (
 )
 
 func TestTripDomainToDTO(t *testing.T) {
-	startDate := time.Date(2027, 3, 10, 9, 0, 0, 0, time.UTC)
-	endDate := time.Date(2027, 3, 11, 18, 0, 0, 0, time.UTC)
+	startDate := time.Date(2035, 3, 10, 9, 0, 0, 0, time.UTC)
+	endDate := time.Date(2035, 3, 11, 18, 0, 0, 0, time.UTC)
 	trip := domain.NewTrip(
 		1,
 		1,
@@ -326,4 +326,23 @@ func TestStopsDomainFromDTO(t *testing.T) {
 	assert.True(t, stop.DepartureTime.Equal(time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)))
 	require.NotNil(t, stop.VisitDuration)
 	assert.Equal(t, 7200*time.Second, stop.VisitDuration)
+}
+
+func TestMealTypeDomainToDTO(t *testing.T) {
+	tests := []struct {
+		name         string
+		mealType     domain.MealType
+		expectedType route_generator_common_v1.MealType
+	}{
+		{name: "breakfast", mealType: domain.MealBreakfast, expectedType: route_generator_common_v1.MealType_MEAL_TYPE_BREAKFAST},
+		{name: "lunch", mealType: domain.MealLunch, expectedType: route_generator_common_v1.MealType_MEAL_TYPE_LUNCH},
+		{name: "dinner", mealType: domain.MealDinner, expectedType: route_generator_common_v1.MealType_MEAL_TYPE_DINNER},
+		{name: "unknown meal type falls back to breakfast", mealType: domain.MealType("unknown"), expectedType: route_generator_common_v1.MealType_MEAL_TYPE_BREAKFAST},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expectedType, mealTypeDomainToDTO(tt.mealType))
+		})
+	}
 }

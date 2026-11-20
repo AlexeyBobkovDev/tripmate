@@ -98,3 +98,20 @@ func TestDailySchedule_Validate(t *testing.T) {
 		})
 	}
 }
+
+func TestDailySchedule_Validate_EdgeCases(t *testing.T) {
+	t.Run("valid schedule", func(t *testing.T) {
+		err := (&DailySchedule{StartTime: "09:00", EndTime: "18:00"}).Validate()
+		require.NoError(t, err)
+	})
+
+	t.Run("invalid end time", func(t *testing.T) {
+		err := (&DailySchedule{StartTime: "09:00", EndTime: "25:00"}).Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidLocalTime)
+	})
+
+	t.Run("start time after end time", func(t *testing.T) {
+		err := (&DailySchedule{StartTime: "18:00", EndTime: "09:00"}).Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndTime)
+	})
+}
