@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	core_consts "github.com/AlexeyBobkovDev/tripmate/services/route_generator/internal/core/consts"
 	"github.com/AlexeyBobkovDev/tripmate/services/route_generator/internal/core/domain"
 )
 
@@ -18,7 +19,7 @@ func (s *GenerateRouteService) GenerateRoute(
 		return nil, status.Error(codes.InvalidArgument, "invalid trip data")
 	}
 
-	date, err := time.Parse("2006-01-02", "2027-03-10")
+	date, err := time.Parse("2006-01-02", trip.StartDate.Format(core_consts.Layout))
 	if err != nil {
 		return nil, err
 	}

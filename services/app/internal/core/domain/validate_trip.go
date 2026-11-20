@@ -7,8 +7,14 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
+// timeNow is a function that returns the current time, can be overridden in tests
+var timeNow = func() time.Time { return time.Now().UTC() }
+
 func validateTripStartDate(startDate time.Time) error {
 	if startDate.IsZero() {
+		return core_errors.ErrInvalidTripStartDate
+	}
+	if startDate.Before(timeNow()) {
 		return core_errors.ErrInvalidTripStartDate
 	}
 	return nil
@@ -16,6 +22,9 @@ func validateTripStartDate(startDate time.Time) error {
 
 func validateTripEndDate(endDate time.Time) error {
 	if endDate.IsZero() {
+		return core_errors.ErrInvalidTripEndDate
+	}
+	if endDate.Before(timeNow()) {
 		return core_errors.ErrInvalidTripEndDate
 	}
 	return nil
@@ -90,11 +99,17 @@ func validateTripStartTime(startTime time.Time) error {
 	if startTime.IsZero() {
 		return core_errors.ErrInvalidTripStartTime
 	}
+	if startTime.Before(timeNow()) {
+		return core_errors.ErrInvalidTripStartTime
+	}
 	return nil
 }
 
 func validateTripEndTime(endTime time.Time) error {
 	if endTime.IsZero() {
+		return core_errors.ErrInvalidTripEndTime
+	}
+	if endTime.Before(timeNow()) {
 		return core_errors.ErrInvalidTripEndTime
 	}
 	return nil
