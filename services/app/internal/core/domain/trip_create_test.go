@@ -27,8 +27,8 @@ func TestTripCreate_Validate(t *testing.T) {
 				Name:             "Test Trip",
 				PlanningArea:     "Moscow",
 				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-				StartDate:        time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
-				EndDate:          time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				StartDate:        time.Date(2035, time.January, 15, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2035, time.January, 15, 0, 0, 0, 0, time.UTC),
 				DailySchedule: DailySchedule{
 					StartTime: "09:00",
 					EndTime:   "18:00",
@@ -53,8 +53,8 @@ func TestTripCreate_Validate(t *testing.T) {
 				Name:             "Test Trip",
 				PlanningArea:     "Moscow",
 				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-				StartDate:        time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
-				EndDate:          time.Date(2027, time.January, 16, 0, 0, 0, 0, time.UTC),
+				StartDate:        time.Date(2035, time.January, 15, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2035, time.January, 16, 0, 0, 0, 0, time.UTC),
 				DailySchedule: DailySchedule{
 					StartTime: "09:00",
 					EndTime:   "18:00",
@@ -73,8 +73,8 @@ func TestTripCreate_Validate(t *testing.T) {
 				Name:             "Test Trip",
 				PlanningArea:     "Moscow",
 				StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-				StartDate:        time.Date(2027, time.January, 16, 0, 0, 0, 0, time.UTC),
-				EndDate:          time.Date(2027, time.January, 15, 0, 0, 0, 0, time.UTC),
+				StartDate:        time.Date(2035, time.January, 16, 0, 0, 0, 0, time.UTC),
+				EndDate:          time.Date(2035, time.January, 15, 0, 0, 0, 0, time.UTC),
 				DailySchedule: DailySchedule{
 					StartTime: "09:00",
 					EndTime:   "18:00",
@@ -392,4 +392,68 @@ func TestNewTripCreate(t *testing.T) {
 
 	// Verify validation passes
 	require.NoError(t, create.Validate())
+}
+
+func TestTripCreate_Validate_EdgeCases(t *testing.T) {
+	t.Run("start date in the past", func(t *testing.T) {
+		trip := TripCreate{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        time.Now().Add(-24 * time.Hour),
+			EndDate:          time.Now().Add(-24 * time.Hour),
+			DailySchedule:    DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirement{},
+			Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []Interest{InterestHistory},
+			TimeZone:         "Europe/Moscow",
+		}
+
+		err := trip.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripStartDate)
+	})
+
+	t.Run("end date in the past", func(t *testing.T) {
+		trip := TripCreate{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        time.Now().Add(24 * time.Hour),
+			EndDate:          time.Now().Add(-24 * time.Hour),
+			DailySchedule:    DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirement{},
+			Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests:        []Interest{InterestHistory},
+			TimeZone:         "Europe/Moscow",
+		}
+
+		err := trip.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndDate)
+	})
+
+	t.Run("invalid meal requirement", func(t *testing.T) {
+		futureDate := time.Now().Add(24 * time.Hour)
+		trip := TripCreate{
+			Name:             "Trip to Moscow",
+			PlanningArea:     "Moscow",
+			StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			StartDate:        futureDate,
+			EndDate:          futureDate,
+			DailySchedule:    DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+			MealRequirements: []MealRequirement{
+				{
+					Type:     MealBreakfast,
+					Window:   TimeWindow{Start: "08:00", End: "09:00"},
+					Duration: 0,
+					Budget:   Money{AmountMinorUnits: 1000, Currency: "RUB"},
+				},
+			},
+			Budget:    Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+			Interests: []Interest{InterestHistory},
+			TimeZone:  "Europe/Moscow",
+		}
+
+		err := trip.Validate()
+		require.ErrorIs(t, err, core_errors.ErrInvalidMealTimeDuration)
+	})
 }

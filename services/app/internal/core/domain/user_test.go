@@ -397,3 +397,118 @@ func TestUser_ApplyPatch(t *testing.T) {
 		})
 	}
 }
+
+func TestNewUser(t *testing.T) {
+	createdAt := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	var deletedAt *time.Time
+	user := NewUser(
+		7,
+		2,
+		"John",
+		"Doe",
+		"johndoe",
+		time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+		"Test user",
+		"john@example.com",
+		"+79001234567",
+		createdAt,
+		createdAt,
+		deletedAt,
+	)
+
+	require.NotNil(t, user)
+	assert.Equal(t, 7, user.ID)
+	assert.Equal(t, 2, user.Version)
+	assert.Equal(t, "John", user.Name)
+	assert.Equal(t, "Doe", user.Surname)
+	assert.Equal(t, "johndoe", user.Username)
+	assert.Equal(t, 1990, user.BirthDate.Year())
+	assert.Equal(t, "Test user", user.Description)
+	assert.Equal(t, "john@example.com", user.Email)
+	assert.Equal(t, "+79001234567", user.PhoneNumber)
+	assert.Equal(t, createdAt, user.CreatedAt)
+	assert.Equal(t, createdAt, user.UpdatedAt)
+	assert.Nil(t, user.DeletedAt)
+}
+
+func TestUser_Validate_DatesOrderError(t *testing.T) {
+	user := User{
+		ID:          1,
+		Version:     1,
+		Name:        "John",
+		Surname:     "Doe",
+		Username:    "johndoe",
+		BirthDate:   time.Date(2005, time.January, 1, 0, 0, 0, 0, time.UTC),
+		CreatedAt:   time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:   time.Date(2000, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Email:       "john@example.com",
+		PhoneNumber: "+79001234567",
+	}
+
+	err := user.Validate()
+	require.ErrorIs(t, err, core_errors.ErrInvalidCreatedAt)
+}
+
+func TestUser_ApplyPatch_WithAllFieldsSet(t *testing.T) {
+	now := time.Now()
+	user := User{
+		ID:          1,
+		Version:     1,
+		Name:        "John",
+		Surname:     "Doe",
+		Username:    "johndoe",
+		BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Test user",
+		Email:       "john@example.com",
+		PhoneNumber: "+79001234567",
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	patch := &UserPatch{
+		Version:     1,
+		Surname:     Nullable[string]{Value: &[]string{"DoeUpdated"}[0], Set: true},
+		Username:    Nullable[string]{Value: &[]string{"johndoe2"}[0], Set: true},
+		BirthDate:   Nullable[time.Time]{Value: &[]time.Time{time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC)}[0], Set: true},
+		Description: Nullable[string]{Value: &[]string{"Updated description"}[0], Set: true},
+		Email:       Nullable[string]{Value: &[]string{"john2@example.com"}[0], Set: true},
+		PhoneNumber: Nullable[string]{Value: &[]string{"+79009876543"}[0], Set: true},
+	}
+
+	err := user.ApplyPatch(patch)
+	require.NoError(t, err)
+	require.Equal(t, "DoeUpdated", user.Surname)
+	require.Equal(t, "johndoe2", user.Username)
+	require.Equal(t, "Updated description", user.Description)
+	require.Equal(t, "john2@example.com", user.Email)
+	require.Equal(t, "+79009876543", user.PhoneNumber)
+}
+
+func TestUser_ApplyPatch_InvalidPatchReturnsErrorWithoutMutation(t *testing.T) {
+	now := time.Now()
+	user := User{
+		ID:          1,
+		Version:     1,
+		Name:        "John",
+		Surname:     "Doe",
+		Username:    "johndoe",
+		BirthDate:   time.Date(1990, time.January, 1, 0, 0, 0, 0, time.UTC),
+		Description: "Test user",
+		Email:       "",
+		PhoneNumber: "+79001234567",
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
+
+	patch := &UserPatch{
+		Version: 1,
+		Surname: Nullable[string]{Value: &[]string{"DoeUpdated"}[0], Set: true},
+	}
+
+	err := user.ApplyPatch(patch)
+	require.Error(t, err)
+	assert.NotNil(t, err)
+	assert.Equal(t, "John", user.Name)
+	assert.Equal(t, "Doe", user.Surname)
+	assert.Equal(t, "", user.Email)
+}

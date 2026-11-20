@@ -10,6 +10,11 @@ import (
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
 )
 
+// Helper function to create a pointer to a time.Time
+func ptr(t time.Time) *time.Time {
+	return &t
+}
+
 func TestValidateID(t *testing.T) {
 	tests := []struct {
 		name string
@@ -81,10 +86,10 @@ func TestValidateUpdatedAt(t *testing.T) {
 func TestValidateDeletedAt(t *testing.T) {
 	now := time.Now()
 	require.NoError(t, validateDeletedAt(nil))
-	require.NoError(t, validateDeletedAt(timePtr(now.Add(-time.Second))))
-	require.NoError(t, validateDeletedAt(timePtr(now)))
-	require.ErrorIs(t, validateDeletedAt(timePtr(now.Add(time.Second))), core_errors.ErrInvalidDeletedAt)
-	require.NoError(t, validateDeletedAt(timePtr(time.Time{})))
+	require.NoError(t, validateDeletedAt(ptr(now.Add(-time.Second))))
+	require.NoError(t, validateDeletedAt(ptr(now)))
+	require.ErrorIs(t, validateDeletedAt(ptr(now.Add(time.Second))), core_errors.ErrInvalidDeletedAt)
+	require.NoError(t, validateDeletedAt(ptr(time.Time{})))
 }
 
 func TestValidateSystemDatesOrder(t *testing.T) {
@@ -103,6 +108,9 @@ func TestValidateSystemDatesOrder(t *testing.T) {
 		{name: "created after updated", created: now, updated: now.Add(-time.Second), want: core_errors.ErrInvalidUpdatedAt},
 		{name: "updated after deleted", created: now, updated: now.Add(time.Hour), deleted: timePtr(now.Add(time.Minute)), want: core_errors.ErrInvalidDeletedAt},
 		{name: "no deleted timestamp", created: now, updated: now, deleted: nil},
+		{name: "created and updated in same second", created: now, updated: now},
+		{name: "deleted much later than updated", created: now, updated: now.Add(time.Hour), deleted: timePtr(now.Add(24 * time.Hour))},
+		{name: "all timestamps equal", created: now, updated: now, deleted: timePtr(now)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,4 +122,129 @@ func TestValidateSystemDatesOrder(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestValidateID_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name string
+		id   int
+		want error
+	}{
+		{name: "minimum integer", id: math.MinInt, want: core_errors.ErrInvalidID},
+		{name: "maximum integer", id: math.MaxInt},
+		{name: "positive one", id: 1},
+		{name: "large positive", id: 2147483647},
+		{name: "zero", id: 0, want: core_errors.ErrInvalidID},
+		{name: "negative one", id: -1, want: core_errors.ErrInvalidID},
+		{name: "large negative", id: -2147483648, want: core_errors.ErrInvalidID},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateID(tt.id)
+			if tt.want != nil {
+				require.ErrorIs(t, err, tt.want)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateVersion_EdgeCases(t *testing.T) {
+	tests := []struct {
+		name    string
+		version int
+		want    error
+	}{
+		{name: "minimum integer", version: math.MinInt, want: core_errors.ErrInvalidVersion},
+		{name: "maximum integer", version: math.MaxInt},
+		{name: "positive one", version: 1},
+		{name: "large positive", version: 2147483647},
+		{name: "zero", version: 0, want: core_errors.ErrInvalidVersion},
+		{name: "negative one", version: -1, want: core_errors.ErrInvalidVersion},
+		{name: "large negative", version: -2147483648, want: core_errors.ErrInvalidVersion},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateVersion(tt.version)
+			if tt.want != nil {
+				require.ErrorIs(t, err, tt.want)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateCreatedAt_EdgeCases(t *testing.T) {
+	now := time.Now()
+
+	// Test with very old time
+	ancientTime := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+	require.NoError(t, validateCreatedAt(ancientTime))
+
+	// Test with time just now
+	require.NoError(t, validateCreatedAt(now))
+
+	// Test with time in the future
+	require.ErrorIs(t, validateCreatedAt(now.Add(time.Second)), core_errors.ErrInvalidCreatedAt)
+
+	// Test with zero time
+	require.ErrorIs(t, validateCreatedAt(time.Time{}), core_errors.ErrInvalidCreatedAt)
+}
+
+func TestValidateUpdatedAt_EdgeCases(t *testing.T) {
+	now := time.Now()
+
+	// Test with very old time
+	ancientTime := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+	require.NoError(t, validateUpdatedAt(ancientTime))
+
+	// Test with time just now
+	require.NoError(t, validateUpdatedAt(now))
+
+	// Test with time in the future
+	require.ErrorIs(t, validateUpdatedAt(now.Add(time.Second)), core_errors.ErrInvalidUpdatedAt)
+
+	// Test with zero time
+	require.ErrorIs(t, validateUpdatedAt(time.Time{}), core_errors.ErrInvalidUpdatedAt)
+}
+
+func TestValidateDeletedAt_EdgeCases(t *testing.T) {
+	now := time.Now()
+
+	// Test with nil (no deletion)
+	require.NoError(t, validateDeletedAt(nil))
+
+	// Test with very old time
+	ancientTime := time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)
+	require.NoError(t, validateDeletedAt(&ancientTime))
+
+	// Test with time just now
+	require.NoError(t, validateDeletedAt(&now))
+
+	// Test with time in the future
+	futureTime := now.Add(time.Second)
+	require.ErrorIs(t, validateDeletedAt(&futureTime), core_errors.ErrInvalidDeletedAt)
+
+	// Test with zero time
+	zeroTime := time.Time{}
+	require.NoError(t, validateDeletedAt(&zeroTime))
+}
+
+func TestValidateSystemDatesOrder_ComplexCases(t *testing.T) {
+	now := time.Now()
+
+	// Test multiple updates and deletions
+	created := now
+	updated1 := now.Add(time.Hour)
+	deleted1 := ptr(now.Add(2 * time.Hour))
+
+	require.NoError(t, validateSystemDatesOrder(created, updated1, deleted1))
+
+	// Test that updated time cannot be after deletion time
+	updated2 := now.Add(3 * time.Hour)
+	require.ErrorIs(t, validateSystemDatesOrder(created, updated2, deleted1), core_errors.ErrInvalidDeletedAt)
 }

@@ -15,8 +15,8 @@ func tripTestValidTrip() *Trip {
 		"Weekend in Moscow",
 		"Moscow",
 		Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		time.Date(2027, time.January, 10, 0, 0, 0, 0, time.UTC),
-		time.Date(2027, time.January, 10, 0, 0, 0, 0, time.UTC),
+		time.Date(2035, time.January, 10, 0, 0, 0, 0, time.UTC),
+		time.Date(2035, time.January, 10, 0, 0, 0, 0, time.UTC),
 		validDailySchedule(),
 		[]MealRequirement{validMealRequirement()},
 		Money{AmountMinorUnits: 100000, Currency: "RUB"},
@@ -88,7 +88,7 @@ func TestNewTrip(t *testing.T) {
 	location := Coordinates{Latitude: 55.7539, Longitude: 37.6208}
 	budget := Money{AmountMinorUnits: 250000, Currency: "RUB"}
 	interests := []Interest{InterestHistory, InterestFood}
-	startDate := time.Date(2027, time.March, 1, 0, 0, 0, 0, time.UTC)
+	startDate := time.Date(2035, time.March, 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate
 	dailySchedule := DailySchedule{StartTime: "10:00", EndTime: "19:00"}
 	mealRequirements := []MealRequirement{validMealRequirement()}

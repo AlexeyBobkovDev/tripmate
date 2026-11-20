@@ -31,7 +31,7 @@ func convertMealRequirementsDTOToDomain(mealRequirements []*route_generator_comm
 func convertDailyScheduleDTOToDomain(dailySchedule *route_generator_common_v1.DailySchedule) domain.DailySchedule {
 	return domain.DailySchedule{
 		StartTime: domain.LocalTime(dailySchedule.StartTime.AsTime().Format("15:04")),
-		EndTime:   domain.LocalTime(dailySchedule.StartTime.AsTime().Format("15:04")),
+		EndTime:   domain.LocalTime(dailySchedule.EndTime.AsTime().Format("15:04")),
 	}
 }
 

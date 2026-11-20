@@ -336,3 +336,22 @@ func TestNewTripPatch(t *testing.T) {
 	// Verify validation passes
 	require.NoError(t, patch.Validate())
 }
+
+func TestTripPatch_Validate_WithInvalidMealRequirement(t *testing.T) {
+	mealRequirements := []MealRequirement{
+		{
+			Type:     MealBreakfast,
+			Window:   TimeWindow{Start: "08:00", End: "09:00"},
+			Duration: 0,
+			Budget:   Money{AmountMinorUnits: 1000, Currency: "RUB"},
+		},
+	}
+	patch := &TripPatch{
+		OwnerID:          1,
+		Version:          1,
+		MealRequirements: Nullable[[]MealRequirement]{Value: &mealRequirements, Set: true},
+	}
+
+	err := patch.Validate()
+	require.ErrorIs(t, err, core_errors.ErrInvalidMealTimeDuration)
+}
