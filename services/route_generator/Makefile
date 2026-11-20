@@ -115,10 +115,16 @@ download:
 # Apply goimports, gofumpt, and the repository's import grouping rules.
 .PHONY: fmt
 fmt:
-	@set -e; \
-	goimports -w .; \
-	gofumpt -w .; \
-	gci write --custom-order -s standard -s default -s "prefix(github.com/AlexeyBobkovDev/tripmate)" .
+	@find . -type f -name '*.go' -print0 | while IFS= read -r -d '' file; do \
+		start_sha=$$(sha256sum "$${file}" | cut -d ' ' -f 1) && \
+		goimports -w "$${file}" && \
+		gofumpt -w "$${file}" && \
+		gci write --custom-order -s standard -s default -s "prefix(github.com/AlexeyBobkovDev/tripmate)" "$${file}" && \
+		end_sha=$$(sha256sum "$${file}" | cut -d ' ' -f 1) && \
+		if [ "$${start_sha}" != "$${end_sha}" ]; then \
+			echo "$${file}"; \
+		fi; \
+	done
 
 # Run golangci-lint against every package in this service.
 .PHONY: lint
