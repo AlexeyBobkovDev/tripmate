@@ -53,26 +53,29 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_recurring_exceptio
             OR source_url ~ '^https?://.*$'
         ),
 
-    CONSTRAINT place_recurring_exceptions_annual_date CHECK (
-        recurrence_type = 'annual_date'
-            AND
-        month IS NOT NULL
-            AND
-        day_of_month IS NOT NULL
-            AND
-        day_of_week IS NULL
-            AND
-        week_of_month IS NULL
-        ),
-    CONSTRAINT place_recurring_exceptions_nth_weekday_of_month CHECK (
-        recurrence_type = 'nth_weekday_of_month'
-            AND
-        month IS NULL
-            AND
-        day_of_month IS NULL
-            AND
-        day_of_week IS NOT NULL
-            AND
-        week_of_month IS NOT NULL
+    CONSTRAINT place_recurring_recurrence_type CHECK (
+        (
+            recurrence_type = 'annual_date'
+                AND
+            month IS NOT NULL
+                AND
+            day_of_month IS NOT NULL
+                AND
+            day_of_week IS NULL
+                AND
+            week_of_month IS NULL
+            )
+            OR
+        (
+            recurrence_type = 'nth_weekday_of_month'
+                AND
+            month IS NULL
+                AND
+            day_of_month IS NULL
+                AND
+            day_of_week IS NOT NULL
+                AND
+            week_of_month IS NOT NULL
+            )
         )
 );
