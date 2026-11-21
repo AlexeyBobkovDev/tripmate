@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS app.route_stops
 (
     id             BIGSERIAL PRIMARY KEY,
-    route_day_id   BIGINT REFERENCES app.route_days (id) ON DELETE CASCADE,
+    route_day_id   BIGINT           NOT NULL REFERENCES app.route_days (id) ON DELETE CASCADE,
     place_id       BIGINT           NOT NULL,
 
     position       SMALLINT         NOT NULL,
