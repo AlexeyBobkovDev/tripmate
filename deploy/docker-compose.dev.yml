@@ -82,7 +82,7 @@ services:
       start_period: 10s
 
   route-generator-postgres:
-    image: postgres:18.4-bookworm
+    image: postgis/postgis:18-3.7
     container_name: route-generator-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
