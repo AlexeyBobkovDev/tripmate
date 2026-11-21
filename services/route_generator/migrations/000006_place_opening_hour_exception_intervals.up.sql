@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_exception_interval
 (
     id              BIGSERIAL PRIMARY KEY,
     exception_id    BIGINT  NOT NULL REFERENCES route_generator.place_opening_hour_exceptions (id),
-    opens_at        TIME    NOT NULL,
-    closes_at       TIME    NOT NULL,
+    opens_at        TIME,
+    closes_at       TIME,
     closes_next_day BOOLEAN NOT NULL,
 
     CONSTRAINT place_opening_hour_exception_id CHECK (id > 0),

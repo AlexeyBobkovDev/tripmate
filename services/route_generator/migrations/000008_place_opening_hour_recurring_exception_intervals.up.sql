@@ -2,8 +2,8 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_recurring_exceptio
 (
     id           BIGSERIAL PRIMARY KEY,
     exception_id BIGINT NOT NULL REFERENCES route_generator.place_opening_hour_recurring_exceptions (id) ON DELETE CASCADE,
-    opens_at     TIME   NOT NULL,
-    closes_at    TIME   NOT NULL,
+    opens_at     TIME,
+    closes_at    TIME,
 
     CONSTRAINT place_opening_hour_exception_id CHECK (id > 0),
     CONSTRAINT place_opening_hour_exception_exception_id CHECK (exception_id > 0),
