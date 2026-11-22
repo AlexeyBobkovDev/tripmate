@@ -9,9 +9,9 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_exceptions
     created_at     TIMESTAMPTZ DEFAULT NOW(),
     updated_at     TIMESTAMPTZ DEFAULT NOW(),
 
+    CONSTRAINT place_opening_hour_exceptions_unique UNIQUE (place_id, exception_date),
     CONSTRAINT place_opening_hour_exceptions_id CHECK (id > 0),
     CONSTRAINT place_opening_hour_exceptions_place_id CHECK (place_id > 0),
-    CONSTRAINT place_opening_hour_exceptions_exception_date CHECK (exception_date >= CURRENT_DATE),
     CONSTRAINT place_opening_hour_exceptions_reason CHECK (LENGTH(TRIM(reason)) > 0),
     CONSTRAINT place_opening_hour_exceptions_source_url CHECK (
         source_url IS NULL

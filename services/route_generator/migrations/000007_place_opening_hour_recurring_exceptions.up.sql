@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_recurring_exceptio
     week_of_month   SMALLINT,
     valid_from      DATE                                      NOT NULL,
     valid_until     DATE,
-    is_closed       BOOLEAN,
+    is_closed       BOOLEAN NOT NULL,
     reason          TEXT,
     source_url      TEXT,
     created_at      TIMESTAMPTZ                               NOT NULL DEFAULT NOW(),
@@ -46,8 +46,11 @@ CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_recurring_exceptio
             OR week_of_month BETWEEN 1 AND 5
             OR week_of_month = -1
         ),
-    CONSTRAINT place_recurring_exceptions_valid_from_until CHECK (valid_from < valid_until),
-    CONSTRAINT place_recurring_exceptions_reason CHECK (LENGTH(TRIM(reason)) > 0),
+    CONSTRAINT place_recurring_exceptions_valid_from_until CHECK (
+        valid_until IS NULL
+        OR valid_from < valid_until
+    ),
+    CONSTRAINT place_recurring_exceptions_reason CHECK (reason IS NULL OR LENGTH(TRIM(reason)) > 0),
     CONSTRAINT place_recurring_exceptions_source_url CHECK (
         source_url IS NULL
             OR source_url ~ '^https?://.*$'

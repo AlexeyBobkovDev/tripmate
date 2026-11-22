@@ -14,15 +14,11 @@ CREATE TABLE IF NOT EXISTS route_generator.places
     place_type             route_generator.place_type NOT NULL,
     categories             TEXT[]                     NOT NULL,
     interests              TEXT[]                     NOT NULL,
-    location               GEOGRAPHY(POINT, 4326)     NOT NULL UNIQUE,
-    address                TEXT                       NOT NULL UNIQUE,
+    location               GEOGRAPHY(POINT, 4326)     NOT NULL,
+    address                TEXT                       NOT NULL,
     website_url            TEXT UNIQUE,
-    phone                  VARCHAR(32) UNIQUE,
+    phone                  VARCHAR(32),
     visit_duration_minutes SMALLINT                   NOT NULL,
-    price_status           VARCHAR(20)                NOT NULL,
-    price_min_minor_units  BIGINT                     NOT NULL,
-    price_max_minor_units  BIGINT                     NOT NULL,
-    price_currency         VARCHAR(3)                 NOT NULL,
     status                 VARCHAR(30),
     created_at             TIMESTAMPTZ DEFAULT NOW(),
     updated_at             TIMESTAMPTZ DEFAULT NOW(),
@@ -44,9 +40,5 @@ CREATE TABLE IF NOT EXISTS route_generator.places
             OR phone ~ '^\+[0-9]{10,15}$'
         ),
     CONSTRAINT places_visit_duration_minutes CHECK (visit_duration_minutes > 0),
-    CONSTRAINT places_price_status CHECK (LENGTH(TRIM(price_status)) > 0),
-    CONSTRAINT places_price_min_minor_units CHECK (price_min_minor_units >= 0),
-    CONSTRAINT places_price_max_minor_units CHECK (price_max_minor_units >= price_min_minor_units),
-    CONSTRAINT places_price_currency CHECK (LENGTH(TRIM(price_currency)) > 0),
     CONSTRAINT places_status CHECK (LENGTH(TRIM(status)) > 0)
 );

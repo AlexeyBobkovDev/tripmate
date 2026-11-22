@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_exception_intervals
 (
     id              BIGSERIAL PRIMARY KEY,
-    exception_id    BIGINT  NOT NULL REFERENCES route_generator.place_opening_hour_exceptions (id),
+    exception_id    BIGINT  NOT NULL REFERENCES route_generator.place_opening_hour_exceptions (id) ON DELETE CASCADE,
     opens_at        TIME,
     closes_at       TIME,
     closes_next_day BOOLEAN NOT NULL,
