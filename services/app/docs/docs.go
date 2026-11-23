@@ -1011,7 +1011,7 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string",
-                    "example": "2026-11-14"
+                    "example": "2027-03-04"
                 },
                 "interests": {
                     "type": "array",
@@ -1040,7 +1040,7 @@ const docTemplate = `{
                 },
                 "start_date": {
                     "type": "string",
-                    "example": "2026-11-14"
+                    "example": "2027-03-04"
                 },
                 "start_location": {
                     "$ref": "#/definitions/domain.Coordinates"

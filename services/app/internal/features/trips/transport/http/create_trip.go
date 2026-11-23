@@ -21,8 +21,8 @@ type CreateTripRequest struct {
 	PlanningArea     string             `json:"planning_area"  validate:"required,min=1,max=100"       example:"Moscow"`
 	StartCoordinates domain.Coordinates `json:"start_location" validate:"required"`
 
-	StartDate string `json:"start_date"     validate:"required,datetime=2006-01-02" example:"2026-11-14"`
-	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2026-11-14"`
+	StartDate string `json:"start_date"     validate:"required,datetime=2006-01-02" example:"2027-03-04"`
+	EndDate   string `json:"end_date"       validate:"required,datetime=2006-01-02" example:"2027-03-04"`
 
 	DailySchedule    domain.DailySchedule        `json:"daily_schedule"       validate:"required"`
 	MealRequirements []MealRequirementRequestDTO `json:"meal_requirements"    validate:"required,dive"`
