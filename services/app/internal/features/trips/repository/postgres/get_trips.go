@@ -43,7 +43,7 @@ func (r *TripsRepository) GetTrips(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	rows, err := r.pool.Query(
+	tripRows, err := r.pool.Query(
 		ctx,
 		getTripsQuery,
 		ownerID,
@@ -61,14 +61,15 @@ func (r *TripsRepository) GetTrips(
 		}
 		return nil, fmt.Errorf("get trip: %w", err)
 	}
+	defer tripRows.Close()
 
 	trips := make([]domain.Trip, 0)
 
-	for rows.Next() {
+	for tripRows.Next() {
 		var tripResponse domain.Trip
 		var startTime, endTime time.Time
 
-		err := rows.Scan(
+		err := tripRows.Scan(
 			&tripResponse.ID,
 			&tripResponse.OwnerID,
 			&tripResponse.Version,
@@ -106,7 +107,7 @@ func (r *TripsRepository) GetTrips(
 			EndTime:   domain.LocalTime(endTime.Format("15:04")),
 		}
 
-		rows, err := r.pool.Query(
+		mealRequirementRows, err := r.pool.Query(
 			ctx,
 			getTripMealRequirementsQuery,
 			tripResponse.ID,
@@ -114,13 +115,15 @@ func (r *TripsRepository) GetTrips(
 		if err != nil {
 			return nil, fmt.Errorf("get trip meal requirements: %w", err)
 		}
-		for rows.Next() {
+		defer mealRequirementRows.Close()
+
+		for mealRequirementRows.Next() {
 			var (
 				scannedMealRequirement           domain.MealRequirement
 				scannedStartTime, scannedEndTime time.Time
 			)
 
-			err = rows.Scan(
+			err = mealRequirementRows.Scan(
 				&scannedMealRequirement.Type,
 				&scannedStartTime,
 				&scannedEndTime,
@@ -140,8 +143,14 @@ func (r *TripsRepository) GetTrips(
 
 			tripResponse.MealRequirements = append(tripResponse.MealRequirements, scannedMealRequirement)
 		}
+		if err := mealRequirementRows.Err(); err != nil {
+			return nil, fmt.Errorf("failed to scan rows: %w", err)
+		}
 
 		trips = append(trips, tripResponse)
+	}
+	if err := tripRows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan rows: %w", err)
 	}
 
 	return &trips, nil

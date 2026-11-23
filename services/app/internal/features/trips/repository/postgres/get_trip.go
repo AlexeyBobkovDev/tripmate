@@ -111,6 +111,8 @@ func (r *TripsRepository) GetTrip(
 	if err != nil {
 		return nil, fmt.Errorf("get trip meal requirements: %w", err)
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var (
 			scannedMealRequirement           domain.MealRequirement
@@ -136,6 +138,9 @@ func (r *TripsRepository) GetTrip(
 		scannedMealRequirement.Duration *= time.Minute
 
 		tripResponse.MealRequirements = append(tripResponse.MealRequirements, scannedMealRequirement)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to scan rows: %w", err)
 	}
 
 	return &tripResponse, nil

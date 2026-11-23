@@ -254,8 +254,8 @@ func fetchMealRequirements(t *testing.T, ctx context.Context, tripID int) []doma
 	rows, err := poolForIntegrationTesting.Query(
 		ctx,
 		`SELECT meal_type, start_time, end_time, visit_duration_minutes, amount_minor_units, currency
-		 FROM app.meal_requirements
-		 WHERE trip_id=$1;`,
+		FROM app.meal_requirements
+		WHERE trip_id=$1;`,
 		tripID,
 	)
 	require.NoError(t, err)
