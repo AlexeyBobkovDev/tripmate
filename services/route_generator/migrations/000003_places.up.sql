@@ -8,6 +8,7 @@ CREATE TYPE route_generator.place_type AS ENUM (
 CREATE TABLE IF NOT EXISTS route_generator.places
 (
     id                     BIGSERIAL PRIMARY KEY,
+    city_id                BIGINT                     NOT NULL REFERENCES route_generator.cities (id),
     name                   VARCHAR(255)               NOT NULL,
     description            TEXT                       NOT NULL,
     short_description      VARCHAR(255)               NOT NULL,
