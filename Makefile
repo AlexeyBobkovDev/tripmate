@@ -26,19 +26,20 @@ help:
 	@printf '  Run service-specific commands from services/app or services/route_generator.\n'
 	@printf '  Run contract commands from contracts/.\n'
 	@printf '\n\033[1;33mAPPLICATION SERVICE\033[0m\n'
-	@printf '  \033[1;32mapp-run\033[0m                         Build and start the App service.\n'
+	@printf '  \033[1;32mapp-run\033[0m                        Build and start the App service.\n'
 	@printf '  \033[1;32mapp-postgres-up\033[0m                Start the App PostgreSQL container.\n'
 	@printf '  \033[1;32mapp-postgres-down\033[0m              Stop and remove the App PostgreSQL container.\n'
 	@printf '  \033[1;32mapp-postgres-cleanup\033[0m           Remove the App database volume after confirmation.\n'
 	@printf '  \033[1;32mapp-postgres-port-forward\033[0m      Start the App PostgreSQL port-forwarder.\n'
 	@printf '  \033[1;32mapp-postgres-port-close\033[0m        Stop the App PostgreSQL port-forwarder.\n'
 	@printf '\n\033[1;33mROUTE GENERATOR SERVICE\033[0m\n'
-	@printf '  \033[1;32mroute-generator-run\033[0m            Build and start the Route Generator service.\n'
-	@printf '  \033[1;32mroute-generator-postgres-up\033[0m   Start the Route Generator PostgreSQL container.\n'
-	@printf '  \033[1;32mroute-generator-postgres-down\033[0m Stop and remove its PostgreSQL container.\n'
-	@printf '  \033[1;32mroute-generator-postgres-cleanup\033[0m Remove its database volume after confirmation.\n'
-	@printf '  \033[1;32mroute-generator-postgres-port-forward\033[0m Start its PostgreSQL port-forwarder.\n'
-	@printf '  \033[1;32mroute-generator-postgres-port-close\033[0m Stop its PostgreSQL port-forwarder.\n'
+	@printf '  \033[1;32mroute-generator-run\033[0m                     Build and start the Route Generator service.\n'
+	@printf '  \033[1;32mroute-generator-logs\033[0m                    Show the Route Generator service logs.\n'
+	@printf '  \033[1;32mroute-generator-postgres-up\033[0m             Start the Route Generator PostgreSQL container.\n'
+	@printf '  \033[1;32mroute-generator-postgres-down\033[0m           Stop and remove its PostgreSQL container.\n'
+	@printf '  \033[1;32mroute-generator-postgres-cleanup\033[0m        Remove its database volume after confirmation.\n'
+	@printf '  \033[1;32mroute-generator-postgres-port-forward\033[0m   Start its PostgreSQL port-forwarder.\n'
+	@printf '  \033[1;32mroute-generator-postgres-port-close\033[0m     Stop its PostgreSQL port-forwarder.\n'
 	@printf '\n\033[1;33mEXAMPLES\033[0m\n'
 	@printf '  make app-run\n  make app-postgres-up\n'
 	@printf '  make route-generator-run\n  make route-generator-postgres-up\n'
@@ -84,6 +85,11 @@ app-postgres-port-close:
 .PHONY: route-generator-run
 route-generator-run:
 	@$(COMPOSE) up --build $(ROUTE_GENERATOR_SERVICE_NAME)
+
+# Stream route-generator logs in the foreground.
+.PHONY: route-generator-logs
+route-generator-logs:
+	@$(COMPOSE) logs -f route-generator
 
 # Start the Route Generator PostgreSQL container in the background.
 .PHONY: route-generator-postgres-up
