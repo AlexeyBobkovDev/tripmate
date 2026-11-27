@@ -213,7 +213,6 @@ func TestDaysDomainFromDTO(t *testing.T) {
 				DayNumber: 1,
 				Stops: []*route_generator_api_v1.RouteStop{
 					{
-						Id:       1,
 						PlaceId:  10,
 						Position: 1,
 						Name:     "Stop name",
@@ -294,7 +293,6 @@ func TestStopsDomainFromDTO(t *testing.T) {
 	stops := stopsDomainFromDTO(
 		[]*route_generator_api_v1.RouteStop{
 			{
-				Id:       1,
 				PlaceId:  10,
 				Position: 1,
 				Name:     "Stop name",
@@ -302,9 +300,9 @@ func TestStopsDomainFromDTO(t *testing.T) {
 					Latitude:  55.7539,
 					Longitude: 37.6208,
 				},
-				ArrivalTime:   timestamppb.New(time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)),
-				DepartureTime: timestamppb.New(time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)),
-				VisitDuration: durationpb.New(7200 * time.Second),
+				ArrivalTime:          timestamppb.New(time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)),
+				DepartureTime:        timestamppb.New(time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)),
+				VisitDurationMinutes: 120,
 			},
 		},
 	)
@@ -313,10 +311,11 @@ func TestStopsDomainFromDTO(t *testing.T) {
 
 	stop := stops[0]
 	require.NotNil(t, stop)
-	assert.Equal(t, 1, stop.ID)
+	assert.Equal(t, 0, stop.ID) // ID is assigned by the database
 	assert.Equal(t, 10, stop.PlaceID)
 	assert.Equal(t, 1, stop.Position)
 	assert.Equal(t, "Stop name", stop.Name)
+	assert.Equal(t, 120, stop.VisitDurationMinutes)
 	require.NotNil(t, stop.Coordinates)
 	assert.Equal(t, 55.7539, stop.Coordinates.Latitude)
 	assert.Equal(t, 37.6208, stop.Coordinates.Longitude)
@@ -324,8 +323,6 @@ func TestStopsDomainFromDTO(t *testing.T) {
 	assert.True(t, stop.ArrivalTime.Equal(time.Date(2026, 10, 28, 12, 0, 0, 0, time.UTC)))
 	require.NotNil(t, stop.DepartureTime)
 	assert.True(t, stop.DepartureTime.Equal(time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)))
-	require.NotNil(t, stop.VisitDuration)
-	assert.Equal(t, 7200*time.Second, stop.VisitDuration)
 }
 
 func TestMealTypeDomainToDTO(t *testing.T) {
