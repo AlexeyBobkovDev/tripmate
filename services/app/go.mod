@@ -3,7 +3,7 @@ module github.com/AlexeyBobkovDev/tripmate/services/app
 go 1.27.4
 
 require (
-	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261115224043-2f62ace196f6
+	github.com/AlexeyBobkovDev/tripmate/contracts v0.0.0-20261120162554-328b7f8df1b4
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/go-playground/validator/v10 v10.30.6
 	github.com/golang-migrate/migrate/v4 v4.20.1
@@ -106,7 +106,7 @@ require (
 	golang.org/x/sys v0.50.0 // indirect
 	golang.org/x/text v0.44.0 // indirect
 	golang.org/x/tools v0.53.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261118221215-c8830f628b3f // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261123191846-1e707ab9fbc2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
