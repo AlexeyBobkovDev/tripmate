@@ -5,20 +5,38 @@ package tripmate.route_generator.api.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
+import "tripmate/route_generator/api/v1/enums.proto";
 import "tripmate/route_generator/common/v1/coordinates.proto";
+import "tripmate/route_generator/common/v1/opening_hours.proto";
 
 option go_package = "github.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1";
 
 message RouteStop {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0];
-  int64 place_id = 2 [(buf.validate.field).int64.gt = 0];
+  int64 place_id = 1 [(buf.validate.field).int64.gt = 0];
 
-  int32 position = 3 [(buf.validate.field).int32.gt = 0];
-  string name = 4 [(buf.validate.field).string.min_len = 1];
-  string description = 5 [(buf.validate.field).string.min_len = 1];
+  int32 position = 2 [(buf.validate.field).int32.gt = 0];
 
-  tripmate.route_generator.common.v1.Coordinates coordinates = 6;
-  google.protobuf.Timestamp arrival_time = 7;
-  google.protobuf.Timestamp departure_time = 8;
-  google.protobuf.Duration visit_duration = 9 [(buf.validate.field).duration.gt = {seconds: 0}];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  string description = 4 [(buf.validate.field).string.min_len = 1];
+  repeated Category categories = 5 [(buf.validate.field).repeated.min_items = 1];
+  repeated Interest interests = 6 [(buf.validate.field).repeated.min_items = 1];
+  string address = 7 [(buf.validate.field).string.min_len = 1];
+  optional string website_url = 8 [(buf.validate.field).string = {
+    min_len: 1
+    pattern: "^https?://.*$"
+  }];
+  optional string phone = 9 [(buf.validate.field).string = {
+    min_len: 1
+    pattern: "^\\+[0-9]{10,15}$"
+  }];
+  int32 visit_duration_minutes = 10 [(buf.validate.field).int32 = {
+    gt: 0
+    lt: 1440
+  }];
+  repeated tripmate.route_generator.common.v1.OpeningHours opening_hours = 11 [(buf.validate.field).repeated.min_items = 1];
+
+  tripmate.route_generator.common.v1.Coordinates coordinates = 12;
+  google.protobuf.Timestamp arrival_time = 13;
+  google.protobuf.Timestamp departure_time = 14;
+  google.protobuf.Duration visit_duration = 15 [(buf.validate.field).duration.gt = {seconds: 0}];
 }
