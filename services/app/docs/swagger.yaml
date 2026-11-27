@@ -11,6 +11,58 @@ definitions:
         example: short human-readable message
         type: string
     type: object
+  domain.Category:
+    enum:
+    - museum
+    - art_gallery
+    - theater
+    - cinema
+    - monument
+    - historical_site
+    - religious_site
+    - park
+    - garden
+    - square
+    - street
+    - architecture
+    - observation_deck
+    - entertainment
+    - restaurant
+    - cafe
+    - bar
+    - shopping
+    - market
+    - nature
+    - zoo
+    - aquarium
+    - sports
+    - event_venue
+    type: string
+    x-enum-varnames:
+    - CategoryMuseum
+    - CategoryArtGallery
+    - CategoryTheater
+    - CategoryCinema
+    - CategoryMonument
+    - CategoryHistorical
+    - CategoryReligious
+    - CategoryPark
+    - CategoryGarden
+    - CategorySquare
+    - CategoryStreet
+    - CategoryArchitecture
+    - CategoryObservation
+    - CategoryEntertainment
+    - CategoryRestaurant
+    - CategoryCafe
+    - CategoryBar
+    - CategoryShopping
+    - CategoryMarket
+    - CategoryNature
+    - CategoryZoo
+    - CategoryAquarium
+    - CategorySports
+    - CategoryEventVenue
   domain.Coordinates:
     properties:
       latitude:
@@ -81,6 +133,13 @@ definitions:
     - amount_minor_units
     - currency
     type: object
+  domain.OpeningHours:
+    properties:
+      closesAt:
+        type: integer
+      opensAt:
+        type: integer
+    type: object
   domain.RouteDay:
     properties:
       date:
@@ -125,9 +184,16 @@ definitions:
     type: object
   domain.RouteStop:
     properties:
+      address:
+        example: Russia, Nizhny Novgorod, Upper Volga Embankment, 7
+        type: string
       arrival_time:
         example: "2026-10-28T12:00:00Z"
         type: string
+      categories:
+        items:
+          $ref: '#/definitions/domain.Category'
+        type: array
       coordinates:
         $ref: '#/definitions/domain.Coordinates'
       departure_time:
@@ -139,8 +205,20 @@ definitions:
       id:
         example: 1
         type: integer
+      interests:
+        example:
+        - '[history]'
+        items:
+          $ref: '#/definitions/domain.Interest'
+        type: array
       name:
         example: Name
+        type: string
+      opening_hours:
+        items:
+          $ref: '#/definitions/domain.OpeningHours'
+        type: array
+      phone:
         type: string
       place_id:
         example: 1
@@ -148,9 +226,11 @@ definitions:
       position:
         example: 1
         type: integer
-      visit_duration:
-        example: 7200
+      visit_duration_minutes:
+        example: 60
         type: integer
+      website_url:
+        type: string
     type: object
   domain.TimeWindow:
     properties:

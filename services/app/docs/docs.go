@@ -720,6 +720,61 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.Category": {
+            "type": "string",
+            "enum": [
+                "museum",
+                "art_gallery",
+                "theater",
+                "cinema",
+                "monument",
+                "historical_site",
+                "religious_site",
+                "park",
+                "garden",
+                "square",
+                "street",
+                "architecture",
+                "observation_deck",
+                "entertainment",
+                "restaurant",
+                "cafe",
+                "bar",
+                "shopping",
+                "market",
+                "nature",
+                "zoo",
+                "aquarium",
+                "sports",
+                "event_venue"
+            ],
+            "x-enum-varnames": [
+                "CategoryMuseum",
+                "CategoryArtGallery",
+                "CategoryTheater",
+                "CategoryCinema",
+                "CategoryMonument",
+                "CategoryHistorical",
+                "CategoryReligious",
+                "CategoryPark",
+                "CategoryGarden",
+                "CategorySquare",
+                "CategoryStreet",
+                "CategoryArchitecture",
+                "CategoryObservation",
+                "CategoryEntertainment",
+                "CategoryRestaurant",
+                "CategoryCafe",
+                "CategoryBar",
+                "CategoryShopping",
+                "CategoryMarket",
+                "CategoryNature",
+                "CategoryZoo",
+                "CategoryAquarium",
+                "CategorySports",
+                "CategoryEventVenue"
+            ]
+        },
         "domain.Coordinates": {
             "type": "object",
             "required": [
@@ -819,6 +874,17 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.OpeningHours": {
+            "type": "object",
+            "properties": {
+                "closesAt": {
+                    "type": "integer"
+                },
+                "opensAt": {
+                    "type": "integer"
+                }
+            }
+        },
         "domain.RouteDay": {
             "type": "object",
             "properties": {
@@ -884,9 +950,19 @@ const docTemplate = `{
         "domain.RouteStop": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "Russia, Nizhny Novgorod, Upper Volga Embankment, 7"
+                },
                 "arrival_time": {
                     "type": "string",
                     "example": "2026-10-28T12:00:00Z"
+                },
+                "categories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Category"
+                    }
                 },
                 "coordinates": {
                     "$ref": "#/definitions/domain.Coordinates"
@@ -903,9 +979,27 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "interests": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.Interest"
+                    },
+                    "example": [
+                        "[history]"
+                    ]
+                },
                 "name": {
                     "type": "string",
                     "example": "Name"
+                },
+                "opening_hours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.OpeningHours"
+                    }
+                },
+                "phone": {
+                    "type": "string"
                 },
                 "place_id": {
                     "type": "integer",
@@ -915,9 +1009,12 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
-                "visit_duration": {
+                "visit_duration_minutes": {
                     "type": "integer",
-                    "example": 7200
+                    "example": 60
+                },
+                "website_url": {
+                    "type": "string"
                 }
             }
         },
