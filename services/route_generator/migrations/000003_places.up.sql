@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS route_generator.places
     city_id                BIGINT                     NOT NULL REFERENCES route_generator.cities (id),
     name                   VARCHAR(255)               NOT NULL,
     description            TEXT                       NOT NULL,
-    short_description      VARCHAR(255)               NOT NULL,
     place_type             route_generator.place_type NOT NULL,
     categories             TEXT[]                     NOT NULL,
     interests              TEXT[]                     NOT NULL,
@@ -20,14 +19,13 @@ CREATE TABLE IF NOT EXISTS route_generator.places
     website_url            TEXT UNIQUE,
     phone                  VARCHAR(32),
     visit_duration_minutes SMALLINT                   NOT NULL,
-    status                 VARCHAR(30),
-    created_at             TIMESTAMPTZ DEFAULT NOW(),
-    updated_at             TIMESTAMPTZ DEFAULT NOW(),
+    status                 VARCHAR(30)                NOT NULL,
+    created_at             TIMESTAMPTZ                NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMPTZ                NOT NULL DEFAULT NOW(),
 
     CONSTRAINT places_id CHECK (id > 0),
     CONSTRAINT places_name CHECK (LENGTH(TRIM(name)) > 0),
     CONSTRAINT places_description CHECK (LENGTH(TRIM(description)) > 0),
-    CONSTRAINT places_short_description CHECK (LENGTH(TRIM(short_description)) > 0),
     -- CONSTRAINT route_generator_places_location CHECK(location),
     CONSTRAINT places_address CHECK (LENGTH(TRIM(address)) > 0),
     CONSTRAINT places_categories CHECK (cardinality(categories) > 0),
@@ -41,5 +39,6 @@ CREATE TABLE IF NOT EXISTS route_generator.places
             OR phone ~ '^\+[0-9]{10,15}$'
         ),
     CONSTRAINT places_visit_duration_minutes CHECK (visit_duration_minutes > 0),
-    CONSTRAINT places_status CHECK (LENGTH(TRIM(status)) > 0)
+    CONSTRAINT place_check_location_is_not_empty CHECK ( NOT ST_IsEmpty(location::geometry)),
+    CONSTRAINT places_status CHECK (status IN ('active', 'inactive', 'temporarily_closed'))
 );

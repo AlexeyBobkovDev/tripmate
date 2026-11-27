@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS route_generator.cities
 
     CONSTRAINT cities_id CHECK (id > 0),
     CONSTRAINT cities_name CHECK (LENGTH(TRIM(name)) > 0)
-)
+);

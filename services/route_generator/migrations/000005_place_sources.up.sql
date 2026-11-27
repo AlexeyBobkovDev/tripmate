@@ -14,8 +14,7 @@ CREATE TABLE IF NOT EXISTS route_generator.place_sources
     CONSTRAINT place_sources_external_type CHECK (LENGTH(TRIM(external_type)) > 0),
     CONSTRAINT place_sources_external_id CHECK (external_id > 0),
     CONSTRAINT place_sources_source_url CHECK (
-        source_url IS NULL
-            OR source_url ~ '^https?://.*$'
+        source_url ~ '^https?://.*$'
         ),
     CONSTRAINT route_generator_unique UNIQUE (provider, external_type, external_id)
 );

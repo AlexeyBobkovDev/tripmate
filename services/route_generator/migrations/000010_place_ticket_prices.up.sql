@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS route_generator.place_ticket_prices
     source_url        TEXT,
     verified_at       TIMESTAMPTZ                      NOT NULL,
 
-    CONSTRAINT place_ticket_rices_id CHECK (id > 0),
-    CONSTRAINT place_ticket_rices_place_id CHECK (place_id > 0),
-    CONSTRAINT place_ticket_rices_price_minor_units CHECK (
+    CONSTRAINT place_ticket_prices_id CHECK (id > 0),
+    CONSTRAINT place_ticket_prices_place_id CHECK (place_id > 0),
+    CONSTRAINT place_ticket_prices_price_minor_units CHECK (
         price_minor_units IS NULL
             OR price_minor_units >= 0
         ),
@@ -31,13 +31,17 @@ CREATE TABLE IF NOT EXISTS route_generator.place_ticket_prices
     CONSTRAINT place_ticket_prices_price CHECK (
         (
             price_status = 'paid'
+                AND price_minor_units IS NOT NULL
                 AND price_minor_units > 0
+                AND currency IS NOT NULL
                 AND currency ~ '^[A-Z]{3}$'
             )
             OR
         (
             price_status = 'free'
+                AND price_minor_units IS NOT NULL
                 AND price_minor_units = 0
+                AND currency IS NOT NULL
                 AND currency ~ '^[A-Z]{3}$'
             )
             OR

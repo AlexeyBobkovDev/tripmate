@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS route_generator.place_opening_hour_exceptions
 (
     id             BIGSERIAL PRIMARY KEY,
-    place_id       BIGINT  NOT NULL REFERENCES route_generator.places (id) ON DELETE CASCADE,
-    exception_date DATE    NOT NULL,
-    is_closed      BOOLEAN NOT NULL,
-    reason         TEXT    NOT NULL,
+    place_id       BIGINT      NOT NULL REFERENCES route_generator.places (id) ON DELETE CASCADE,
+    exception_date DATE        NOT NULL,
+    is_closed      BOOLEAN     NOT NULL,
+    reason         TEXT        NOT NULL,
     source_url     TEXT,
-    created_at     TIMESTAMPTZ DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ DEFAULT NOW(),
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT place_opening_hour_exceptions_unique UNIQUE (place_id, exception_date),
     CONSTRAINT place_opening_hour_exceptions_id CHECK (id > 0),
