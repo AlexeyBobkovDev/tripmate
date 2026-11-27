@@ -89,14 +89,14 @@ func validateDepartureTime(departureTime time.Time) error {
 	return nil
 }
 
-func validateRouteStopTimesOrder(arrivalTime time.Time, visitDuration time.Duration, departureTime time.Time) error {
-	if visitDuration < 0 {
+func validateRouteStopTimesOrder(arrivalTime time.Time, visitDurationMinutes int, departureTime time.Time) error {
+	if visitDurationMinutes < 0 {
 		return core_errors.ErrInvalidRouteStopDatesOrder
 	}
 	if arrivalTime.After(departureTime) {
 		return core_errors.ErrInvalidRouteStopDatesOrder
 	}
-	if arrivalTime.Add(visitDuration).After(departureTime) {
+	if arrivalTime.Add(time.Duration(visitDurationMinutes) * time.Minute).After(departureTime) {
 		return core_errors.ErrInvalidRouteStopDatesOrder
 	}
 	return nil
@@ -138,6 +138,36 @@ func validateStopsAndLegs(stops []RouteStop, legs []RouteLeg) error {
 		}
 		if _, ok := existingStops[leg.ToStopID]; !ok {
 			return core_errors.ErrInvalidRouteLegStopReference
+		}
+	}
+	return nil
+}
+
+func validateRouteStopAddress(address string) error {
+	if len([]rune(address)) == 0 {
+		return core_errors.ErrInvalidAddress
+	}
+	return nil
+}
+
+func validateRouteStopWebsiteURL(websiteURL string) error {
+	if len([]rune(websiteURL)) == 0 {
+		return core_errors.ErrInvalidWebsiteURL
+	}
+	return nil
+}
+
+func validateRouteStopVisitDurationMinutes(visitDurationMinutes int) error {
+	if visitDurationMinutes < 0 {
+		return core_errors.ErrInvalidRouteStopVisitDurationMinutes
+	}
+	return nil
+}
+
+func validateRouteStopOpeningHours(openingHours []OpeningHours) error {
+	for _, openingHour := range openingHours {
+		if openingHour.OpensAt >= openingHour.ClosesAt {
+			return core_errors.ErrInvalidRouteStopOpeningHours
 		}
 	}
 	return nil

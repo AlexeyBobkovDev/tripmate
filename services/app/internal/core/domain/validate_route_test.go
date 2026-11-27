@@ -110,16 +110,18 @@ func TestValidateRouteStatus(t *testing.T) {
 
 func TestValidateRouteDays(t *testing.T) {
 	futureDate := time.Now().Add(24 * time.Hour)
+	websiteURL := "https://stop.example.com"
 
 	validStop := RouteStop{
-		ID:            1,
-		PlaceID:       1,
-		Position:      1,
-		Name:          "Stop",
-		Description:   "Stop description",
-		Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-		ArrivalTime:   futureDate.Add(time.Hour),
-		VisitDuration: 30 * time.Minute,
+		ID:          1,
+		PlaceID:     1,
+		Position:    1,
+		Name:        "Stop",
+		Description: "Stop description",
+		Address:     "Some stop address",
+		Coordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		WebsiteURL:  &websiteURL,
+		ArrivalTime: futureDate.Add(time.Hour),
 	}
 	validStop.DepartureTime = futureDate.Add(2 * time.Hour)
 
@@ -291,15 +293,15 @@ func TestValidateRouteStopTimesOrder(t *testing.T) {
 	tests := []struct {
 		name          string
 		arrivalTime   time.Time
-		visitDuration time.Duration
+		visitDuration int
 		departureTime time.Time
 		want          error
 	}{
-		{name: "valid stop", arrivalTime: time.Now().Add(time.Hour), visitDuration: 30 * time.Minute, departureTime: time.Now().Add(2 * time.Hour)},
-		{name: "visit duration fits into departure time", arrivalTime: time.Now().Add(time.Hour), visitDuration: 30 * time.Minute, departureTime: time.Now().Add(90 * time.Minute)},
-		{name: "visit duration after departure", arrivalTime: time.Now().Add(time.Hour), visitDuration: 2 * time.Hour, departureTime: time.Now().Add(90 * time.Minute), want: core_errors.ErrInvalidRouteStopDatesOrder},
-		{name: "arrival after departure", arrivalTime: time.Now().Add(2 * time.Hour), visitDuration: 30 * time.Minute, departureTime: time.Now().Add(time.Hour), want: core_errors.ErrInvalidRouteStopDatesOrder},
-		{name: "negative visit duration", arrivalTime: time.Now().Add(time.Hour), visitDuration: -time.Minute, departureTime: time.Now().Add(2 * time.Hour), want: core_errors.ErrInvalidRouteStopDatesOrder},
+		{name: "valid stop", arrivalTime: time.Now().Add(time.Hour), visitDuration: 30, departureTime: time.Now().Add(2 * time.Hour)},
+		{name: "visit duration fits into departure time", arrivalTime: time.Now().Add(time.Hour), visitDuration: 30, departureTime: time.Now().Add(90 * time.Minute)},
+		{name: "visit duration after departure", arrivalTime: time.Now().Add(time.Hour), visitDuration: 2 * 60, departureTime: time.Now().Add(90 * time.Minute), want: core_errors.ErrInvalidRouteStopDatesOrder},
+		{name: "arrival after departure", arrivalTime: time.Now().Add(2 * time.Hour), visitDuration: 30, departureTime: time.Now().Add(time.Hour), want: core_errors.ErrInvalidRouteStopDatesOrder},
+		{name: "negative visit duration", arrivalTime: time.Now().Add(time.Hour), visitDuration: -1, departureTime: time.Now().Add(2 * time.Hour), want: core_errors.ErrInvalidRouteStopDatesOrder},
 	}
 
 	for _, tt := range tests {
@@ -365,16 +367,19 @@ func TestValidateStopsAndLegs(t *testing.T) {
 	futureDate := time.Now().Add(24 * time.Hour)
 
 	newStop := func(id int) RouteStop {
+		websiteURL := "https://stop.example.com"
+
 		return RouteStop{
 			ID:            id,
 			PlaceID:       1,
 			Position:      1,
 			Name:          "Stop",
 			Description:   "Stop description",
+			Address:       "Some stop address",
 			Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+			WebsiteURL:    &websiteURL,
 			ArrivalTime:   futureDate.Add(time.Hour),
 			DepartureTime: futureDate.Add(2 * time.Hour),
-			VisitDuration: 30 * time.Minute,
 		}
 	}
 

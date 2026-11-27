@@ -12,6 +12,7 @@ import (
 
 func TestRouteDay_Validate(t *testing.T) {
 	futureDate := time.Now().Add(24 * time.Hour).UTC()
+	websiteURL := "https://stop.example.com"
 
 	tests := []struct {
 		name    string
@@ -31,10 +32,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 					{
 						ID:            2,
@@ -42,10 +44,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      2,
 						Name:          "Stop 2",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate.Add(2 * time.Hour),
 						DepartureTime: futureDate.Add(4 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 				Legs: []RouteLeg{
@@ -73,10 +76,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 			},
@@ -95,10 +99,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 			},
@@ -117,10 +122,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 			},
@@ -149,10 +155,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 				Legs: []RouteLeg{
@@ -181,10 +188,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 					{
 						ID:            2,
@@ -192,10 +200,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      2,
 						Name:          "Stop 2",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate.Add(2 * time.Hour),
 						DepartureTime: futureDate.Add(4 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 				Legs: []RouteLeg{
@@ -224,10 +233,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 				Legs: []RouteLeg{
@@ -256,10 +266,11 @@ func TestRouteDay_Validate(t *testing.T) {
 						Position:      1,
 						Name:          "Stop 1",
 						Description:   "Description",
+						Address:       "Some stop address",
 						Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						WebsiteURL:    &websiteURL,
 						ArrivalTime:   futureDate,
 						DepartureTime: futureDate.Add(2 * time.Hour),
-						VisitDuration: 2 * time.Hour,
 					},
 				},
 				Legs: []RouteLeg{
@@ -293,6 +304,7 @@ func TestRouteDay_Validate(t *testing.T) {
 
 func TestRouteDay_ValidationOrder(t *testing.T) {
 	futureDate := time.Now().Add(24 * time.Hour).UTC()
+	websiteURL := "https://stop.example.com"
 
 	// Test that validation happens in the correct order
 	day := RouteDay{
@@ -306,10 +318,11 @@ func TestRouteDay_ValidationOrder(t *testing.T) {
 				Position:      1,
 				Name:          "Stop 1",
 				Description:   "Description",
+				Address:       "Some stop address",
 				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+				WebsiteURL:    &websiteURL,
 				ArrivalTime:   futureDate,
 				DepartureTime: futureDate.Add(2 * time.Hour),
-				VisitDuration: 2 * time.Hour,
 			},
 		},
 	}

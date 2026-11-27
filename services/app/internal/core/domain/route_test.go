@@ -25,6 +25,8 @@ func validRoute() *Route {
 }
 
 func validRouteDay(futureDate time.Time) RouteDay {
+	websiteURL := "https://stop.example.com"
+
 	secondValidStop := validStop(futureDate)
 	secondValidStop.ID = 2
 	secondValidStop.PlaceID = 2
@@ -41,10 +43,11 @@ func validRouteDay(futureDate time.Time) RouteDay {
 				Position:      1,
 				Name:          "Stop",
 				Description:   "Stop description",
+				Address:       "Some stop address",
+				WebsiteURL:    &websiteURL,
 				Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 				ArrivalTime:   futureDate.Add(time.Hour),
 				DepartureTime: futureDate.Add(2 * time.Hour),
-				VisitDuration: 30 * time.Minute,
 			},
 			secondValidStop,
 		},
@@ -62,16 +65,19 @@ func validRouteDay(futureDate time.Time) RouteDay {
 }
 
 func validStop(futureDate time.Time) RouteStop {
+	websiteURL := "https://stop.example.com"
+
 	return RouteStop{
 		ID:            1,
 		PlaceID:       1,
 		Position:      1,
 		Name:          "Stop",
 		Description:   "Stop description",
+		Address:       "Some stop address",
+		WebsiteURL:    &websiteURL,
 		Coordinates:   Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 		ArrivalTime:   futureDate.Add(time.Hour),
 		DepartureTime: futureDate.Add(2 * time.Hour),
-		VisitDuration: 30 * time.Minute,
 	}
 }
 
