@@ -62,7 +62,6 @@ func TestGenerateRouteGRPCTransport_GenerateRoute(t *testing.T) {
 							DayNumber: 1,
 							Stops: []domain.RouteStop{
 								{
-									ID:            1,
 									PlaceID:       1,
 									Position:      1,
 									Name:          "Kremlin",
@@ -70,7 +69,6 @@ func TestGenerateRouteGRPCTransport_GenerateRoute(t *testing.T) {
 									Coordinates:   domain.Coordinates{Latitude: 56.07981, Longitude: 46.192347},
 									ArrivalTime:   trip.StartDate.Add(2 * time.Hour),
 									DepartureTime: trip.StartDate.Add(3 * time.Hour),
-									VisitDuration: 3600 * time.Second,
 								},
 							},
 							Legs: []domain.RouteLeg{

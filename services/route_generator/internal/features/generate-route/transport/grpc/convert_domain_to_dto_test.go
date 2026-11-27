@@ -21,26 +21,24 @@ func TestConvertRouteDomainToDTO(t *testing.T) {
 				DayNumber: 1,
 				Stops: []domain.RouteStop{
 					{
-						ID:            1,
-						PlaceID:       1,
-						Position:      1,
-						Name:          "Kremlin",
-						Description:   "Kremlin",
-						Coordinates:   domain.Coordinates{Latitude: 56.07981, Longitude: 46.192347},
-						ArrivalTime:   time.Date(2030, time.May, 10, 11, 0, 0, 0, time.UTC),
-						DepartureTime: time.Date(2030, time.May, 10, 12, 0, 0, 0, time.UTC),
-						VisitDuration: 3600 * time.Second,
+						PlaceID:              1,
+						Position:             1,
+						Name:                 "Kremlin",
+						Description:          "Kremlin",
+						Coordinates:          domain.Coordinates{Latitude: 56.07981, Longitude: 46.192347},
+						ArrivalTime:          time.Date(2030, time.May, 10, 11, 0, 0, 0, time.UTC),
+						DepartureTime:        time.Date(2030, time.May, 10, 12, 0, 0, 0, time.UTC),
+						VisitDurationMinutes: 3600,
 					},
 					{
-						ID:            2,
-						PlaceID:       2,
-						Position:      2,
-						Name:          "Red Square",
-						Description:   "Red Square",
-						Coordinates:   domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
-						ArrivalTime:   time.Date(2030, time.May, 10, 14, 0, 0, 0, time.UTC),
-						DepartureTime: time.Date(2030, time.May, 10, 15, 0, 0, 0, time.UTC),
-						VisitDuration: 1800 * time.Second,
+						PlaceID:              2,
+						Position:             2,
+						Name:                 "Red Square",
+						Description:          "Red Square",
+						Coordinates:          domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+						ArrivalTime:          time.Date(2030, time.May, 10, 14, 0, 0, 0, time.UTC),
+						DepartureTime:        time.Date(2030, time.May, 10, 15, 0, 0, 0, time.UTC),
+						VisitDurationMinutes: 3600,
 					},
 				},
 				Legs: []domain.RouteLeg{
@@ -73,7 +71,7 @@ func TestConvertRouteDomainToDTO(t *testing.T) {
 
 	stop := day.GetStops()[0]
 	require.NotNil(t, stop)
-	assert.Equal(t, int64(1), stop.GetId())
+
 	assert.Equal(t, int64(1), stop.GetPlaceId())
 	assert.Equal(t, int32(1), stop.GetPosition())
 	assert.Equal(t, "Kremlin", stop.GetName())
@@ -83,8 +81,7 @@ func TestConvertRouteDomainToDTO(t *testing.T) {
 	assert.Equal(t, 46.192347, stop.GetCoordinates().GetLongitude())
 	require.NotNil(t, stop.GetArrivalTime())
 	require.NotNil(t, stop.GetDepartureTime())
-	require.NotNil(t, stop.GetVisitDuration())
-	assert.Equal(t, 3600.0, stop.GetVisitDuration().AsDuration().Seconds())
+	assert.Equal(t, int32(3600), stop.GetVisitDurationMinutes())
 
 	leg := day.GetLegs()[0]
 	require.NotNil(t, leg)
@@ -157,15 +154,14 @@ func TestConvertLegsFromDomainToDTO(t *testing.T) {
 func TestConvertStopsFromDomainToDTO(t *testing.T) {
 	stops := []domain.RouteStop{
 		{
-			ID:            11,
-			PlaceID:       42,
-			Position:      1,
-			Name:          "Moscow Kremlin",
-			Description:   "Kremlin",
-			Coordinates:   domain.Coordinates{Latitude: 56.07981, Longitude: 46.192347},
-			ArrivalTime:   time.Date(2030, time.May, 10, 11, 0, 0, 0, time.UTC),
-			DepartureTime: time.Date(2030, time.May, 10, 12, 0, 0, 0, time.UTC),
-			VisitDuration: 3600 * time.Second,
+			PlaceID:              42,
+			Position:             1,
+			Name:                 "Moscow Kremlin",
+			Description:          "Kremlin",
+			Coordinates:          domain.Coordinates{Latitude: 56.07981, Longitude: 46.192347},
+			ArrivalTime:          time.Date(2030, time.May, 10, 11, 0, 0, 0, time.UTC),
+			DepartureTime:        time.Date(2030, time.May, 10, 12, 0, 0, 0, time.UTC),
+			VisitDurationMinutes: 3600,
 		},
 	}
 
@@ -173,7 +169,7 @@ func TestConvertStopsFromDomainToDTO(t *testing.T) {
 	require.Len(t, converted, 1)
 	require.NotNil(t, converted[0])
 	stop := converted[0]
-	assert.Equal(t, int64(11), stop.GetId())
+
 	assert.Equal(t, int64(42), stop.GetPlaceId())
 	assert.Equal(t, int32(1), stop.GetPosition())
 	assert.Equal(t, "Moscow Kremlin", stop.GetName())
@@ -183,8 +179,7 @@ func TestConvertStopsFromDomainToDTO(t *testing.T) {
 	assert.Equal(t, 46.192347, stop.GetCoordinates().GetLongitude())
 	require.NotNil(t, stop.GetArrivalTime())
 	require.NotNil(t, stop.GetDepartureTime())
-	require.NotNil(t, stop.GetVisitDuration())
-	assert.Equal(t, 3600.0, stop.GetVisitDuration().AsDuration().Seconds())
+	assert.Equal(t, int32(3600), stop.GetVisitDurationMinutes())
 }
 
 func TestConvertStartCoordinatesDomainToDTO(t *testing.T) {
