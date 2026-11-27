@@ -40,11 +40,11 @@ func decodeCreateTripRequest(t *testing.T, body string) error {
 	return core_http_request.DecodeAndValidate(request, &decoded)
 }
 
-// TestCreateTripRequest_ValidatesNestedMealRequirements_BUG documents that the
-// `dive` validator is missing from CreateTripRequest.MealRequirements. Field
-// tags inside MealRequirementRequestDTO (oneof, min, max) are never evaluated,
-// so invalid meal data reaches the service layer.
-func TestCreateTripRequest_ValidatesNestedMealRequirements_BUG(t *testing.T) {
+// TestCreateTripRequest_ValidatesNestedMealRequirements verifies that nested
+// meal requirement validation rules are enforced while decoding the request:
+// the `dive` validator propagates the MealRequirementRequestDTO validators
+// (oneof, min, max) to every element of the meal_requirements array.
+func TestCreateTripRequest_ValidatesNestedMealRequirements(t *testing.T) {
 	tests := []struct {
 		name             string
 		mealRequirements string

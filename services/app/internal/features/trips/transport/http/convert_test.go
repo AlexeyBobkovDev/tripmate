@@ -10,12 +10,11 @@ import (
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 )
 
-// TestTripDTOFromDomain_MealDurationConversionDoesNotMutateSource_BUG
-// documents that tripDTOFromDomain divides the duration in place. The domain
-// slice is shared, so every extra conversion divides the duration again
-// (90 minutes -> 90 nanoseconds -> 0). Converting the same trip twice must be
-// idempotent and must not change the domain object.
-func TestTripDTOFromDomain_MealDurationConversionDoesNotMutateSource_BUG(t *testing.T) {
+// TestTripDTOFromDomain_MealDurationConversionDoesNotMutateSource verifies
+// that tripDTOFromDomain does not mutate the domain trip: the meal duration is
+// copied into the response instead of being divided in place, so converting the
+// same trip twice must be idempotent and must not change the domain object.
+func TestTripDTOFromDomain_MealDurationConversionDoesNotMutateSource(t *testing.T) {
 	trip := testTripResponse()
 	trip.MealRequirements = []domain.MealRequirement{
 		{

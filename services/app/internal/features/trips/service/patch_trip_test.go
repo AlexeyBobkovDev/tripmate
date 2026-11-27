@@ -243,3 +243,50 @@ func TestTripsService_PatchTrip_ApplyPatchError(t *testing.T) {
 	require.ErrorIs(t, err, core_errors.ErrBadRequest)
 	assert.Nil(t, res)
 }
+
+func TestTripsService_PatchTrip_RepositoryError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockTripsRepository(ctrl)
+	srv := NewTripsService(mockRepo)
+
+	updatedName := "Updated Trip"
+	tripPatch := domain.TripPatch{
+		Name: domain.Nullable[string]{Value: &updatedName, Set: true},
+	}
+
+	repoError := errors.New("repository error")
+
+	mockRepo.EXPECT().
+		GetTrip(context.Background(), 1, 1).
+		Return(nil, repoError)
+
+	_, err := srv.PatchTrip(context.Background(), 1, 1, &tripPatch)
+	require.ErrorIs(t, err, repoError)
+}
+
+func TestTripsService_PatchTrip_TransactionCommitError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockTripsRepository(ctrl)
+	srv := NewTripsService(mockRepo)
+
+	tripPatch := domain.TripPatch{
+		Name: domain.Nullable[string]{Value: stringPtr("Updated Trip"), Set: true},
+	}
+
+	commitError := errors.New("commit error")
+
+	mockRepo.EXPECT().
+		GetTrip(context.Background(), 1, 1).
+		Return(nil, commitError)
+
+	_, err := srv.PatchTrip(context.Background(), 1, 1, &tripPatch)
+	require.ErrorIs(t, err, commitError)
+}
+
+func stringPtr(s string) *string {
+	return &s
+}

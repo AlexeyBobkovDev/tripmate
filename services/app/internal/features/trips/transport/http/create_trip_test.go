@@ -2,6 +2,7 @@ package trips_transport_http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"testing"
@@ -423,4 +424,120 @@ func TestTripsTransportHTTP_CreateTrip_InvalidTripDates(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, rec.Code)
 		})
 	}
+}
+
+func TestTripsTransportHTTP_CreateTrip_InvalidBirthdate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockTripsService(ctrl)
+	tripsTransport := NewTripsHTTPHandler(mockService)
+
+	body := `{
+		"owner_id": 1,
+		"name": "Trip to Moscow",
+		"planning_area": "Moscow",
+		"start_location": {"latitude": 55.7539, "longitude": 37.6208},
+		"start_date": "2026-12-31",
+		"end_date": "2026-12-31",
+		"daily_schedule": {"start_time": "09:00", "end_time": "18:00"},
+		"meal_requirements": [],
+		"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
+		"interests": ["history"],
+		"time_zone": "Europe/Moscow",
+		"birthdate": "invalid-date"
+	}`
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPost, "/trips/1", strings.NewReader(body))
+	logger := testutils.SetupLogger(t, testutils.TestLevel, t.TempDir())
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	tripsTransport.CreateTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestTripsTransportHTTP_CreateTrip_TransactionCommitError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockTripsService(ctrl)
+	tripsTransport := NewTripsHTTPHandler(mockService)
+
+	commitError := errors.New("commit error")
+
+	mockService.EXPECT().
+		CreateTrip(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, commitError)
+
+	body := `{
+		"owner_id": 1,
+		"name": "Trip to Moscow",
+		"planning_area": "Moscow",
+		"start_location": {"latitude": 55.7539, "longitude": 37.6208},
+		"start_date": "2026-12-31",
+		"end_date": "2026-12-31",
+		"daily_schedule": {"start_time": "09:00", "end_time": "18:00"},
+		"meal_requirements": [],
+		"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
+		"interests": ["history"],
+		"time_zone": "Europe/Moscow",
+		"birthdate": "1990-01-01"
+	}`
+
+	rec, req := testutils.SetupHTTP(t, http.MethodPost, "/trips/1", strings.NewReader(body))
+	logger := testutils.SetupLogger(
+		t,
+		testutils.TestLevel,
+		t.TempDir(),
+	)
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req.SetPathValue("ownerID", "1")
+	req = req.WithContext(ctx)
+
+	tripsTransport.CreateTrip(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+}
+
+func TestTripsTransportHTTP_CreateTrip_ParseError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockTripsService(ctrl)
+	tripsTransport := NewTripsHTTPHandler(mockService)
+
+	body := `{
+		"owner_id": 1,
+		"name": "Trip to Moscow",
+		"planning_area": "Moscow",
+		"start_location": {"latitude": 55.7539, "longitude": 37.6208},
+		"start_date": "2026-12-31",
+		"end_date": "2026-12-31",
+		"daily_schedule": {"start_time": "09:00", "end_time": "18:00"},
+		"meal_requirements": [],
+		"budget": {"amount_minor_units": 1500000, "currency": "RUB"},
+		"interests": ["history"],
+		"time_zone": "Europe/Moscow",
+		"birthdate": "invalid-date"
+	}`
+
+	rec, req := testutils.SetupHTTP(
+		t,
+		http.MethodPost,
+		"/trips/1",
+		strings.NewReader(body),
+	)
+	logger := testutils.SetupLogger(
+		t,
+		testutils.TestLevel,
+		t.TempDir(),
+	)
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	tripsTransport.CreateTrip(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
 }
