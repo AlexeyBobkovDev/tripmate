@@ -189,13 +189,18 @@ func assertRouteMatchesGenerated(
 			assert.Equal(t, int(generatedStop.Position), actualStop.Position)
 			assert.Equal(t, generatedStop.Name, actualStop.Name)
 			assert.Equal(t, generatedStop.Description, actualStop.Description)
+			require.Len(t, actualStop.Categories, len(generatedStop.Categories))
+			require.Len(t, actualStop.Interests, len(generatedStop.Interests))
+			assert.Equal(t, generatedStop.Address, actualStop.Address)
+			assert.Equal(t, generatedStop.WebsiteUrl, actualStop.WebsiteURL)
+			assert.Equal(t, generatedStop.Phone, actualStop.Phone)
+			assert.Equal(t, int(generatedStop.VisitDurationMinutes), actualStop.VisitDurationMinutes)
 			assert.Equal(t, generatedStop.Coordinates.Latitude, actualStop.Coordinates.Latitude)
 			assert.Equal(t, generatedStop.Coordinates.Longitude, actualStop.Coordinates.Longitude)
 			assertSameInstant(t, generatedStop.ArrivalTime.AsTime(), actualStop.ArrivalTime)
 			assertSameInstant(t, generatedStop.DepartureTime.AsTime(), actualStop.DepartureTime)
-			assert.Equal(t, generatedStop.VisitDuration.AsDuration(), actualStop.VisitDuration)
 
-			stopIDsMapping[generatedStop.Id] = actualStop.ID
+			stopIDsMapping[int64(generatedStop.Position)] = actualStop.ID
 		}
 
 		require.Len(t, actualDay.Legs, len(generatedDay.Legs))
