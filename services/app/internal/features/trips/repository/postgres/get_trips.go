@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
@@ -12,25 +11,7 @@ import (
 )
 
 const getTripsQuery = `
-SELECT
-	id,
-	owner_id,
-	version,
-	name,
-	planning_area,
-	location_latitude,
-	location_longitude,
-	start_date,
-	end_date,
-	start_time,
-	end_time,
-	amount_minor_units,
-	currency,
-	interests,
-	time_zone,
-	created_at,
-	updated_at,
-	deleted_at
+SELECT id
 FROM app.trips
 WHERE owner_id=$1
 	AND deleted_at IS NULL;
@@ -63,95 +44,26 @@ func (r *TripsRepository) GetTrips(
 	}
 	defer tripRows.Close()
 
-	trips := make([]domain.Trip, 0)
-
+	var tripsIDs []int
 	for tripRows.Next() {
-		var tripResponse domain.Trip
-		var startTime, endTime time.Time
-
-		err := tripRows.Scan(
-			&tripResponse.ID,
-			&tripResponse.OwnerID,
-			&tripResponse.Version,
-			&tripResponse.Name,
-			&tripResponse.PlanningArea,
-			&tripResponse.StartCoordinates.Latitude,
-			&tripResponse.StartCoordinates.Longitude,
-			&tripResponse.StartDate,
-			&tripResponse.EndDate,
-			&startTime,
-			&endTime,
-			&tripResponse.Budget.AmountMinorUnits,
-			&tripResponse.Budget.Currency,
-			&tripResponse.Interests,
-			&tripResponse.TimeZone,
-			&tripResponse.CreatedAt,
-			&tripResponse.UpdatedAt,
-			&tripResponse.DeletedAt,
-		)
-		if err != nil {
-			if errors.Is(err, core_postgres_pool_errors.ErrNoRows) {
-				return nil, fmt.Errorf(
-					"get ownerID %d: %w",
-					ownerID,
-					core_errors.NewError(
-						errors.Join(err, core_errors.ErrNotFound),
-						core_errors.CategoryNotFound,
-					),
-				)
-			}
-			return nil, fmt.Errorf("get trip: %w", err)
+		var tripID int
+		if err := tripRows.Scan(&tripID); err != nil {
+			return nil, fmt.Errorf("scan trips ids: %w", err)
 		}
-		tripResponse.DailySchedule = domain.DailySchedule{
-			StartTime: domain.LocalTime(startTime.Format("15:04")),
-			EndTime:   domain.LocalTime(endTime.Format("15:04")),
-		}
-
-		mealRequirementRows, err := r.pool.Query(
-			ctx,
-			getTripMealRequirementsQuery,
-			tripResponse.ID,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("get trip meal requirements: %w", err)
-		}
-		defer mealRequirementRows.Close()
-
-		for mealRequirementRows.Next() {
-			var (
-				scannedMealRequirement           domain.MealRequirement
-				scannedStartTime, scannedEndTime time.Time
-			)
-
-			err = mealRequirementRows.Scan(
-				&scannedMealRequirement.Type,
-				&scannedStartTime,
-				&scannedEndTime,
-				&scannedMealRequirement.Duration,
-				&scannedMealRequirement.Budget.AmountMinorUnits,
-				&scannedMealRequirement.Budget.Currency,
-			)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create trip meal requirements: %w", err)
-			}
-
-			scannedMealRequirement.Window = domain.TimeWindow{
-				Start: domain.LocalTime(scannedStartTime.Format("15:04")),
-				End:   domain.LocalTime(scannedEndTime.Format("15:04")),
-			}
-			scannedMealRequirement.Duration *= time.Minute
-
-			tripResponse.MealRequirements = append(tripResponse.MealRequirements, scannedMealRequirement)
-		}
-		if err := mealRequirementRows.Err(); err != nil {
-			return nil, fmt.Errorf("failed to scan rows: %w", err)
-		}
-
-		trips = append(trips, tripResponse)
+		tripsIDs = append(tripsIDs, tripID)
 	}
 	if err := tripRows.Err(); err != nil {
-		return nil, fmt.Errorf("failed to scan rows: %w", err)
+		return nil, fmt.Errorf("failed to scan trip ids: %w", err)
 	}
 
+	trips := make([]domain.Trip, len(tripsIDs))
+	for tripInd, tripID := range tripsIDs {
+		tripResponse, err := getTrip(ctx, r.pool, ownerID, tripID)
+		if err != nil {
+			return nil, err
+		}
+
+		trips[tripInd] = *tripResponse
+	}
 	return &trips, nil
 }

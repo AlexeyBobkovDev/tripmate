@@ -47,6 +47,8 @@ func TestTripsRepository_GetTrip_Success(t *testing.T) {
 		Query(gomock.Any(), getTripMealRequirementsQuery, expectedTrip.ID).
 		Return(mockMealRows, nil)
 	mockMealRows.EXPECT().Next().Return(false).AnyTimes()
+	mockMealRows.EXPECT().Err().Return(nil)
+	mockMealRows.EXPECT().Close()
 
 	actualTrip, err := tripsRepository.GetTrip(context.Background(), ownerID, tripID)
 
@@ -83,6 +85,8 @@ func TestTripsRepository_GetTrip_ScheduleRoundTrip(t *testing.T) {
 		Query(gomock.Any(), getTripMealRequirementsQuery, gomock.Any()).
 		Return(mockMealRows, nil)
 	mockMealRows.EXPECT().Next().Return(false).AnyTimes()
+	mockMealRows.EXPECT().Err().Return(nil)
+	mockMealRows.EXPECT().Close()
 
 	actualTrip, err := tripsRepository.GetTrip(context.Background(), 1, 1)
 
@@ -211,6 +215,7 @@ func TestTripsRepository_GetTrip_MealRequirementsScanError(t *testing.T) {
 		Return(mockMealRows, nil)
 	mockMealRows.EXPECT().Next().Return(true)
 	mockMealRows.EXPECT().Scan(anyArgs(6)...).Return(errors.New("meal requirements scan error"))
+	mockMealRows.EXPECT().Close()
 
 	actualTrip, err := tripsRepository.GetTrip(context.Background(), 1, 1)
 
@@ -263,7 +268,9 @@ func TestTripsRepository_GetTrip_MealRequirements_Success(t *testing.T) {
 			},
 		),
 		mockMealRows.EXPECT().Next().Return(false),
+		mockMealRows.EXPECT().Err().Return(nil),
 	)
+	mockMealRows.EXPECT().Close()
 
 	actualTrip, err := tripsRepository.GetTrip(context.Background(), 1, 1)
 

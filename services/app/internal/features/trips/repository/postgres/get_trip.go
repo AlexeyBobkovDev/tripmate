@@ -8,6 +8,7 @@ import (
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 )
 
@@ -56,10 +57,19 @@ func (r *TripsRepository) GetTrip(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
+	return getTrip(ctx, r.pool, ownerID, tripID)
+}
+
+func getTrip(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	ownerID int,
+	tripID int,
+) (*domain.Trip, error) {
 	var tripResponse domain.Trip
 	var startTime, endTime time.Time
 
-	err := r.pool.QueryRow(
+	err := pool.QueryRow(
 		ctx,
 		getTripQuery,
 		ownerID,
@@ -103,7 +113,7 @@ func (r *TripsRepository) GetTrip(
 		EndTime:   domain.LocalTime(endTime.Format("15:04")),
 	}
 
-	rows, err := r.pool.Query(
+	rows, err := pool.Query(
 		ctx,
 		getTripMealRequirementsQuery,
 		tripResponse.ID,
