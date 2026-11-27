@@ -332,18 +332,24 @@ func TestRoutesRepository_CreateRoute_RouteStopError(t *testing.T) {
 			gomock.Any(), // stop.Position
 			gomock.Any(), // stop.Name
 			gomock.Any(), // stop.Description
+			gomock.Any(), // stop.Categories
+			gomock.Any(), // stop.Interests
+			gomock.Any(), // stop.Address
+			gomock.Any(), // stop.WebsiteURL
+			gomock.Any(), // stop.Phone
+			gomock.Any(), // stop.VisitDurationMinutes
 			gomock.Any(), // stop.Coordinates.Latitude
 			gomock.Any(), // stop.Coordinates.Longitude
 			gomock.Any(), // stop.ArrivalTime
 			gomock.Any(), // stop.DepartureTime
-			gomock.Any(), // durationToSeconds(stop.VisitDuration)
 		).
 		Return(mockRouteStopRow)
 
 	mockRouteStopRow.EXPECT().
 		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(),
 		).
 		Return(routeStopError)
 
@@ -378,7 +384,6 @@ func TestRoutesRepository_CreateRoute_RouteStopError(t *testing.T) {
 							Coordinates:   domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 							ArrivalTime:   time.Date(2026, time.November, 14, 9, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 14, 10, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 					},
 					Legs: []domain.RouteLeg{},
@@ -437,8 +442,9 @@ func TestRoutesRepository_CreateRoute_RouteLegError(t *testing.T) {
 	// Then, the route stop is created successfully
 	mockRouteStopRow.EXPECT().
 		Scan(
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+			gomock.Any(), gomock.Any(), gomock.Any(),
 		).
 		DoAndReturn(func(destinations ...any) error {
 			*destinations[0].(*int) = 1 // stop ID
@@ -446,11 +452,16 @@ func TestRoutesRepository_CreateRoute_RouteLegError(t *testing.T) {
 			*destinations[2].(*int) = 1 // position
 			*destinations[3].(*string) = "Test Stop"
 			*destinations[4].(*string) = "Test Description"
-			*destinations[5].(*float64) = 55.7539 // latitude
-			*destinations[6].(*float64) = 37.6208 // longitude
-			*destinations[7].(*time.Time) = time.Date(2026, time.November, 14, 9, 0, 0, 0, time.UTC)
-			*destinations[8].(*time.Time) = time.Date(2026, time.November, 14, 10, 0, 0, 0, time.UTC)
-			*destinations[9].(*int64) = 3600 // visit duration in seconds
+			*destinations[5].(*[]domain.Category) = []domain.Category{}
+			*destinations[6].(*[]domain.Interest) = []domain.Interest{}
+			*destinations[7].(*string) = "Test Address"
+			*destinations[8].(**string) = nil
+			*destinations[9].(**string) = nil
+			*destinations[10].(*int) = 60          // visit duration in minutes
+			*destinations[11].(*float64) = 55.7539 // latitude
+			*destinations[12].(*float64) = 37.6208 // longitude
+			*destinations[13].(*time.Time) = time.Date(2026, time.November, 14, 9, 0, 0, 0, time.UTC)
+			*destinations[14].(*time.Time) = time.Date(2026, time.November, 14, 10, 0, 0, 0, time.UTC)
 			return nil
 		})
 
@@ -500,11 +511,16 @@ func TestRoutesRepository_CreateRoute_RouteLegError(t *testing.T) {
 			gomock.Any(), // stop.Position
 			gomock.Any(), // stop.Name
 			gomock.Any(), // stop.Description
+			gomock.Any(), // stop.Categories
+			gomock.Any(), // stop.Interests
+			gomock.Any(), // stop.Address
+			gomock.Any(), // stop.WebsiteURL
+			gomock.Any(), // stop.Phone
+			gomock.Any(), // stop.VisitDurationMinutes
 			gomock.Any(), // stop.Coordinates.Latitude
 			gomock.Any(), // stop.Coordinates.Longitude
 			gomock.Any(), // stop.ArrivalTime
 			gomock.Any(), // stop.DepartureTime
-			gomock.Any(), // durationToSeconds(stop.VisitDuration)
 		).
 		Return(mockRouteStopRow)
 
@@ -552,7 +568,6 @@ func TestRoutesRepository_CreateRoute_RouteLegError(t *testing.T) {
 							Coordinates:   domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 							ArrivalTime:   time.Date(2026, time.November, 14, 9, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 14, 10, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 					},
 					Legs: []domain.RouteLeg{
@@ -623,20 +638,26 @@ func TestRoutesRepository_CreateRoute_WithMultipleDaysAndStops(t *testing.T) {
 		mockRouteStopRows[i] = mocks.NewMockRow(ctrl)
 		mockRouteStopRows[i].EXPECT().
 			Scan(
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
-				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				gomock.Any(), gomock.Any(), gomock.Any(),
 			).
 			DoAndReturn(func(destinations ...any) error {
-				*destinations[0].(*int) = i + 1 // stop ID
-				*destinations[1].(*int) = i + 1 // place ID
-				*destinations[2].(*int) = i + 1 // position
+				*destinations[0].(*int) = i + 1   // stop ID
+				*destinations[1].(*int) = i + 1   // place ID
+				*destinations[2].(*int) = i%2 + 1 // position within the day
 				*destinations[3].(*string) = fmt.Sprintf("Test Stop %d", i+1)
 				*destinations[4].(*string) = fmt.Sprintf("Test Description %d", i+1)
-				*destinations[5].(*float64) = 55.7539 + float64(i)*0.1 // latitude
-				*destinations[6].(*float64) = 37.6208 + float64(i)*0.1 // longitude
-				*destinations[7].(*time.Time) = time.Date(2026, time.November, 14+i/2, 9, 0, 0, 0, time.UTC)
-				*destinations[8].(*time.Time) = time.Date(2026, time.November, 14+i/2, 10, 0, 0, 0, time.UTC)
-				*destinations[9].(*int64) = 3600 // visit duration in seconds
+				*destinations[5].(*[]domain.Category) = []domain.Category{}
+				*destinations[6].(*[]domain.Interest) = []domain.Interest{}
+				*destinations[7].(*string) = fmt.Sprintf("Test Address %d", i+1)
+				*destinations[8].(**string) = nil
+				*destinations[9].(**string) = nil
+				*destinations[10].(*int) = 60                           // visit duration in minutes
+				*destinations[11].(*float64) = 55.7539 + float64(i)*0.1 // latitude
+				*destinations[12].(*float64) = 37.6208 + float64(i)*0.1 // longitude
+				*destinations[13].(*time.Time) = time.Date(2026, time.November, 14+i/2, 9, 0, 0, 0, time.UTC)
+				*destinations[14].(*time.Time) = time.Date(2026, time.November, 14+i/2, 10, 0, 0, 0, time.UTC)
 				return nil
 			})
 	}
@@ -703,14 +724,95 @@ func TestRoutesRepository_CreateRoute_WithMultipleDaysAndStops(t *testing.T) {
 				gomock.Any(), // stop.Position
 				gomock.Any(), // stop.Name
 				gomock.Any(), // stop.Description
+				gomock.Any(), // stop.Categories
+				gomock.Any(), // stop.Interests
+				gomock.Any(), // stop.Address
+				gomock.Any(), // stop.WebsiteURL
+				gomock.Any(), // stop.Phone
+				gomock.Any(), // stop.VisitDurationMinutes
 				gomock.Any(), // stop.Coordinates.Latitude
 				gomock.Any(), // stop.Coordinates.Longitude
 				gomock.Any(), // stop.ArrivalTime
 				gomock.Any(), // stop.DepartureTime
-				gomock.Any(), // durationToSeconds(stop.VisitDuration)
 			).
 			Return(mockRouteStopRows[i])
 	}
+
+	// The first stop has one opening hours entry
+	mockOpeningHoursRow := mocks.NewMockRow(ctrl)
+	mockOpeningHoursRow.EXPECT().
+		Scan(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(destinations ...any) error {
+			*destinations[0].(*int) = 9
+			*destinations[1].(*int) = 18
+			return nil
+		})
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			createOpeningHoursQuery,
+			gomock.Any(), // stop ID
+			gomock.Any(), // opens at
+			gomock.Any(), // closes at
+		).
+		Return(mockOpeningHoursRow)
+
+	// The second stop also has one opening hours entry
+	mockOpeningHoursRow2 := mocks.NewMockRow(ctrl)
+	mockOpeningHoursRow2.EXPECT().
+		Scan(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(destinations ...any) error {
+			*destinations[0].(*int) = 10
+			*destinations[1].(*int) = 20
+			return nil
+		})
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			createOpeningHoursQuery,
+			gomock.Any(), // stop ID
+			gomock.Any(), // opens at
+			gomock.Any(), // closes at
+		).
+		Return(mockOpeningHoursRow2)
+
+	// The third stop also has one opening hours entry
+	mockOpeningHoursRow3 := mocks.NewMockRow(ctrl)
+	mockOpeningHoursRow3.EXPECT().
+		Scan(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(destinations ...any) error {
+			*destinations[0].(*int) = 9
+			*destinations[1].(*int) = 19
+			return nil
+		})
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			createOpeningHoursQuery,
+			gomock.Any(), // stop ID
+			gomock.Any(), // opens at
+			gomock.Any(), // closes at
+		).
+		Return(mockOpeningHoursRow3)
+
+	// The fourth stop also has one opening hours entry
+	mockOpeningHoursRow4 := mocks.NewMockRow(ctrl)
+	mockOpeningHoursRow4.EXPECT().
+		Scan(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(destinations ...any) error {
+			*destinations[0].(*int) = 10
+			*destinations[1].(*int) = 20
+			return nil
+		})
+	mockTx.EXPECT().
+		QueryRow(
+			gomock.Any(),
+			createOpeningHoursQuery,
+			gomock.Any(), // stop ID
+			gomock.Any(), // opens at
+			gomock.Any(), // closes at
+		).
+		Return(mockOpeningHoursRow4)
 
 	// Expect 2 route leg queries (1 per day)
 	for i := 0; i < 2; i++ {
@@ -750,20 +852,20 @@ func TestRoutesRepository_CreateRoute_WithMultipleDaysAndStops(t *testing.T) {
 							Position:      1,
 							Name:          "Test Stop 1",
 							Description:   "Test Description 1",
+							OpeningHours:  []domain.OpeningHours{{OpensAt: 9, ClosesAt: 18}},
 							Coordinates:   domain.Coordinates{Latitude: 55.7539, Longitude: 37.6208},
 							ArrivalTime:   time.Date(2026, time.November, 14, 9, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 14, 10, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 						{
 							PlaceID:       2,
 							Position:      2,
 							Name:          "Test Stop 2",
 							Description:   "Test Description 2",
+							OpeningHours:  []domain.OpeningHours{{OpensAt: 10, ClosesAt: 20}},
 							Coordinates:   domain.Coordinates{Latitude: 55.8539, Longitude: 37.7208},
 							ArrivalTime:   time.Date(2026, time.November, 14, 11, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 14, 12, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 					},
 					Legs: []domain.RouteLeg{
@@ -785,26 +887,26 @@ func TestRoutesRepository_CreateRoute_WithMultipleDaysAndStops(t *testing.T) {
 							Position:      1,
 							Name:          "Test Stop 3",
 							Description:   "Test Description 3",
+							OpeningHours:  []domain.OpeningHours{{OpensAt: 9, ClosesAt: 19}},
 							Coordinates:   domain.Coordinates{Latitude: 55.9539, Longitude: 37.8208},
 							ArrivalTime:   time.Date(2026, time.November, 15, 9, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 15, 10, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 						{
 							PlaceID:       4,
 							Position:      2,
 							Name:          "Test Stop 4",
 							Description:   "Test Description 4",
+							OpeningHours:  []domain.OpeningHours{{OpensAt: 10, ClosesAt: 20}},
 							Coordinates:   domain.Coordinates{Latitude: 56.0539, Longitude: 37.9208},
 							ArrivalTime:   time.Date(2026, time.November, 15, 11, 0, 0, 0, time.UTC),
 							DepartureTime: time.Date(2026, time.November, 15, 12, 0, 0, 0, time.UTC),
-							VisitDuration: time.Hour,
 						},
 					},
 					Legs: []domain.RouteLeg{
 						{
-							FromStopID: 3,
-							ToStopID:   4,
+							FromStopID: 1,
+							ToStopID:   2,
 							TravelMode: domain.TravelModeWalking,
 							Distance:   1500,
 							Duration:   time.Minute + 30*time.Second,

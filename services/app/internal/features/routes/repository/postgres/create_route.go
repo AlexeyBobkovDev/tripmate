@@ -44,24 +44,34 @@ INSERT INTO app.route_stops (
 	position,
 	name,
 	description,
+	categories,
+	interests,
+	address,
+	website_url,
+	phone,
+	visit_duration_minutes,
 	latitude,
 	longitude,
 	arrival_time,
-	departure_time,
-	visit_duration
+	departure_time
 )
-VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 RETURNING
 	id,
 	place_id,
 	position,
 	name,
 	description,
+	categories,
+	interests,
+	address,
+	website_url,
+	phone,
+	visit_duration_minutes,
 	latitude,
 	longitude,
 	arrival_time,
-	departure_time,
-	visit_duration;
+	departure_time;
 `
 
 const createRouteLegQuery = `
@@ -81,6 +91,17 @@ RETURNING
 	travel_mode,
 	distance,
 	duration;
+`
+
+const createOpeningHoursQuery = `
+INSERT INTO app.opening_hours (
+	route_stop_id,
+	opens_at,
+	closes_at
+)
+VALUES($1, $2, $3)
+RETURNING opens_at,
+	closes_at;
 `
 
 func (r *RoutesRepository) CreateRoute(
@@ -141,7 +162,6 @@ func (r *RoutesRepository) CreateRoute(
 		for stop_ind, stop := range day.Stops {
 			routeResponse.Days[day_ind].Stops = append(routeResponse.Days[day_ind].Stops, domain.RouteStop{})
 
-			var visitDurationSeconds int64
 			if err := tx.QueryRow(
 				ctx,
 				createRouteStopQuery,
@@ -150,28 +170,56 @@ func (r *RoutesRepository) CreateRoute(
 				stop.Position,
 				stop.Name,
 				stop.Description,
+				stop.Categories,
+				stop.Interests,
+				stop.Address,
+				stop.WebsiteURL,
+				stop.Phone,
+				stop.VisitDurationMinutes,
 				stop.Coordinates.Latitude,
 				stop.Coordinates.Longitude,
 				stop.ArrivalTime,
 				stop.DepartureTime,
-				durationToSeconds(stop.VisitDuration),
 			).Scan(
 				&routeResponse.Days[day_ind].Stops[stop_ind].ID,
 				&routeResponse.Days[day_ind].Stops[stop_ind].PlaceID,
 				&routeResponse.Days[day_ind].Stops[stop_ind].Position,
 				&routeResponse.Days[day_ind].Stops[stop_ind].Name,
 				&routeResponse.Days[day_ind].Stops[stop_ind].Description,
+				&routeResponse.Days[day_ind].Stops[stop_ind].Categories,
+				&routeResponse.Days[day_ind].Stops[stop_ind].Interests,
+				&routeResponse.Days[day_ind].Stops[stop_ind].Address,
+				&routeResponse.Days[day_ind].Stops[stop_ind].WebsiteURL,
+				&routeResponse.Days[day_ind].Stops[stop_ind].Phone,
+				&routeResponse.Days[day_ind].Stops[stop_ind].VisitDurationMinutes,
 				&routeResponse.Days[day_ind].Stops[stop_ind].Coordinates.Latitude,
 				&routeResponse.Days[day_ind].Stops[stop_ind].Coordinates.Longitude,
 				&routeResponse.Days[day_ind].Stops[stop_ind].ArrivalTime,
 				&routeResponse.Days[day_ind].Stops[stop_ind].DepartureTime,
-				&visitDurationSeconds,
 			); err != nil {
 				_ = tx.Rollback(ctx)
 				return nil, fmt.Errorf("failed to create route stop: %w", err)
 			}
-			routeResponse.Days[day_ind].Stops[stop_ind].VisitDuration = durationFromSeconds(visitDurationSeconds)
-			mapStopIDInTripToStopIDInDB[generatedRoute.Days[day_ind].Stops[stop_ind].ID] = routeResponse.Days[day_ind].Stops[stop_ind].ID
+			mapStopIDInTripToStopIDInDB[generatedRoute.Days[day_ind].Stops[stop_ind].Position] = routeResponse.Days[day_ind].Stops[stop_ind].ID
+
+			for _, openingHour := range stop.OpeningHours {
+				var scannedOpeningHour domain.OpeningHours
+
+				if err := tx.QueryRow(
+					ctx,
+					createOpeningHoursQuery,
+					routeResponse.Days[day_ind].Stops[stop_ind].ID,
+					openingHour.OpensAt,
+					openingHour.ClosesAt,
+				).Scan(
+					&scannedOpeningHour.OpensAt,
+					&scannedOpeningHour.ClosesAt,
+				); err != nil {
+					_ = tx.Rollback(ctx)
+					return nil, fmt.Errorf("failed to insert opening hours: %w", err)
+				}
+				routeResponse.Days[day_ind].Stops[stop_ind].OpeningHours = append(routeResponse.Days[day_ind].Stops[stop_ind].OpeningHours, openingHour)
+			}
 		}
 
 		for leg_ind, leg := range day.Legs {
