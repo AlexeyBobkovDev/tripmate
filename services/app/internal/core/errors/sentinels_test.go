@@ -49,7 +49,7 @@ func TestValidationSentinelsAreBadRequests(t *testing.T) {
 		ErrInvalidUserBirthdate,
 		ErrInvalidUserDescription,
 		ErrInvalidUserEmail,
-		ErrInvalidUserPhoneNumber,
+		ErrInvalidPhoneNumber,
 		ErrInvalidUserPassword,
 
 		ErrInvalidTripStartDate,
