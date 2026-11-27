@@ -189,7 +189,7 @@ func TestUsersService_CreateUser_UserValidationError(t *testing.T) {
 				user.PhoneNumber = ""
 				return user
 			},
-			err: core_errors.ErrInvalidUserPhoneNumber,
+			err: core_errors.ErrInvalidPhoneNumber,
 		},
 		{
 			name: "invalid phone number format",
@@ -197,7 +197,7 @@ func TestUsersService_CreateUser_UserValidationError(t *testing.T) {
 				user.PhoneNumber = "123456"
 				return user
 			},
-			err: core_errors.ErrInvalidUserPhoneNumber,
+			err: core_errors.ErrInvalidPhoneNumber,
 		},
 		{
 			name: "description too long",

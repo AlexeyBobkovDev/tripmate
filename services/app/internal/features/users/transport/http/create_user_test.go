@@ -2,11 +2,14 @@ package users_transport_http
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
 	core_logger "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/logger"
@@ -270,4 +273,137 @@ func TestUsersTransportHTTP_CreateUser_ValidationError(t *testing.T) {
 			assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 		})
 	}
+}
+
+func TestUsersTransportHTTP_CreateUser_InvalidBirthdateFormat(t *testing.T) {
+	userCreate := testutils.UserCreateTest()
+	// Use a valid date format that will fail during parsing
+	userCreate.BirthDate = time.Date(2010, 6, 9, 0, 0, 0, 0, time.UTC)
+
+	body, err := json.Marshal(userCreate)
+	require.NoError(t, err)
+
+	ctrl := gomock.NewController(t)
+	mockUsersService := mocks.NewMockUsersService(ctrl)
+	usersTransport := NewUsersHTTPHandler(mockUsersService)
+
+	rec, req := testutils.SetupHTTP(
+		t,
+		http.MethodPost,
+		"/api/v1/users",
+		strings.NewReader(string(body)),
+	)
+
+	logger := testutils.SetupLogger(
+		t,
+		testutils.TestLevel,
+		t.TempDir(),
+	)
+
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	usersTransport.CreateUser(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+}
+
+func TestUsersTransportHTTP_CreateUser_TransactionCommitError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockUsersService(ctrl)
+	usersTransport := NewUsersHTTPHandler(mockService)
+
+	commitError := errors.New("commit error")
+
+	mockService.EXPECT().
+		CreateUser(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil, commitError)
+
+	type createUserRequest struct {
+		Name        string `json:"name"`
+		Surname     string `json:"surname"`
+		Username    string `json:"username"`
+		Description string `json:"description"`
+		BirthDate   string `json:"birth_date"`
+		Email       string `json:"email"`
+		PhoneNumber string `json:"phone_number"`
+		Password    string `json:"password"`
+	}
+
+	request := createUserRequest{
+		Name:        "John",
+		Surname:     "Doe",
+		Username:    "johndoe",
+		Description: "A test user",
+		BirthDate:   "1990-01-01",
+		Email:       "john@example.com",
+		PhoneNumber: "+1234567890",
+		Password:    "password123",
+	}
+	body, err := json.Marshal(request)
+	require.NoError(t, err)
+
+	rec, req := testutils.SetupHTTP(
+		t,
+		http.MethodPost,
+		"/api/v1/users",
+		strings.NewReader(string(body)),
+	)
+
+	logger := testutils.SetupLogger(
+		t,
+		testutils.TestLevel,
+		t.TempDir(),
+	)
+
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	usersTransport.CreateUser(rec, req)
+
+	assert.Equal(t, http.StatusInternalServerError, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
+}
+
+func TestUsersTransportHTTP_CreateUser_ParseError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockService := mocks.NewMockUsersService(ctrl)
+	usersTransport := NewUsersHTTPHandler(mockService)
+
+	body := `{
+		"name": "John",
+		"surname": "Doe",
+		"username": "johndoe",
+		"email": "john@example.com",
+		"password": "password123",
+		"birthdate": "invalid-date",
+		"phone_number": "+1234567890",
+		"description": "A test user"
+	}`
+
+	rec, req := testutils.SetupHTTP(
+		t,
+		http.MethodPost,
+		"/api/v1/users",
+		strings.NewReader(body),
+	)
+
+	logger := testutils.SetupLogger(
+		t,
+		testutils.TestLevel,
+		t.TempDir(),
+	)
+
+	ctx := core_logger.ToContext(req.Context(), logger)
+	req = req.WithContext(ctx)
+
+	usersTransport.CreateUser(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+	assert.Equal(t, "application/json", rec.Header().Get("Content-Type"))
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 
-	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	pool_mocks "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/mocks"
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/testutils"
 )
@@ -40,7 +39,7 @@ func TestUsersRepository_GetUser_Success(t *testing.T) {
 		EXPECT().
 		QueryRow(gomock.Any(), getUserQuery, userID).
 		Return(&mockRow{
-			user: testUser,
+			err: nil,
 		})
 
 	retrievedUser, err := repo.GetUser(ctx, userID)
@@ -207,10 +206,39 @@ func TestUsersRepository_GetUser_ContextTimeout(t *testing.T) {
 	assert.ErrorContains(t, err, "deadline exceeded")
 }
 
+func TestUsersRepository_Get_TransactionCommitError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPool := pool_mocks.NewMockPool(ctrl)
+	repo := NewUsersRepository(mockPool)
+
+	ctx := context.Background()
+	userID := 1
+
+	// Mock the database to return a specific error
+	mockPool.
+		EXPECT().
+		OpTimeout().
+		Return(5 * time.Second)
+
+	mockPool.
+		EXPECT().
+		QueryRow(gomock.Any(), getUserQuery, userID).
+		Return(&mockRow{err: errors.New("database error")})
+
+	retrievedUser, err := repo.GetUser(ctx, userID)
+	require.Error(t, err)
+	assert.Nil(t, retrievedUser)
+
+	// Check that the error is wrapped correctly
+	assert.ErrorContains(t, err, "get user")
+	assert.ErrorContains(t, err, "database error")
+}
+
 // Mock row for testing
 type mockRow struct {
-	user domain.User
-	err  error
+	err error
 }
 
 func (m *mockRow) Scan(dest ...interface{}) error {
@@ -264,4 +292,34 @@ func (m *mockRow) Scan(dest ...interface{}) error {
 	}
 
 	return nil
+}
+
+func TestUsersRepository_GetUser_ErrorHandling(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockPool := pool_mocks.NewMockPool(ctrl)
+	repo := NewUsersRepository(mockPool)
+
+	ctx := context.Background()
+	userID := 1
+
+	// Mock the database to return a specific error
+	mockPool.
+		EXPECT().
+		OpTimeout().
+		Return(5 * time.Second)
+
+	mockPool.
+		EXPECT().
+		QueryRow(gomock.Any(), getUserQuery, userID).
+		Return(&mockRow{err: errors.New("database error")})
+
+	retrievedUser, err := repo.GetUser(ctx, userID)
+	require.Error(t, err)
+	assert.Nil(t, retrievedUser)
+
+	// Check that the error is wrapped correctly
+	assert.ErrorContains(t, err, "get user")
+	assert.ErrorContains(t, err, "database error")
 }
