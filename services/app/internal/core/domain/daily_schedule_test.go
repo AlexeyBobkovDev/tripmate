@@ -115,3 +115,32 @@ func TestDailySchedule_Validate_EdgeCases(t *testing.T) {
 		require.ErrorIs(t, err, core_errors.ErrInvalidTripEndTime)
 	})
 }
+
+func TestDailySchedule_Validate_MinutesSinceMidnightFailures(t *testing.T) {
+	// BUG: LocalTime.Validate rejects these formats before
+	// MinutesSinceMidnight can fail, so DailySchedule.Validate can never
+	// reach its MinutesSinceMidnight error branches (daily_schedule.go:22,
+	// 27) — "24:00" parses in "15:04" as 0:00 next day, so even hours=24
+	// passes time.Parse; Validate's own range check catches it instead.
+	tests := []struct {
+		name     string
+		schedule DailySchedule
+	}{
+		{
+			name:     "invalid start time fails at MinutesSinceMidnight",
+			schedule: DailySchedule{StartTime: "not-a-time", EndTime: "18:00"},
+		},
+		{
+			name:     "invalid end time fails at MinutesSinceMidnight",
+			schedule: DailySchedule{StartTime: "09:00", EndTime: "not-a-time"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.schedule.Validate()
+
+			require.ErrorIs(t, err, core_errors.ErrInvalidLocalTime)
+		})
+	}
+}
