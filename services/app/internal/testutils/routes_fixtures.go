@@ -36,34 +36,53 @@ func routeGeneratorDayTest(
 	date time.Time,
 	stopIDBase int64,
 ) *route_generator_api_v1.RouteDay {
+	websiteURL := "https://stop.example.com"
+	phone := "+79990000000"
+
 	firstStop := &route_generator_api_v1.RouteStop{
-		Id:          stopIDBase,
 		PlaceId:     stopIDBase + 1,
 		Position:    1,
 		Name:        fmt.Sprintf("Stop %d-%d", dayNumber, 1),
 		Description: fmt.Sprintf("Description %d-%d", dayNumber, 1),
+		Categories: []route_generator_api_v1.Category{
+			route_generator_api_v1.Category_CATEGORY_MUSEUM,
+		},
+		Interests: []route_generator_api_v1.Interest{
+			route_generator_api_v1.Interest_INTEREST_HISTORY,
+		},
+		Address:    fmt.Sprintf("Address %d-%d", dayNumber, 1),
+		WebsiteUrl: &websiteURL,
+		Phone:      &phone,
 		Coordinates: &route_generator_common_v1.Coordinates{
 			Latitude:  55.7539 + float64(dayNumber)/1000,
 			Longitude: 37.6208 + float64(dayNumber)/1000,
 		},
-		ArrivalTime:   timestamppb.New(date.Add(9 * time.Hour)),
-		DepartureTime: timestamppb.New(date.Add(11 * time.Hour)),
-		VisitDuration: durationpb.New(90 * time.Minute),
+		ArrivalTime:          timestamppb.New(date.Add(9 * time.Hour)),
+		DepartureTime:        timestamppb.New(date.Add(11 * time.Hour)),
+		VisitDurationMinutes: 90,
 	}
 
 	secondStop := &route_generator_api_v1.RouteStop{
-		Id:          stopIDBase + 1,
 		PlaceId:     stopIDBase + 2,
 		Position:    2,
 		Name:        fmt.Sprintf("Stop %d-%d", dayNumber, 2),
 		Description: fmt.Sprintf("Description %d-%d", dayNumber, 2),
+		Categories: []route_generator_api_v1.Category{
+			route_generator_api_v1.Category_CATEGORY_PARK,
+		},
+		Interests: []route_generator_api_v1.Interest{
+			route_generator_api_v1.Interest_INTEREST_NATURE,
+		},
+		Address:    fmt.Sprintf("Address %d-%d", dayNumber, 2),
+		WebsiteUrl: &websiteURL,
+		Phone:      &phone,
 		Coordinates: &route_generator_common_v1.Coordinates{
 			Latitude:  55.7639 + float64(dayNumber)/1000,
 			Longitude: 37.6308 + float64(dayNumber)/1000,
 		},
-		ArrivalTime:   timestamppb.New(date.Add(12 * time.Hour)),
-		DepartureTime: timestamppb.New(date.Add(13*time.Hour + 30*time.Minute)),
-		VisitDuration: durationpb.New(45 * time.Minute),
+		ArrivalTime:          timestamppb.New(date.Add(12 * time.Hour)),
+		DepartureTime:        timestamppb.New(date.Add(13*time.Hour + 30*time.Minute)),
+		VisitDurationMinutes: 45,
 	}
 
 	return &route_generator_api_v1.RouteDay{
@@ -74,8 +93,8 @@ func routeGeneratorDayTest(
 		Legs: []*route_generator_api_v1.RouteLeg{
 			{
 				Id:         int64(dayNumber),
-				FromStopId: int32(firstStop.Id),
-				ToStopId:   int32(secondStop.Id),
+				FromStopId: int32(firstStop.Position),
+				ToStopId:   int32(secondStop.Position),
 				TravelMode: route_generator_api_v1.TravelMode_TRAVEL_MODE_WALKING,
 				Distance:   1500,
 				Duration:   durationpb.New(15 * time.Minute),
