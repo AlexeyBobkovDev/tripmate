@@ -37,7 +37,7 @@ buf-fmt:
 
 # Remove stale generated files and regenerate Go bindings from the .proto sources.
 .PHONY: buf-generate buf-gen
-buf-generate buf-gen:
+buf-generate buf-gen: buf-fmt buf-lint buf-build
 	@rm -rf gen/* && buf generate
 
 # Detect backward-incompatible changes relative to the contracts on main.
