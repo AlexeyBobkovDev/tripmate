@@ -7,6 +7,7 @@ import (
 
 	"github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/domain"
 	core_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/errors"
+	core_postgres_pool "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool"
 	core_postgres_pool_errors "github.com/AlexeyBobkovDev/tripmate/services/app/internal/core/repository/postgres/pool/errors"
 )
 
@@ -38,11 +39,16 @@ SELECT id,
 	position,
 	name,
 	description,
+	categories,
+	interests,
+	address,
+	website_url,
+	phone,
+	visit_duration_minutes,
 	latitude,
 	longitude,
 	arrival_time,
-	departure_time,
-	visit_duration
+	departure_time
 FROM app.route_stops
 WHERE route_day_id=$1
 ORDER BY position;
@@ -60,6 +66,13 @@ WHERE route_day_id=$1
 ORDER BY from_stop_id;
 `
 
+const getOpeningHoursQuery = `
+SELECT opens_at,
+	closes_at
+FROM app.opening_hours
+WHERE route_stop_id=$1;
+`
+
 func (r *RoutesRepository) GetRoute(
 	ctx context.Context,
 	tripID int,
@@ -68,15 +81,18 @@ func (r *RoutesRepository) GetRoute(
 	ctx, cancel := context.WithTimeout(ctx, r.pool.OpTimeout())
 	defer cancel()
 
-	tx, err := r.pool.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("create transaction: %w", err)
-	}
-	defer func() { _ = tx.Commit(ctx) }()
+	return getRoute(ctx, r.pool, tripID, routeID)
+}
 
+func getRoute(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	tripID int,
+	routeID int,
+) (*domain.Route, error) {
 	var routeResponse domain.Route
 
-	if err := tx.QueryRow(
+	if err := pool.QueryRow(
 		ctx,
 		getRouteQuery,
 		tripID,
@@ -90,7 +106,6 @@ func (r *RoutesRepository) GetRoute(
 		&routeResponse.CreatedAt,
 		&routeResponse.UpdatedAt,
 	); err != nil {
-		_ = tx.Rollback(ctx)
 		if errors.Is(err, core_postgres_pool_errors.ErrNoRows) {
 			return nil, fmt.Errorf(
 				"get route %d: %w",
@@ -101,92 +116,190 @@ func (r *RoutesRepository) GetRoute(
 		return nil, fmt.Errorf("failed to fetch route: %w", err)
 	}
 
-	routeDayCounter := 0
-	routeDayRows, err := tx.Query(
+	routeDayRows, err := pool.Query(
 		ctx,
 		getRouteDayQuery,
 		routeResponse.ID,
 	)
 	if err != nil {
-		_ = tx.Rollback(ctx)
 		return nil, fmt.Errorf("failed to fetch route day rows: %w", err)
 	}
+	defer routeDayRows.Close()
+
 	for routeDayRows.Next() {
-		routeResponse.Days = append(routeResponse.Days, domain.RouteDay{})
+		var routeDayResponse domain.RouteDay
 		if err := routeDayRows.Scan(
-			&routeResponse.Days[routeDayCounter].ID,
-			&routeResponse.Days[routeDayCounter].Date,
-			&routeResponse.Days[routeDayCounter].DayNumber,
+			&routeDayResponse.ID,
+			&routeDayResponse.Date,
+			&routeDayResponse.DayNumber,
 		); err != nil {
-			_ = tx.Rollback(ctx)
 			return nil, fmt.Errorf("failed to fetch route day: %w", err)
 		}
-		routeDayCounter++
+		routeResponse.Days = append(routeResponse.Days, routeDayResponse)
+	}
+	if err := routeDayRows.Err(); err != nil {
+		return nil, fmt.Errorf("error while fetching route day: %w", err)
 	}
 
 	for routeDaysRowsInd := range routeResponse.Days {
-		routeStopCounter := 0
-		routeStopRows, err := tx.Query(
-			ctx,
-			getRouteStopQuery,
-			routeResponse.Days[routeDaysRowsInd].ID,
-		)
+		routeDay, err := getRouteDay(ctx, pool, routeResponse.Days[routeDaysRowsInd])
 		if err != nil {
-			_ = tx.Rollback(ctx)
-			return nil, fmt.Errorf("failed to fetch route stop rows: %w", err)
+			return nil, err
 		}
-		for routeStopRows.Next() {
-			routeResponse.Days[routeDaysRowsInd].Stops = append(routeResponse.Days[routeDaysRowsInd].Stops, domain.RouteStop{})
-
-			var visitDurationSeconds int64
-			if err := routeStopRows.Scan(
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].ID,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].PlaceID,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].Position,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].Name,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].Description,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].Coordinates.Latitude,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].Coordinates.Longitude,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].ArrivalTime,
-				&routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].DepartureTime,
-				&visitDurationSeconds,
-			); err != nil {
-				_ = tx.Rollback(ctx)
-				return nil, fmt.Errorf("failed to fetch route stop: %w", err)
-			}
-			routeResponse.Days[routeDaysRowsInd].Stops[routeStopCounter].VisitDuration = durationFromSeconds(visitDurationSeconds)
-			routeStopCounter++
-		}
-
-		routeLegCounter := 0
-		routeLegRows, err := tx.Query(
-			ctx,
-			getRouteLegQuery,
-			routeResponse.Days[routeDaysRowsInd].ID,
-		)
-		if err != nil {
-			_ = tx.Rollback(ctx)
-			return nil, fmt.Errorf("failed to fetch route leg rows: %w", err)
-		}
-		for routeLegRows.Next() {
-			routeResponse.Days[routeDaysRowsInd].Legs = append(routeResponse.Days[routeDaysRowsInd].Legs, domain.RouteLeg{})
-
-			var durationSeconds int64
-			if err := routeLegRows.Scan(
-				&routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].ID,
-				&routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].FromStopID,
-				&routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].ToStopID,
-				&routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].TravelMode,
-				&routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].Distance,
-				&durationSeconds,
-			); err != nil {
-				_ = tx.Rollback(ctx)
-				return nil, fmt.Errorf("failed to create route leg: %w", err)
-			}
-			routeResponse.Days[routeDaysRowsInd].Legs[routeLegCounter].Duration = durationFromSeconds(durationSeconds)
-			routeLegCounter++
-		}
+		routeResponse.Days[routeDaysRowsInd] = routeDay
 	}
 
 	return &routeResponse, nil
+}
+
+func getRouteDay(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	routeDay domain.RouteDay,
+) (domain.RouteDay, error) {
+	stops, err := getRouteStops(ctx, pool, routeDay.ID)
+	if err != nil {
+		return domain.RouteDay{}, fmt.Errorf("fetch route stops: %w", err)
+	}
+
+	legs, err := getRouteLegs(ctx, pool, routeDay.ID)
+	if err != nil {
+		return domain.RouteDay{}, fmt.Errorf("fetch route legs: %w", err)
+	}
+
+	routeDay.Stops = stops
+	routeDay.Legs = legs
+
+	return routeDay, nil
+}
+
+func getRouteStops(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	routeDayID int,
+) ([]domain.RouteStop, error) {
+	routeStopRows, err := pool.Query(
+		ctx,
+		getRouteStopQuery,
+		routeDayID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch route stop rows: %w", err)
+	}
+	defer routeStopRows.Close()
+
+	var routeStopsResponses []domain.RouteStop
+
+	for routeStopRows.Next() {
+		var routeStopResponse domain.RouteStop
+
+		if err := routeStopRows.Scan(
+			&routeStopResponse.ID,
+			&routeStopResponse.PlaceID,
+			&routeStopResponse.Position,
+			&routeStopResponse.Name,
+			&routeStopResponse.Description,
+			&routeStopResponse.Categories,
+			&routeStopResponse.Interests,
+			&routeStopResponse.Address,
+			&routeStopResponse.WebsiteURL,
+			&routeStopResponse.Phone,
+			&routeStopResponse.VisitDurationMinutes,
+			&routeStopResponse.Coordinates.Latitude,
+			&routeStopResponse.Coordinates.Longitude,
+			&routeStopResponse.ArrivalTime,
+			&routeStopResponse.DepartureTime,
+		); err != nil {
+			return nil, fmt.Errorf("failed to fetch route stop: %w", err)
+		}
+
+		openingHours, err := getOpeningHours(ctx, pool, routeStopResponse.ID)
+		if err != nil {
+			return nil, err
+		}
+		routeStopResponse.OpeningHours = openingHours
+
+		routeStopsResponses = append(routeStopsResponses, routeStopResponse)
+	}
+	if err := routeStopRows.Err(); err != nil {
+		return nil, fmt.Errorf("error while fetching route day stops: %w", err)
+	}
+
+	return routeStopsResponses, nil
+}
+
+func getOpeningHours(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	stopID int,
+) ([]domain.OpeningHours, error) {
+	openingHoursRows, err := pool.Query(
+		ctx,
+		getOpeningHoursQuery,
+		stopID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch opening hours rows: %w", err)
+	}
+	defer openingHoursRows.Close()
+
+	var openingHoursResponses []domain.OpeningHours
+
+	for openingHoursRows.Next() {
+		var openingHoursResponse domain.OpeningHours
+		if err := openingHoursRows.Scan(
+			&openingHoursResponse.OpensAt,
+			&openingHoursResponse.ClosesAt,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan opening hours: %w", err)
+		}
+		openingHoursResponses = append(openingHoursResponses, openingHoursResponse)
+	}
+	if err := openingHoursRows.Err(); err != nil {
+		return nil, fmt.Errorf("error while fetching route day stop opening hours: %w", err)
+	}
+
+	return openingHoursResponses, nil
+}
+
+func getRouteLegs(
+	ctx context.Context,
+	pool core_postgres_pool.Pool,
+	routeDayID int,
+) ([]domain.RouteLeg, error) {
+	routeLegRows, err := pool.Query(
+		ctx,
+		getRouteLegQuery,
+		routeDayID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch route leg rows: %w", err)
+	}
+	defer routeLegRows.Close()
+
+	var routeLegResponses []domain.RouteLeg
+
+	for routeLegRows.Next() {
+		var routeLegResponse domain.RouteLeg
+
+		var durationSeconds int64
+		if err := routeLegRows.Scan(
+			&routeLegResponse.ID,
+			&routeLegResponse.FromStopID,
+			&routeLegResponse.ToStopID,
+			&routeLegResponse.TravelMode,
+			&routeLegResponse.Distance,
+			&durationSeconds,
+		); err != nil {
+			return nil, fmt.Errorf("failed to create route leg: %w", err)
+		}
+		routeLegResponse.Duration = durationFromSeconds(durationSeconds)
+
+		routeLegResponses = append(routeLegResponses, routeLegResponse)
+	}
+	if err := routeLegRows.Err(); err != nil {
+		return nil, fmt.Errorf("error while fetching route day legs: %w", err)
+	}
+
+	return routeLegResponses, nil
 }
