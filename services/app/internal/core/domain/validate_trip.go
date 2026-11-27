@@ -82,6 +82,18 @@ func validateInterests(interests []Interest) error {
 	return nil
 }
 
+func validateCategories(categories []Category) error {
+	for _, category := range categories {
+		if len([]rune(strings.TrimSpace(string(category)))) == 0 {
+			return core_errors.ErrInvalidCategory
+		}
+		if _, ok := AllowedCategories[category]; !ok {
+			return core_errors.ErrUnsupportedCategory
+		}
+	}
+	return nil
+}
+
 func validateTimeZone(timeZone string) error {
 	if len([]rune(strings.TrimSpace(timeZone))) == 0 {
 		return core_errors.ErrInvalidTimeZone

@@ -355,3 +355,73 @@ func TestTripPatch_Validate_WithInvalidMealRequirement(t *testing.T) {
 	err := patch.Validate()
 	require.ErrorIs(t, err, core_errors.ErrInvalidMealTimeDuration)
 }
+
+func TestTrip_ApplyPatch_LeavesTripUntouchedOnInvalidPatch(t *testing.T) {
+	createdAt := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	trip := &Trip{
+		ID:               7,
+		OwnerID:          3,
+		Version:          2,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        time.Date(2035, time.October, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:          time.Date(2035, time.October, 1, 0, 0, 0, 0, time.UTC),
+		DailySchedule:    DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+		MealRequirements: []MealRequirement{},
+		Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+		Interests:        []Interest{InterestHistory},
+		TimeZone:         "Europe/Moscow",
+		CreatedAt:        createdAt,
+		UpdatedAt:        createdAt,
+	}
+	before := *trip
+
+	invalidTimeZone := "Mars/Phobos"
+	patch := &TripPatch{
+		OwnerID:  3,
+		Version:  2,
+		TimeZone: Nullable[string]{Value: &invalidTimeZone, Set: true},
+	}
+
+	err := trip.ApplyPatch(patch)
+	require.Error(t, err)
+
+	assert.Equal(t, before, *trip,
+		"a failed patch must not modify any field of the trip, including Version")
+}
+
+func TestTrip_ApplyPatch_UnsetFieldsKeepValues(t *testing.T) {
+	createdAt := time.Date(2026, 10, 1, 0, 0, 0, 0, time.UTC)
+	trip := &Trip{
+		ID:               7,
+		OwnerID:          3,
+		Version:          2,
+		Name:             "Trip to Moscow",
+		PlanningArea:     "Moscow",
+		StartCoordinates: Coordinates{Latitude: 55.7539, Longitude: 37.6208},
+		StartDate:        time.Date(2035, time.October, 1, 0, 0, 0, 0, time.UTC),
+		EndDate:          time.Date(2035, time.October, 1, 0, 0, 0, 0, time.UTC),
+		DailySchedule:    DailySchedule{StartTime: "09:00", EndTime: "18:00"},
+		MealRequirements: []MealRequirement{},
+		Budget:           Money{AmountMinorUnits: 1500000, Currency: "RUB"},
+		Interests:        []Interest{InterestHistory},
+		TimeZone:         "Europe/Moscow",
+		CreatedAt:        createdAt,
+		UpdatedAt:        createdAt,
+	}
+
+	newName := "Renamed Trip"
+	patch := &TripPatch{
+		OwnerID: 3,
+		Version: 2,
+		Name:    Nullable[string]{Value: &newName, Set: true},
+	}
+
+	require.NoError(t, trip.ApplyPatch(patch))
+	assert.Equal(t, "Renamed Trip", trip.Name)
+	assert.Equal(t, "Moscow", trip.PlanningArea)
+	assert.Equal(t, Money{AmountMinorUnits: 1500000, Currency: "RUB"}, trip.Budget)
+	assert.Equal(t, []Interest{InterestHistory}, trip.Interests)
+	assert.Equal(t, "Europe/Moscow", trip.TimeZone)
+}
