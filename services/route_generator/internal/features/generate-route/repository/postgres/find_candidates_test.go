@@ -14,8 +14,16 @@ import (
 
 func TestGenerateRouteRepository_FindCandidates(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	mockRows := mocks.NewMockRows(ctrl)
 	mockPool := mocks.NewMockPool(ctrl)
 	routesRepository := NewGenerateRouteRepository(mockPool)
+
+	mockPool.EXPECT().
+		Query(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(mockRows, nil)
+	mockRows.EXPECT().Next().Return(false)
+	mockRows.EXPECT().Err().Return(nil)
+	mockRows.EXPECT().Close()
 
 	candidates, err := routesRepository.FindCandidates(context.Background(), generate_route_service.FindCandidatesCriteria{})
 
