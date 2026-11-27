@@ -181,6 +181,121 @@ func (Interest) EnumDescriptor() ([]byte, []int) {
 	return file_tripmate_route_generator_api_v1_enums_proto_rawDescGZIP(), []int{2}
 }
 
+type Category int32
+
+const (
+	Category_CATEGORY_UNSPECIFIED   Category = 0
+	Category_CATEGORY_MUSEUM        Category = 1
+	Category_CATEGORY_ART_GALLERY   Category = 2
+	Category_CATEGORY_THEATER       Category = 3
+	Category_CATEGORY_CINEMA        Category = 4
+	Category_CATEGORY_MONUMENT      Category = 5
+	Category_CATEGORY_HISTORICAL    Category = 6
+	Category_CATEGORY_RELIGIOUS     Category = 7
+	Category_CATEGORY_PARK          Category = 8
+	Category_CATEGORY_GARDEN        Category = 9
+	Category_CATEGORY_SQUARE        Category = 10
+	Category_CATEGORY_STREET        Category = 11
+	Category_CATEGORY_ARCHITECTURE  Category = 12
+	Category_CATEGORY_OBSERVATION   Category = 13
+	Category_CATEGORY_ENTERTAINMENT Category = 14
+	Category_CATEGORY_RESTAURANT    Category = 15
+	Category_CATEGORY_CAFE          Category = 16
+	Category_CATEGORY_BAR           Category = 17
+	Category_CATEGORY_SHOPPING      Category = 18
+	Category_CATEGORY_MARKET        Category = 19
+	Category_CATEGORY_NATURE        Category = 20
+	Category_CATEGORY_ZOO           Category = 21
+	Category_CATEGORY_AQUARIUM      Category = 22
+	Category_CATEGORY_SPORTS        Category = 23
+	Category_CATEGORY_EVENT_VENUE   Category = 24
+)
+
+// Enum value maps for Category.
+var (
+	Category_name = map[int32]string{
+		0:  "CATEGORY_UNSPECIFIED",
+		1:  "CATEGORY_MUSEUM",
+		2:  "CATEGORY_ART_GALLERY",
+		3:  "CATEGORY_THEATER",
+		4:  "CATEGORY_CINEMA",
+		5:  "CATEGORY_MONUMENT",
+		6:  "CATEGORY_HISTORICAL",
+		7:  "CATEGORY_RELIGIOUS",
+		8:  "CATEGORY_PARK",
+		9:  "CATEGORY_GARDEN",
+		10: "CATEGORY_SQUARE",
+		11: "CATEGORY_STREET",
+		12: "CATEGORY_ARCHITECTURE",
+		13: "CATEGORY_OBSERVATION",
+		14: "CATEGORY_ENTERTAINMENT",
+		15: "CATEGORY_RESTAURANT",
+		16: "CATEGORY_CAFE",
+		17: "CATEGORY_BAR",
+		18: "CATEGORY_SHOPPING",
+		19: "CATEGORY_MARKET",
+		20: "CATEGORY_NATURE",
+		21: "CATEGORY_ZOO",
+		22: "CATEGORY_AQUARIUM",
+		23: "CATEGORY_SPORTS",
+		24: "CATEGORY_EVENT_VENUE",
+	}
+	Category_value = map[string]int32{
+		"CATEGORY_UNSPECIFIED":   0,
+		"CATEGORY_MUSEUM":        1,
+		"CATEGORY_ART_GALLERY":   2,
+		"CATEGORY_THEATER":       3,
+		"CATEGORY_CINEMA":        4,
+		"CATEGORY_MONUMENT":      5,
+		"CATEGORY_HISTORICAL":    6,
+		"CATEGORY_RELIGIOUS":     7,
+		"CATEGORY_PARK":          8,
+		"CATEGORY_GARDEN":        9,
+		"CATEGORY_SQUARE":        10,
+		"CATEGORY_STREET":        11,
+		"CATEGORY_ARCHITECTURE":  12,
+		"CATEGORY_OBSERVATION":   13,
+		"CATEGORY_ENTERTAINMENT": 14,
+		"CATEGORY_RESTAURANT":    15,
+		"CATEGORY_CAFE":          16,
+		"CATEGORY_BAR":           17,
+		"CATEGORY_SHOPPING":      18,
+		"CATEGORY_MARKET":        19,
+		"CATEGORY_NATURE":        20,
+		"CATEGORY_ZOO":           21,
+		"CATEGORY_AQUARIUM":      22,
+		"CATEGORY_SPORTS":        23,
+		"CATEGORY_EVENT_VENUE":   24,
+	}
+)
+
+func (x Category) Enum() *Category {
+	p := new(Category)
+	*p = x
+	return p
+}
+
+func (x Category) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Category) Descriptor() protoreflect.EnumDescriptor {
+	return file_tripmate_route_generator_api_v1_enums_proto_enumTypes[3].Descriptor()
+}
+
+func (Category) Type() protoreflect.EnumType {
+	return &file_tripmate_route_generator_api_v1_enums_proto_enumTypes[3]
+}
+
+func (x Category) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Category.Descriptor instead.
+func (Category) EnumDescriptor() ([]byte, []int) {
+	return file_tripmate_route_generator_api_v1_enums_proto_rawDescGZIP(), []int{3}
+}
+
 var File_tripmate_route_generator_api_v1_enums_proto protoreflect.FileDescriptor
 
 const file_tripmate_route_generator_api_v1_enums_proto_rawDesc = "" +
@@ -202,7 +317,34 @@ const file_tripmate_route_generator_api_v1_enums_proto_rawDesc = "" +
 	"\x10INTEREST_HISTORY\x10\x01\x12\x13\n" +
 	"\x0fINTEREST_NATURE\x10\x02\x12\x11\n" +
 	"\rINTEREST_FOOD\x10\x03\x12\x19\n" +
-	"\x15INTEREST_ARCHITECTURE\x10\x04BmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
+	"\x15INTEREST_ARCHITECTURE\x10\x04*\xc0\x04\n" +
+	"\bCategory\x12\x18\n" +
+	"\x14CATEGORY_UNSPECIFIED\x10\x00\x12\x13\n" +
+	"\x0fCATEGORY_MUSEUM\x10\x01\x12\x18\n" +
+	"\x14CATEGORY_ART_GALLERY\x10\x02\x12\x14\n" +
+	"\x10CATEGORY_THEATER\x10\x03\x12\x13\n" +
+	"\x0fCATEGORY_CINEMA\x10\x04\x12\x15\n" +
+	"\x11CATEGORY_MONUMENT\x10\x05\x12\x17\n" +
+	"\x13CATEGORY_HISTORICAL\x10\x06\x12\x16\n" +
+	"\x12CATEGORY_RELIGIOUS\x10\a\x12\x11\n" +
+	"\rCATEGORY_PARK\x10\b\x12\x13\n" +
+	"\x0fCATEGORY_GARDEN\x10\t\x12\x13\n" +
+	"\x0fCATEGORY_SQUARE\x10\n" +
+	"\x12\x13\n" +
+	"\x0fCATEGORY_STREET\x10\v\x12\x19\n" +
+	"\x15CATEGORY_ARCHITECTURE\x10\f\x12\x18\n" +
+	"\x14CATEGORY_OBSERVATION\x10\r\x12\x1a\n" +
+	"\x16CATEGORY_ENTERTAINMENT\x10\x0e\x12\x17\n" +
+	"\x13CATEGORY_RESTAURANT\x10\x0f\x12\x11\n" +
+	"\rCATEGORY_CAFE\x10\x10\x12\x10\n" +
+	"\fCATEGORY_BAR\x10\x11\x12\x15\n" +
+	"\x11CATEGORY_SHOPPING\x10\x12\x12\x13\n" +
+	"\x0fCATEGORY_MARKET\x10\x13\x12\x13\n" +
+	"\x0fCATEGORY_NATURE\x10\x14\x12\x10\n" +
+	"\fCATEGORY_ZOO\x10\x15\x12\x15\n" +
+	"\x11CATEGORY_AQUARIUM\x10\x16\x12\x13\n" +
+	"\x0fCATEGORY_SPORTS\x10\x17\x12\x18\n" +
+	"\x14CATEGORY_EVENT_VENUE\x10\x18BmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
 
 var (
 	file_tripmate_route_generator_api_v1_enums_proto_rawDescOnce sync.Once
@@ -217,11 +359,12 @@ func file_tripmate_route_generator_api_v1_enums_proto_rawDescGZIP() []byte {
 }
 
 var (
-	file_tripmate_route_generator_api_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+	file_tripmate_route_generator_api_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
 	file_tripmate_route_generator_api_v1_enums_proto_goTypes   = []any{
 		RouteStatus(0), // 0: tripmate.route_generator.api.v1.RouteStatus
 		TravelMode(0),  // 1: tripmate.route_generator.api.v1.TravelMode
 		Interest(0),    // 2: tripmate.route_generator.api.v1.Interest
+		Category(0),    // 3: tripmate.route_generator.api.v1.Category
 	}
 )
 
@@ -243,7 +386,7 @@ func file_tripmate_route_generator_api_v1_enums_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_tripmate_route_generator_api_v1_enums_proto_rawDesc), len(file_tripmate_route_generator_api_v1_enums_proto_rawDesc)),
-			NumEnums:      3,
+			NumEnums:      4,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,

@@ -28,18 +28,24 @@ const (
 )
 
 type RouteStop struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	PlaceId       int64                  `protobuf:"varint,2,opt,name=place_id,json=placeId,proto3" json:"place_id,omitempty"`
-	Position      int32                  `protobuf:"varint,3,opt,name=position,proto3" json:"position,omitempty"`
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Coordinates   *v1.Coordinates        `protobuf:"bytes,6,opt,name=coordinates,proto3" json:"coordinates,omitempty"`
-	ArrivalTime   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=arrival_time,json=arrivalTime,proto3" json:"arrival_time,omitempty"`
-	DepartureTime *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=departure_time,json=departureTime,proto3" json:"departure_time,omitempty"`
-	VisitDuration *durationpb.Duration   `protobuf:"bytes,9,opt,name=visit_duration,json=visitDuration,proto3" json:"visit_duration,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	PlaceId              int64                  `protobuf:"varint,1,opt,name=place_id,json=placeId,proto3" json:"place_id,omitempty"`
+	Position             int32                  `protobuf:"varint,2,opt,name=position,proto3" json:"position,omitempty"`
+	Name                 string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Description          string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Categories           []Category             `protobuf:"varint,5,rep,packed,name=categories,proto3,enum=tripmate.route_generator.api.v1.Category" json:"categories,omitempty"`
+	Interests            []Interest             `protobuf:"varint,6,rep,packed,name=interests,proto3,enum=tripmate.route_generator.api.v1.Interest" json:"interests,omitempty"`
+	Address              string                 `protobuf:"bytes,7,opt,name=address,proto3" json:"address,omitempty"`
+	WebsiteUrl           *string                `protobuf:"bytes,8,opt,name=website_url,json=websiteUrl,proto3,oneof" json:"website_url,omitempty"`
+	Phone                *string                `protobuf:"bytes,9,opt,name=phone,proto3,oneof" json:"phone,omitempty"`
+	VisitDurationMinutes int32                  `protobuf:"varint,10,opt,name=visit_duration_minutes,json=visitDurationMinutes,proto3" json:"visit_duration_minutes,omitempty"`
+	OpeningHours         []*v1.OpeningHours     `protobuf:"bytes,11,rep,name=opening_hours,json=openingHours,proto3" json:"opening_hours,omitempty"`
+	Coordinates          *v1.Coordinates        `protobuf:"bytes,12,opt,name=coordinates,proto3" json:"coordinates,omitempty"`
+	ArrivalTime          *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=arrival_time,json=arrivalTime,proto3" json:"arrival_time,omitempty"`
+	DepartureTime        *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=departure_time,json=departureTime,proto3" json:"departure_time,omitempty"`
+	VisitDuration        *durationpb.Duration   `protobuf:"bytes,15,opt,name=visit_duration,json=visitDuration,proto3" json:"visit_duration,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *RouteStop) Reset() {
@@ -72,13 +78,6 @@ func (*RouteStop) Descriptor() ([]byte, []int) {
 	return file_tripmate_route_generator_api_v1_route_stop_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *RouteStop) GetId() int64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
 func (x *RouteStop) GetPlaceId() int64 {
 	if x != nil {
 		return x.PlaceId
@@ -105,6 +104,55 @@ func (x *RouteStop) GetDescription() string {
 		return x.Description
 	}
 	return ""
+}
+
+func (x *RouteStop) GetCategories() []Category {
+	if x != nil {
+		return x.Categories
+	}
+	return nil
+}
+
+func (x *RouteStop) GetInterests() []Interest {
+	if x != nil {
+		return x.Interests
+	}
+	return nil
+}
+
+func (x *RouteStop) GetAddress() string {
+	if x != nil {
+		return x.Address
+	}
+	return ""
+}
+
+func (x *RouteStop) GetWebsiteUrl() string {
+	if x != nil && x.WebsiteUrl != nil {
+		return *x.WebsiteUrl
+	}
+	return ""
+}
+
+func (x *RouteStop) GetPhone() string {
+	if x != nil && x.Phone != nil {
+		return *x.Phone
+	}
+	return ""
+}
+
+func (x *RouteStop) GetVisitDurationMinutes() int32 {
+	if x != nil {
+		return x.VisitDurationMinutes
+	}
+	return 0
+}
+
+func (x *RouteStop) GetOpeningHours() []*v1.OpeningHours {
+	if x != nil {
+		return x.OpeningHours
+	}
+	return nil
 }
 
 func (x *RouteStop) GetCoordinates() *v1.Coordinates {
@@ -139,17 +187,30 @@ var File_tripmate_route_generator_api_v1_route_stop_proto protoreflect.FileDescr
 
 const file_tripmate_route_generator_api_v1_route_stop_proto_rawDesc = "" +
 	"\n" +
-	"0tripmate/route_generator/api/v1/route_stop.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\"\xd6\x03\n" +
-	"\tRouteStop\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\x12\"\n" +
-	"\bplace_id\x18\x02 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\aplaceId\x12#\n" +
-	"\bposition\x18\x03 \x01(\x05B\a\xbaH\x04\x1a\x02 \x00R\bposition\x12\x1b\n" +
-	"\x04name\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12)\n" +
-	"\vdescription\x18\x05 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdescription\x12Q\n" +
-	"\vcoordinates\x18\x06 \x01(\v2/.tripmate.route_generator.common.v1.CoordinatesR\vcoordinates\x12=\n" +
-	"\farrival_time\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\varrivalTime\x12A\n" +
-	"\x0edeparture_time\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\rdepartureTime\x12J\n" +
-	"\x0evisit_duration\x18\t \x01(\v2\x19.google.protobuf.DurationB\b\xbaH\x05\xaa\x01\x02*\x00R\rvisitDurationBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
+	"0tripmate/route_generator/api/v1/route_stop.proto\x12\x1ftripmate.route_generator.api.v1\x1a\x1bbuf/validate/validate.proto\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a+tripmate/route_generator/api/v1/enums.proto\x1a4tripmate/route_generator/common/v1/coordinates.proto\x1a6tripmate/route_generator/common/v1/opening_hours.proto\"\xb9\a\n" +
+	"\tRouteStop\x12\"\n" +
+	"\bplace_id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\aplaceId\x12#\n" +
+	"\bposition\x18\x02 \x01(\x05B\a\xbaH\x04\x1a\x02 \x00R\bposition\x12\x1b\n" +
+	"\x04name\x18\x03 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\x04name\x12)\n" +
+	"\vdescription\x18\x04 \x01(\tB\a\xbaH\x04r\x02\x10\x01R\vdescription\x12S\n" +
+	"\n" +
+	"categories\x18\x05 \x03(\x0e2).tripmate.route_generator.api.v1.CategoryB\b\xbaH\x05\x92\x01\x02\b\x01R\n" +
+	"categories\x12Q\n" +
+	"\tinterests\x18\x06 \x03(\x0e2).tripmate.route_generator.api.v1.InterestB\b\xbaH\x05\x92\x01\x02\b\x01R\tinterests\x12!\n" +
+	"\aaddress\x18\a \x01(\tB\a\xbaH\x04r\x02\x10\x01R\aaddress\x12<\n" +
+	"\vwebsite_url\x18\b \x01(\tB\x16\xbaH\x13r\x11\x10\x012\r^https?://.*$H\x00R\n" +
+	"websiteUrl\x88\x01\x01\x124\n" +
+	"\x05phone\x18\t \x01(\tB\x19\xbaH\x16r\x14\x10\x012\x10^\\+[0-9]{10,15}$H\x01R\x05phone\x88\x01\x01\x12@\n" +
+	"\x16visit_duration_minutes\x18\n" +
+	" \x01(\x05B\n" +
+	"\xbaH\a\x1a\x05\x10\xa0\v \x00R\x14visitDurationMinutes\x12_\n" +
+	"\ropening_hours\x18\v \x03(\v20.tripmate.route_generator.common.v1.OpeningHoursB\b\xbaH\x05\x92\x01\x02\b\x01R\fopeningHours\x12Q\n" +
+	"\vcoordinates\x18\f \x01(\v2/.tripmate.route_generator.common.v1.CoordinatesR\vcoordinates\x12=\n" +
+	"\farrival_time\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\varrivalTime\x12A\n" +
+	"\x0edeparture_time\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\rdepartureTime\x12J\n" +
+	"\x0evisit_duration\x18\x0f \x01(\v2\x19.google.protobuf.DurationB\b\xbaH\x05\xaa\x01\x02*\x00R\rvisitDurationB\x0e\n" +
+	"\f_website_urlB\b\n" +
+	"\x06_phoneBmZkgithub.com/AlexeyBobkovDev/tripmate/contracts/gen/go/tripmate/route_generator/api/v1;route_generator_api_v1b\x06proto3"
 
 var (
 	file_tripmate_route_generator_api_v1_route_stop_proto_rawDescOnce sync.Once
@@ -167,22 +228,28 @@ var (
 	file_tripmate_route_generator_api_v1_route_stop_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
 	file_tripmate_route_generator_api_v1_route_stop_proto_goTypes  = []any{
 		(*RouteStop)(nil),             // 0: tripmate.route_generator.api.v1.RouteStop
-		(*v1.Coordinates)(nil),        // 1: tripmate.route_generator.common.v1.Coordinates
-		(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
-		(*durationpb.Duration)(nil),   // 3: google.protobuf.Duration
+		Category(0),                   // 1: tripmate.route_generator.api.v1.Category
+		Interest(0),                   // 2: tripmate.route_generator.api.v1.Interest
+		(*v1.OpeningHours)(nil),       // 3: tripmate.route_generator.common.v1.OpeningHours
+		(*v1.Coordinates)(nil),        // 4: tripmate.route_generator.common.v1.Coordinates
+		(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+		(*durationpb.Duration)(nil),   // 6: google.protobuf.Duration
 	}
 )
 
 var file_tripmate_route_generator_api_v1_route_stop_proto_depIdxs = []int32{
-	1, // 0: tripmate.route_generator.api.v1.RouteStop.coordinates:type_name -> tripmate.route_generator.common.v1.Coordinates
-	2, // 1: tripmate.route_generator.api.v1.RouteStop.arrival_time:type_name -> google.protobuf.Timestamp
-	2, // 2: tripmate.route_generator.api.v1.RouteStop.departure_time:type_name -> google.protobuf.Timestamp
-	3, // 3: tripmate.route_generator.api.v1.RouteStop.visit_duration:type_name -> google.protobuf.Duration
-	4, // [4:4] is the sub-list for method output_type
-	4, // [4:4] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	1, // 0: tripmate.route_generator.api.v1.RouteStop.categories:type_name -> tripmate.route_generator.api.v1.Category
+	2, // 1: tripmate.route_generator.api.v1.RouteStop.interests:type_name -> tripmate.route_generator.api.v1.Interest
+	3, // 2: tripmate.route_generator.api.v1.RouteStop.opening_hours:type_name -> tripmate.route_generator.common.v1.OpeningHours
+	4, // 3: tripmate.route_generator.api.v1.RouteStop.coordinates:type_name -> tripmate.route_generator.common.v1.Coordinates
+	5, // 4: tripmate.route_generator.api.v1.RouteStop.arrival_time:type_name -> google.protobuf.Timestamp
+	5, // 5: tripmate.route_generator.api.v1.RouteStop.departure_time:type_name -> google.protobuf.Timestamp
+	6, // 6: tripmate.route_generator.api.v1.RouteStop.visit_duration:type_name -> google.protobuf.Duration
+	7, // [7:7] is the sub-list for method output_type
+	7, // [7:7] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_tripmate_route_generator_api_v1_route_stop_proto_init() }
@@ -190,6 +257,8 @@ func file_tripmate_route_generator_api_v1_route_stop_proto_init() {
 	if File_tripmate_route_generator_api_v1_route_stop_proto != nil {
 		return
 	}
+	file_tripmate_route_generator_api_v1_enums_proto_init()
+	file_tripmate_route_generator_api_v1_route_stop_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
