@@ -48,7 +48,7 @@ func (u *UserPatch) Validate() error {
 		}
 	}
 	if u.PhoneNumber.Set {
-		if err := validateUserPhoneNumber(*u.PhoneNumber.Value); err != nil {
+		if err := validatePhoneNumber(*u.PhoneNumber.Value); err != nil {
 			return err
 		}
 	}

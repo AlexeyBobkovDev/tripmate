@@ -224,7 +224,7 @@ func TestUserCreate_Validate(t *testing.T) {
 				PhoneNumber:  "invalid",
 				PasswordHash: "hashedpassword",
 			},
-			wantErr: core_errors.ErrInvalidUserPhoneNumber,
+			wantErr: core_errors.ErrInvalidPhoneNumber,
 		},
 		{
 			// The password hash is not part of UserCreate.Validate; plaintext

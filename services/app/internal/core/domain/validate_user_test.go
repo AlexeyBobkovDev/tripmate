@@ -193,7 +193,7 @@ func TestValidateUserEmail(t *testing.T) {
 	}
 }
 
-func TestValidateUserPhoneNumber(t *testing.T) {
+func TestValidatePhoneNumber(t *testing.T) {
 	tests := []struct {
 		name  string
 		input string
@@ -202,18 +202,18 @@ func TestValidateUserPhoneNumber(t *testing.T) {
 		{name: "valid E164 US number", input: "+14155552671"},
 		{name: "valid E164 UK number", input: "+442079460018"},
 		{name: "valid E164 Russian number", input: "+74951234567"},
-		{name: "empty", input: "", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "too short", input: "+123", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "missing plus", input: "14155552671", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "spaces", input: "+1 415 555 2671", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "parentheses", input: "+1 (415) 555-2671", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "national format", input: "02079460018", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "alphabetic", input: "+1ABC5552671", want: core_errors.ErrInvalidUserPhoneNumber},
-		{name: "too many digits", input: "+12345678901234567890", want: core_errors.ErrInvalidUserPhoneNumber},
+		{name: "empty", input: "", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "too short", input: "+123", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "missing plus", input: "14155552671", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "spaces", input: "+1 415 555 2671", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "parentheses", input: "+1 (415) 555-2671", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "national format", input: "02079460018", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "alphabetic", input: "+1ABC5552671", want: core_errors.ErrInvalidPhoneNumber},
+		{name: "too many digits", input: "+12345678901234567890", want: core_errors.ErrInvalidPhoneNumber},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := validateUserPhoneNumber(tt.input)
+			err := validatePhoneNumber(tt.input)
 			if tt.want != nil {
 				require.ErrorIs(t, err, tt.want)
 			} else {

@@ -220,7 +220,7 @@ func TestUser_Validate(t *testing.T) {
 				CreatedAt:   now,
 				UpdatedAt:   now,
 			},
-			wantErr: core_errors.ErrInvalidUserPhoneNumber,
+			wantErr: core_errors.ErrInvalidPhoneNumber,
 		},
 		{
 			name: "invalid created at",
@@ -379,7 +379,7 @@ func TestUser_ApplyPatch(t *testing.T) {
 				Version:     1,
 				PhoneNumber: Nullable[string]{Value: &[]string{"invalid"}[0], Set: true},
 			},
-			wantErr: core_errors.ErrInvalidUserPhoneNumber,
+			wantErr: core_errors.ErrInvalidPhoneNumber,
 		},
 	}
 

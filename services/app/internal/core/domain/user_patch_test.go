@@ -279,7 +279,7 @@ func TestUserPatchValidate(t *testing.T) {
 					Value: &invalidPhone,
 				},
 			},
-			wantErr: core_errors.ErrInvalidUserPhoneNumber,
+			wantErr: core_errors.ErrInvalidPhoneNumber,
 		},
 		{
 			name: "phone number not set ignores invalid value",

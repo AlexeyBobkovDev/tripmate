@@ -78,18 +78,18 @@ func validateUserEmail(email string) error {
 	return nil
 }
 
-func validateUserPhoneNumber(phoneNumber string) error {
+func validatePhoneNumber(phoneNumber string) error {
 	num, err := phonenumbers.Parse(phoneNumber, "")
 	if err != nil {
-		return core_errors.ErrInvalidUserPhoneNumber
+		return core_errors.ErrInvalidPhoneNumber
 	}
 
 	if !phonenumbers.IsValidNumber(num) {
-		return core_errors.ErrInvalidUserPhoneNumber
+		return core_errors.ErrInvalidPhoneNumber
 	}
 
 	if phoneNumber != phonenumbers.Format(num, phonenumbers.E164) {
-		return core_errors.ErrInvalidUserPhoneNumber
+		return core_errors.ErrInvalidPhoneNumber
 	}
 	return nil
 }

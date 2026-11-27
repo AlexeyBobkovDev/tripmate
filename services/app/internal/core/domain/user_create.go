@@ -32,7 +32,7 @@ func (u *UserCreate) Validate() error {
 	if err := validateUserEmail(u.Email); err != nil {
 		return err
 	}
-	if err := validateUserPhoneNumber(u.PhoneNumber); err != nil {
+	if err := validatePhoneNumber(u.PhoneNumber); err != nil {
 		return err
 	}
 
