@@ -149,34 +149,47 @@ func routeDayFixture(
 	date time.Time,
 	stopIDBase int,
 ) domain.RouteDay {
+	websiteURL := "https://stop.example.com"
+	phone := "+79990000000"
+
 	firstStop := domain.RouteStop{
-		ID:          stopIDBase,
-		PlaceID:     stopIDBase + 1,
-		Position:    1,
-		Name:        fmt.Sprintf("Stop %d-%d", dayNumber, 1),
-		Description: fmt.Sprintf("Description %d-%d", dayNumber, 1),
+		ID:                   stopIDBase,
+		PlaceID:              stopIDBase + 1,
+		Position:             1,
+		Name:                 fmt.Sprintf("Stop %d-%d", dayNumber, 1),
+		Description:          fmt.Sprintf("Description %d-%d", dayNumber, 1),
+		Categories:           []domain.Category{domain.CategoryMuseum},
+		Interests:            []domain.Interest{domain.InterestHistory},
+		Address:              fmt.Sprintf("Address %d-%d", dayNumber, 1),
+		WebsiteURL:           &websiteURL,
+		Phone:                &phone,
+		VisitDurationMinutes: 90,
 		Coordinates: domain.Coordinates{
 			Latitude:  55.7539 + float64(dayNumber)/1000,
 			Longitude: 37.6208 + float64(dayNumber)/1000,
 		},
 		ArrivalTime:   date.Add(9 * time.Hour),
 		DepartureTime: date.Add(11 * time.Hour),
-		VisitDuration: 90 * time.Minute,
 	}
 
 	secondStop := domain.RouteStop{
-		ID:          stopIDBase + 1,
-		PlaceID:     stopIDBase + 2,
-		Position:    2,
-		Name:        fmt.Sprintf("Stop %d-%d", dayNumber, 2),
-		Description: fmt.Sprintf("Description %d-%d", dayNumber, 2),
+		ID:                   stopIDBase + 1,
+		PlaceID:              stopIDBase + 2,
+		Position:             2,
+		Name:                 fmt.Sprintf("Stop %d-%d", dayNumber, 2),
+		Description:          fmt.Sprintf("Description %d-%d", dayNumber, 2),
+		Categories:           []domain.Category{domain.CategoryPark},
+		Interests:            []domain.Interest{domain.InterestNature},
+		Address:              fmt.Sprintf("Address %d-%d", dayNumber, 2),
+		WebsiteURL:           &websiteURL,
+		Phone:                &phone,
+		VisitDurationMinutes: 45,
 		Coordinates: domain.Coordinates{
 			Latitude:  55.7639 + float64(dayNumber)/1000,
 			Longitude: 37.6308 + float64(dayNumber)/1000,
 		},
 		ArrivalTime:   date.Add(12 * time.Hour),
 		DepartureTime: date.Add(13*time.Hour + 30*time.Minute),
-		VisitDuration: 45 * time.Minute,
 	}
 
 	return domain.RouteDay{
@@ -187,8 +200,8 @@ func routeDayFixture(
 		Legs: []domain.RouteLeg{
 			{
 				ID:         dayNumber*10 + 1,
-				FromStopID: firstStop.ID,
-				ToStopID:   secondStop.ID,
+				FromStopID: firstStop.Position,
+				ToStopID:   secondStop.Position,
 				TravelMode: domain.TravelModeWalking,
 				Distance:   1500,
 				Duration:   15 * time.Minute,
@@ -243,12 +256,17 @@ func assertRouteMatchesCreate(
 			assert.Equal(t, generatedStop.Position, actualStop.Position)
 			assert.Equal(t, generatedStop.Name, actualStop.Name)
 			assert.Equal(t, generatedStop.Description, actualStop.Description)
+			assert.Equal(t, generatedStop.Categories, actualStop.Categories)
+			assert.Equal(t, generatedStop.Interests, actualStop.Interests)
+			assert.Equal(t, generatedStop.Address, actualStop.Address)
+			assert.Equal(t, generatedStop.WebsiteURL, actualStop.WebsiteURL)
+			assert.Equal(t, generatedStop.Phone, actualStop.Phone)
+			assert.Equal(t, generatedStop.VisitDurationMinutes, actualStop.VisitDurationMinutes)
 			assert.Equal(t, generatedStop.Coordinates, actualStop.Coordinates)
 			assertSameInstant(t, generatedStop.ArrivalTime, actualStop.ArrivalTime)
 			assertSameInstant(t, generatedStop.DepartureTime, actualStop.DepartureTime)
-			assert.Equal(t, generatedStop.VisitDuration, actualStop.VisitDuration)
 
-			stopIDsMapping[generatedStop.ID] = actualStop.ID
+			stopIDsMapping[generatedStop.Position] = actualStop.ID
 		}
 
 		require.Len(t, actualDay.Legs, len(generatedDay.Legs))
@@ -336,13 +354,13 @@ func assertRouteRowsPersisted(t *testing.T, route *domain.Route) {
 
 	for _, day := range route.Days {
 		for _, stop := range day.Stops {
-			var visitDurationSeconds int64
+			var visitDurationMinutes int
 			require.NoError(t, poolForIntegrationTesting.QueryRow(
 				context.Background(),
-				`SELECT visit_duration FROM app.route_stops WHERE id=$1;`,
+				`SELECT visit_duration_minutes FROM app.route_stops WHERE id=$1;`,
 				stop.ID,
-			).Scan(&visitDurationSeconds))
-			assert.Equal(t, int64(stop.VisitDuration/time.Second), visitDurationSeconds)
+			).Scan(&visitDurationMinutes))
+			assert.Equal(t, stop.VisitDurationMinutes, visitDurationMinutes)
 		}
 
 		for _, leg := range day.Legs {
